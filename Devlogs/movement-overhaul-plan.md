@@ -20,9 +20,9 @@ Design decisions locked in:
 
 ## Devlogs (write throughout)
 
-Devlogs live in `Hyperstimulant/Devlogs/`. Write entries generously — this is a solo learning project (see `Course Info Folder/`, `Research/`) and the reasoning matters as much as the diff.
+Devlogs live in `A Quick Sprint Through Hell/Devlogs/`. Write entries generously — this is a solo learning project (see `Course Info Folder/`, `Research/`) and the reasoning matters as much as the diff.
 
-- **File per entry:** `Hyperstimulant/Devlogs/YYYY-MM-DD-<short-topic>.md`. Multiple per day is fine.
+- **File per entry:** `A Quick Sprint Through Hell/Devlogs/YYYY-MM-DD-<short-topic>.md`. Multiple per day is fine.
 - **Cadence:** at minimum one entry per pass below, plus a short entry any time a design decision is made or reversed (e.g. the air-cap model: hard clamp → tiny wish-speed → directional soft cap, and *why* each was rejected).
 - **Template:**
   ```markdown
@@ -164,6 +164,6 @@ The enum, all tunables, `SoftClampHorizontal`, the air-accel math, and the slide
 
 ## Files
 
-- **Modify:** `Hyperstimulant/Assets/Scripts/Player Scripts/BaseMovement.cs` (Passes 1–4).
-- **Devlogs:** `Hyperstimulant/Devlogs/` — dated entry per pass and per design decision.
-- **Later:** `Hyperstimulant/Assets/Scripts/Player Scripts/LaunchBehavior.cs` (Pass 5, call-site update only).
+- **Modify:** `A Quick Sprint Through Hell/Assets/Scripts/Player Scripts/BaseMovement.cs` (Passes 1–4).
+- **Devlogs:** `A Quick Sprint Through Hell/Devlogs/` — dated entry per pass and per design decision.
+- **Later:** `A Quick Sprint Through Hell/Assets/Scripts/Player Scripts/LaunchBehavior.cs` (Pass 5, call-site update only).

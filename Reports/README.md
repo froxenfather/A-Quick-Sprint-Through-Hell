@@ -82,3 +82,19 @@
 
 ## 10/4/2026
 - Crude implementation finished
+
+## 10/8/2026
+- Wall Jumping Refactored to be more stable and reliable on curved surfaces
+
+## 10/12/2026
+- Began Work on Wall Running
+
+## 10/13/2026
+- Wall Running Prototype and Testing
+- Finished Wall Running, Bugs on curved surfaces though
+
+# Movement Engine Finished
+
+## 10/14/2026
+- Began total refactor on project from Parkour Simulator to Full Game
+- A Short Walk in Hell

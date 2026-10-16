@@ -968,12 +968,15 @@ MonoBehaviour:
   slideLandingBoostScale: 0.5
   slideLandingBoostMax: 100
   wallJumpHeightMultiplier: 1
-  wallJumpPushAway: 10
+  wallJumpPushAway: 20
   wallJumpForwardBoost: 3
   wallJumpLookTolerance: 30
   wallDetectDistance: 0.15
   wallProbeDirections: 8
   wallMaxNormalY: 0.25
+  wallSlipGravityScale: 0.5
+  wallRunMinSpeed: 20
+  wallRunGracePeriod: 1.5
   crouchSpeed: 5
   crouchHeight: 1.2
   collisionMask:
@@ -2393,11 +2396,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7162162377198911445, guid: 729f73d4d997fda4fbd35da48cd7a99e, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.9018113
+      value: 0.96316874
       objectReference: {fileID: 0}
     - target: {fileID: 7162162377198911445, guid: 729f73d4d997fda4fbd35da48cd7a99e, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.43213013
+      value: -0.26889762
       objectReference: {fileID: 0}
     - target: {fileID: 7162162377198911445, guid: 729f73d4d997fda4fbd35da48cd7a99e, type: 3}
       propertyPath: m_LocalRotation.y
@@ -2409,7 +2412,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7162162377198911445, guid: 729f73d4d997fda4fbd35da48cd7a99e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: -51.206
+      value: -31.197
       objectReference: {fileID: 0}
     - target: {fileID: 7162162377198911445, guid: 729f73d4d997fda4fbd35da48cd7a99e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y

@@ -9,7 +9,7 @@ public static class GrayboxBuilder
     private const string MaterialPath = "Assets/Materials/Graybox_Grid.mat";
     private const string GridTexturePath = "Assets/Textures/Prototype/general/prototype_grid_grey.png";
 
-    [MenuItem("Hyperstimulant/Build Graybox Floor")]
+    [MenuItem("A Quick Sprint Through Hell/Build Graybox Floor")]
     public static void BuildFloor()
     {
         var root = GameObject.Find("Graybox");

@@ -135,6 +135,21 @@ public class CustomPlayerController : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float wallMaxNormalY = 0.3f;
 
+    [Header("Wall Slip")]
+    // The "slipping speed": while touching a wall in the air, gravity is multiplied by this. 0.5 = half gravity, 1 = walls change nothing, 0 = glued to the wall.
+    // It is a multiplier (not an m/s^2 number) so it keeps following gravity if you retune that. It is an acceleration, not a top speed: we still speed up as we slip, just half as fast.
+    // Applies to ANY wall touch, no look angle needed. The moment we are off the wall, gravity is back to normal.
+    [Range(0f, 1f)]
+    [SerializeField] private float wallSlipGravityScale = 0.5f;
+
+    [Header("Wall Run")]
+    // Flat speed (m/s) needed to start AND keep a wall run, on top of holding sprint and meeting every wall jump requirement.
+    [SerializeField] private float wallRunMinSpeed = 20f;
+
+    // Seconds of wall running allowed before Y unpauses and we slip down the wall as normal.
+    // It is a budget, not a per-wall timer: it only refills on a wall jump or on touching the ground.
+    [SerializeField] private float wallRunGracePeriod = 1.5f;
+
     [Header("Crouch")]
     // What pressing slide does instead, if we're too slow to slide (or not moving at all).
     [SerializeField] private float crouchSpeed = 5f;
@@ -187,6 +202,9 @@ public class CustomPlayerController : MonoBehaviour
 
     // Speed (m/s) away from a surface above which we count as leaving it.
     private const float MovingAwaySpeed = 0.1f;
+
+    // Slack (m/s) on wallRunMinSpeed, so a speed that is "exactly 20" but 19.99999 after float math still counts.
+    private const float WallRunSpeedTolerance = 0.05f;
 
     // Step-up tuning.
     private const float MinStepRaiseHeight = 0.02f;     // less headroom than this: can't step
@@ -242,7 +260,7 @@ public class CustomPlayerController : MonoBehaviour
     private float standHeight;
     private float standCenterY;
 
-    // Everything we know about the wall we're next to. Single source of truth: wall jump and the debug rays read it, and a future wall run can too (it just needs its own state + a branch in Move()).
+    // Everything we know about the wall we're next to. Single source of truth: wall jump, wall run, wall slip gravity and the debug rays all read it.
     // Detection and the look check live ONLY in the WALL DETECTION section, filled by UpdateWallContact().
     // A plain struct (small value type), so copying it to re-check the look doesn't touch the stored one.
     private struct WallContact
@@ -258,6 +276,10 @@ public class CustomPlayerController : MonoBehaviour
     }
 
     private WallContact currentWall;
+
+    // Wall run state. wallRunning is decided once per step by UpdateWallRun(); wallRunTimeUsed is the grace period spent so far.
+    private bool wallRunning;
+    private float wallRunTimeUsed;
 
     private bool grounded;
     private Vector3 groundNormal = Vector3.up;
@@ -289,6 +311,7 @@ public class CustomPlayerController : MonoBehaviour
     public bool IsGrounded => grounded;
     public bool IsSliding => sliding;
     public bool IsCrouching => crouching;
+    public bool IsWallRunning => wallRunning;
 
     // Flat speed relative to whatever we're standing on, so riding a fast platform doesn't count as running.
     public float HorizontalSpeed => Flatten(velocity - currentPlatformVelocity).magnitude;
@@ -360,6 +383,9 @@ public class CustomPlayerController : MonoBehaviour
         // Leaving the ground can happen two ways: we jump, or the ground launches us (like if you fly off a platform or launchpad) (falling off a platform also counts)
         bool leftGround =
             Jump(ref calculatedMovement) || LaunchOffMovingGround(previousPlatformVelocity - currentPlatformVelocity, dt);
+
+        // Wall run is decided AFTER the jump, so a wall jump this step (which refills the grace period and pushes us off the wall) is already counted.
+        UpdateWallRun(calculatedMovement, dt);
 
         calculatedMovement = Move(calculatedMovement, dt);
 
@@ -571,18 +597,26 @@ public class CustomPlayerController : MonoBehaviour
     //   all yes              -> ApplyWallJump
     private bool TryWallJump(ref Vector3 calculatedMovement)
     {
-        if (grounded || !currentWall.valid)
-            return false;
-
-        // currentWall was measured at the end of the last physics step, but the mouse can turn us between steps. Copy it and re-check just the look part against where we face right now.
-        WallContact wall = currentWall;
-        EvaluateWallLook(ref wall);
-
-        if (!wall.lookOk)
+        if (!TryGetWallJumpWall(out WallContact wall))
             return false;
 
         ApplyWallJump(wall, ref calculatedMovement);
         return true;
+    }
+
+    // The wall jump requirements: airborne, a wall in range, looking along it. Wall running needs exactly these too, so both ask here and can't drift apart.
+    // Hands back the wall with the look re-checked against where we face right now.
+    private bool TryGetWallJumpWall(out WallContact wall)
+    {
+        wall = currentWall;
+
+        if (grounded || !currentWall.valid)
+            return false;
+
+        // currentWall was measured at the end of the last physics step, but the mouse can turn us between steps. Copy it and re-check just the look part against where we face right now.
+        EvaluateWallLook(ref wall);
+
+        return wall.lookOk;
     }
 
     // The wall jump's velocity change, three parts:
@@ -611,6 +645,14 @@ public class CustomPlayerController : MonoBehaviour
         // A wall jump ends an air slide (SlideAirMove would lock our momentum and ignore air control).
         // Pressing slide again starts a new one as normal - air slides ignore slideGrace.
         sliding = false;
+
+        // A wall jump refills the wall run grace period.
+        wallRunTimeUsed = 0f;
+        wallRunning = false;
+
+        // We just pushed off this wall, so it must not count as touching it this step (no slip gravity, no wall run).
+        // UpdateWallContact measures again at the end of the step.
+        currentWall = default;
     }
 
     // A platform that stops (or slows down) faster than gravity can pull us back down leaves us flying with the speed it had.
@@ -716,9 +758,46 @@ public class CustomPlayerController : MonoBehaviour
         capsule.center = new Vector3(capsule.center.x, targetHeight * 0.5f + bottomOffset, capsule.center.z);
     }
 
+    // Decides whether we are wall running this step. Runs every tick, right before Move().
+    //
+    // A wall run needs ALL of these:
+    //   - every wall jump requirement (airborne, wall in range, looking along it), via TryGetWallJumpWall
+    //   - sprint held
+    //   - flat speed of at least wallRunMinSpeed
+    //   - not already moving away from the wall. Without this, the tick after a wall jump (wall still in range if the push is small) would freeze the jump's upward speed.
+    //   - grace period not used up
+    //
+    // Only time actually spent wall running is counted. The budget refills on landing here, and on a wall jump in ApplyWallJump.
+    private void UpdateWallRun(Vector3 calculatedMovement, float dt)
+    {
+        wallRunning = false;
+
+        if (grounded)
+        {
+            wallRunTimeUsed = 0f;
+            return;
+        }
+
+        if (!TryGetWallJumpWall(out WallContact wall))
+            return;
+
+        bool fastEnough = Flatten(calculatedMovement).magnitude >= wallRunMinSpeed - WallRunSpeedTolerance;
+        bool movingAway = Vector3.Dot(calculatedMovement, wall.normal) > MovingAwaySpeed;
+
+        if (!sprinting || !fastEnough || movingAway || wallRunTimeUsed >= wallRunGracePeriod)
+            return;
+
+        wallRunning = true;
+        wallRunTimeUsed += dt;
+    }
+
     // Choose movement model based on what state we're in.
     private Vector3 Move(Vector3 calculatedMovement, float dt)
     {
+        // Wall running is airborne by definition and overrides the other air models (an air slide included).
+        if (wallRunning)
+            return WallRunMove(calculatedMovement);
+
         if (sliding)
             return grounded ? SlideGroundMove(calculatedMovement, dt) : SlideAirMove(calculatedMovement, dt);
 
@@ -901,7 +980,7 @@ public class CustomPlayerController : MonoBehaviour
         // v = v0 + g * dt
         //
         // Downward direction makes acceleration negative in Y.
-        calculatedMovement += Vector3.down * gravity * dt;
+        calculatedMovement += Vector3.down * CurrentGravity() * dt;
         // Gotta be careful to not clamp gravity here!
 
         return calculatedMovement;
@@ -911,8 +990,24 @@ public class CustomPlayerController : MonoBehaviour
     // (You get here by jumping out of a slide, or sliding off a ledge, with the button still held.)
     private Vector3 SlideAirMove(Vector3 calculatedMovement, float dt)
     {
-        calculatedMovement += Vector3.down * gravity * dt;
+        calculatedMovement += Vector3.down * CurrentGravity() * dt;
         return calculatedMovement;
+    }
+
+    // Wall run: Y is paused (no rising, no falling) and EVERYTHING else is left alone. No air control, no speed cap, no overspeed bleed, so forward momentum is not hindered at all.
+    // Speeds above wallRunMinSpeed (slide jump, wall jump) carry through the whole run.
+    private Vector3 WallRunMove(Vector3 calculatedMovement)
+    {
+        calculatedMovement.y = 0f;
+        return calculatedMovement;
+    }
+
+    // Gravity for the air models. Touching a wall swaps it for the lower wall slip gravity; one step after we leave the wall it is normal again.
+    // currentWall is only ever valid while airborne (UpdateWallContact clears it on the ground), and so is every caller, so this never touches ground movement.
+    // When a wall run's grace period runs out, AirMove lands here with Y at 0: that is the "slip down the wall as normal".
+    private float CurrentGravity()
+    {
+        return currentWall.valid ? gravity * wallSlipGravityScale : gravity;
     }
 
     // ============================================================
@@ -1827,6 +1922,8 @@ public class CustomPlayerController : MonoBehaviour
         // Teleporting doesn't count as walking off an edge.
         lastGroundedTime = NeverGrounded;
         currentWall = default;
+        wallRunning = false;
+        wallRunTimeUsed = 0f;
 
         rb.position = worldPosition;
         transform.position = worldPosition;
@@ -1901,14 +1998,15 @@ public class CustomPlayerController : MonoBehaviour
         }
 
         GUI.Label(
-            new Rect(10f, 10f, 420f, 200f),
+            new Rect(10f, 10f, 420f, 220f),
             $"speed: {velocity.magnitude:F1}   horizontal: {horizontalVelocity.magnitude:F1}\n" +
             $"velocity: {velocity}\n" +
             $"grounded: {grounded}   slope: {slopeAngle:F0} deg\n" +
             $"sliding: {sliding}   crouching: {crouching}\n" +
             $"platform: {platformName}\n" +
             $"coyote left: {Mathf.Max(0f, coyoteTime - (Time.time - lastGroundedTime)):F2}s (window {coyoteTime:F2}s)\n" +
-            $"wall: {wallText}"
+            $"wall: {wallText}\n" +
+            $"wall run: {wallRunning}   grace left: {Mathf.Max(0f, wallRunGracePeriod - wallRunTimeUsed):F2}s"
         );
     }
 }

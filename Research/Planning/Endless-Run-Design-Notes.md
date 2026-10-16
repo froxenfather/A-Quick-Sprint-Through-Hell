@@ -127,7 +127,7 @@ Rooms/
 - **Spawn by distance, not room count.** Keep 400-600 m of path generated. Use `Object.InstantiateAsync` (Unity 6) to avoid hitches. The bright gate glow plus fog also hides the next room's pop-in.
 - **Safe islands.** Lava never covers 100% of a floor, so a bounce can't chain forever.
 - **Drops and the skull.** 5-10 floors is a long fall (v = sqrt(2gh)). Consider a terminal fall speed. Since the skull moves vertically at only 3 m/s, a long drop buys a big lead, so the drop sections work as a breather. Slide-landing at the bottom already gives a capped landing boost (`slideLandingBoostMax`), which makes a nice reward.
-- **Climbs.** Wall-jump zigzags in a shaft depend on shaft width (wall jump push x airtime). Wall riding (syllabus Weeks 10-11) will make vertical rooms much better, so do it first. Upward launchpads help too.
+- **Climbs.** Wall-jump zigzags in a shaft depend on shaft width (wall jump push x airtime). Wall riding is already done (original syllabus Weeks 10-11), which makes vertical rooms much better. Upward launchpads help too.
 - **Telegraphing.** HUD "AIR LIMIT 8" while hazard-limited, orange emissive lava, blue arcing walls, and a distinct sound for each. A heartbeat or growl that scales with the skull's distance.
 - **Chaser as a time lead.** Define the skull's start gap in seconds (about 6 s), not meters, so the lead means the same thing at any player speed.
 - **Seeds.** Seeded `System.Random` for reproducible bugs, daily seeds and shared runs.

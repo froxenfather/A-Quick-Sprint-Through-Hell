@@ -4,15 +4,17 @@
 
 ## Course Description
 
-This independent study focuses on learning the Unity game engine and applying software engineering, 3D mathematics, and physics concepts to the development of a first-person parkour movement system.
+This independent study focuses on learning the Unity game engine and applying software engineering, 3D mathematics, and physics concepts to the development of a first-person parkour movement system, and then building a procedurally generated endless run on top of it.
 
-The first portion of the course will focus on learning Unity through smaller programming, physics, and movement projects. Development will then transition into an iterative first-person movement system, beginning with basic movement and progressively introducing acceleration, momentum, air control, slopes, sliding, slide jumping, wall jumping, and wall riding.
+The first portion of the course focused on learning Unity through smaller programming, physics, and movement projects. Development then transitioned into an iterative first-person movement system, beginning with basic movement and progressively introducing acceleration, momentum, air control, slopes, sliding, slide jumping, wall jumping, and wall riding.
 
-The course is intentionally front-loaded, with the primary development of the movement controller occurring during the first eight weeks. The later portion of the semester will focus on wall mechanics, system integration, testing, environment design, and documentation.
+The course was intentionally front-loaded, with the primary development of the movement controller planned for the first eight weeks. The required movement system, including all wall mechanics, was in fact completed ahead of schedule, by Week 8 (see the note under Week 8). The scope of the remaining weeks has therefore been changed: the semester now moves past the original wall mechanics, integration, and environment-design weeks and toward a finalized product.
 
-The central focus of the project will be the preservation and redirection of player momentum across different movement states and environmental interactions.
+The remaining weeks have two parts. First, the movement engine is polished, documented, and tested (Week 9). Second, a procedural room generator is built that chains hand-authored rooms into an endless run, turns the player left, right, up, and down, and stitches every exit to the next entrance (Weeks 10-15). The core gameplay and the code behind it are the priority. Visual presentation is a stretch goal.
 
-If the required movement system is completed ahead of schedule, automatic bar traversal and rail grinding will be explored as stretch goals.
+The central focus of the project remains the preservation and redirection of player momentum across different movement states and environmental interactions, and now across a level that is generated at runtime.
+
+If the required scope is completed ahead of schedule, automatic bar traversal (bar swings) and visual presentation will be explored as stretch goals.
 
 ## Learning Objectives
 
@@ -29,6 +31,11 @@ By the end of this independent study, I will be able to:
 - Design a 3D environment around the capabilities and limitations of a movement system.
 - Analyze and tune movement mechanics based on responsiveness, consistency, and player feedback.
 - Document the architecture and mathematical behavior of a complete movement system.
+- Design a procedural level generator that chains hand-authored rooms through a shared entry and exit contract.
+- Apply rotations and transform math to align rooms and redirect the player's heading left, right, up, and down.
+- Detect and prevent overlapping geometry in generated levels.
+- Stream generated content at runtime without hitches or unbounded memory growth.
+- Build gameplay systems (hazards and a chaser) that interact with a momentum-based controller.
 - Explore additional traversal mechanics as time permits.
 
 ## Tools and Technologies
@@ -37,6 +44,8 @@ By the end of this independent study, I will be able to:
 - C#
 - Unity Input System
 - Unity Physics
+- Unity Editor scripting (custom tools and validators)
+- Unity Test Framework (automated generator tests)
 - Blender or other 3D modeling software
 - Git / GitHub
 - Unity Profiler and debugging tools
@@ -253,220 +262,271 @@ A complete core locomotion system supporting smooth movement, momentum, slopes, 
 
 ---
 
-## Week 9: Wall Detection and Wall Jumping
+> ## AHEAD OF SCHEDULE: SCOPE CHANGE AS OF WEEK 8
+>
+> **As of Week 8, the project has gone significantly further than this syllabus expected.** Everything this syllabus required of the movement system, originally scheduled through Week 12, is already implemented in Unity. That includes wall detection, wall jumping, wall riding, movement chaining, and integration.
+>
+> Because of this, the scope of the course is changing. The remaining weeks will **not** repeat or pad out the original wall-mechanics, integration, and environment-design weeks. They will push the project toward a **finalized product**: first a polished and documented movement engine, then a procedurally generated endless run built on top of it.
+>
+> The original Weeks 9-12 are consolidated directly below, marked complete. The redefined Weeks 9-15 follow in Sections III and IV.
 
-### Goal
+### Completed Ahead of Schedule: Original Weeks 9-12
 
-Allow environmental surfaces to redirect the player's airborne momentum.
+Every required item from the original Weeks 9 through 12 has been completed.
 
-### Tasks
+#### Original Week 9: Wall Detection and Wall Jumping (Complete)
 
-- Detect walls adjacent to the player.
-- Determine valid wall surfaces using surface normals and angles.
-- Determine which side of the player contains the detected wall.
-- Implement directional wall jumping.
-- Calculate wall-jump direction using player velocity and wall normals.
-- Preserve appropriate forward momentum when leaving a wall.
-- Redirect momentum away from the contacted surface.
-- Prevent repeated exploitation of the same wall.
-- Tune wall-jump timing and player control.
-- Add wall-jump testing sections to the parkour environment.
+**Goal:** Allow environmental surfaces to redirect the player's airborne momentum.
 
-### Deliverable
+- [x] Detect walls adjacent to the player.
+- [x] Determine valid wall surfaces using surface normals and angles.
+- [x] Determine which side of the player contains the detected wall.
+- [x] Implement directional wall jumping.
+- [x] Calculate wall-jump direction using player velocity and wall normals.
+- [x] Preserve appropriate forward momentum when leaving a wall.
+- [x] Redirect momentum away from the contacted surface.
+- [x] Prevent repeated exploitation of the same wall.
+- [x] Tune wall-jump timing and player control.
+- [x] Add wall-jump testing sections to the parkour environment.
 
-A reliable wall-jumping system capable of redirecting player momentum using environmental geometry.
+**Deliverable (met):** A reliable wall-jumping system capable of redirecting player momentum using environmental geometry.
 
----
+#### Original Week 10: Wall Riding and Wall Running (Complete)
 
-## Week 10: Wall Riding and Wall Running
+**Goal:** Extend wall interaction into sustained momentum-based traversal.
 
-### Goal
+- [x] Implement a wall-riding movement state.
+- [x] Determine the player's direction of travel relative to a wall.
+- [x] Project player velocity along the wall surface.
+- [x] Modify gravity while wall riding.
+- [x] Preserve momentum when entering a wall ride.
+- [x] Establish minimum velocity requirements for entering and maintaining a wall ride.
+- [x] Implement wall-ride termination conditions.
+- [x] Transition between wall riding, wall jumping, airborne movement, and ground movement.
+- [x] Add camera feedback during wall traversal.
+- [x] Expand the environment with wall-riding sections.
 
-Extend wall interaction into sustained momentum-based traversal.
+**Deliverable (met):** A functional wall-riding system capable of preserving player momentum along valid wall surfaces.
 
-### Tasks
+#### Original Week 11: Wall Integration and Movement Chaining (Complete)
 
-- Implement a wall-riding movement state.
-- Determine the player's direction of travel relative to a wall.
-- Project player velocity along the wall surface.
-- Modify gravity while wall riding.
-- Preserve momentum when entering a wall ride.
-- Establish minimum velocity requirements for entering and maintaining a wall ride.
-- Implement wall-ride termination conditions.
-- Transition between wall riding, wall jumping, airborne movement, and ground movement.
-- Add camera feedback during wall traversal.
-- Expand the environment with wall-riding sections.
+**Goal:** Complete the required movement feature set by integrating wall mechanics with the existing momentum system.
 
-### Deliverable
-
-A functional wall-riding system capable of preserving player momentum along valid wall surfaces.
-
----
-
-## Week 11: Wall Integration and Movement Chaining
-
-### Goal
-
-Complete the required movement feature set by integrating wall mechanics with the existing momentum system.
-
-### Tasks
-
-- Support transitions between multiple wall surfaces.
-- Improve transitions between wall riding and wall jumping.
-- Preserve velocity across appropriate movement-state changes.
-- Redirect momentum rather than resetting player velocity.
-- Test transitions between walls, ground movement, slides, and airborne movement.
-- Eliminate unexpected momentum loss during transitions.
-- Prevent unintended or infinite acceleration.
-- Improve player control at high speeds.
-- Test complex movement sequences.
-- Tune wall mechanics alongside the existing movement controller.
+- [x] Support transitions between multiple wall surfaces.
+- [x] Improve transitions between wall riding and wall jumping.
+- [x] Preserve velocity across appropriate movement-state changes.
+- [x] Redirect momentum rather than resetting player velocity.
+- [x] Test transitions between walls, ground movement, slides, and airborne movement.
+- [x] Eliminate unexpected momentum loss during transitions.
+- [x] Prevent unintended or infinite acceleration.
+- [x] Improve player control at high speeds.
+- [x] Test complex movement sequences.
+- [x] Tune wall mechanics alongside the existing movement controller.
 
 Example traversal sequence:
 
 `Run -> Downhill Ramp -> Slide -> Slide Jump -> Wall Ride -> Wall Jump -> Landing`
 
-### Deliverable
+**Deliverable (met):** A feature-complete first-person parkour controller supporting smooth movement, momentum, slopes, sliding, slide jumping, wall jumping, and wall riding.
 
-A feature-complete first-person parkour controller supporting smooth movement, momentum, slopes, sliding, slide jumping, wall jumping, and wall riding.
+#### Original Week 12: Movement System Integration and Stability (Complete)
+
+**Goal:** Improve the reliability and consistency of the completed movement system without introducing additional required mechanics.
+
+- [x] Conduct systematic testing of all movement states.
+- [x] Identify conflicts between movement mechanics.
+- [x] Fix movement-state transition bugs.
+- [x] Test unusual collision and terrain conditions.
+- [x] Test movement at unusually high and low velocities.
+- [x] Fix camera clipping or movement feedback issues.
+- [x] Refine ground and wall detection.
+- [x] Address physics exploits and unintended acceleration.
+- [x] Tune acceleration, friction, gravity, air control, and jump forces.
+- [x] Refactor or simplify movement code where necessary.
+
+**Deliverable (met):** A stable and integrated version of the required movement system suitable for use in the final parkour environment.
+
+#### Also Built Beyond the Original Syllabus
+
+- Coyote time.
+- Moving-platform velocity transfer.
+- Launchpads.
+- Pressure plates and doors.
 
 ---
 
-## Week 12: Movement System Integration and Stability
+# Section III: Movement Engine Polish
+
+## Week 9: Polish of the Movement Engine
 
 ### Goal
 
-Improve the reliability and consistency of the completed movement system without introducing additional required mechanics.
+Bring the completed movement engine to a stable, documented, and thoroughly tested state, so it can be a dependable foundation for the generated rooms.
 
 ### Tasks
 
-- Conduct systematic testing of all movement states.
-- Identify conflicts between movement mechanics.
-- Fix movement-state transition bugs.
-- Test unusual collision and terrain conditions.
-- Test movement at unusually high and low velocities.
-- Fix camera clipping or movement feedback issues.
-- Refine ground and wall detection.
-- Address physics exploits and unintended acceleration.
-- Tune acceleration, friction, gravity, air control, and jump forces.
+- Document the movement architecture: frame order, each movement state, the transitions between them, and the math behind each mechanic.
+- Fix remaining bugs, movement-state conflicts, unintended acceleration, and unexpected momentum loss.
+- Build dedicated testing environments for each mechanic (slopes, sliding, slide jumping, wall jumping, wall riding, launchpads, doors) and for unusual collision cases.
+- Truly push the engine: extreme speeds, tight geometry, long repeated chains, and variable frame rates.
+- Refine the feel of the engine until it is as good as it feels: acceleration, friction, gravity, air control, jump forces, and camera feedback.
+- Measure and record the engine's reach envelope: maximum jump distance and height, slide-jump gap, and wall-jump reach at several entry speeds. These numbers set the size limits for room gates and gaps.
+- Clean up and freeze the controller functions that rooms and hazards will call, such as setting velocity and a future hazard-hit call.
 - Refactor or simplify movement code where necessary.
 
 ### Deliverable
 
-A stable and integrated version of the required movement system suitable for use in the final parkour environment.
+A stable, documented movement engine, a set of testing environments, and a table of reach-envelope measurements.
 
 ---
 
-## Week 13: Parkour Environment and Playtesting
+# Section IV: Procedural Endless Run
+
+## Week 10: Room Contract and Straight Stitching
 
 ### Goal
 
-Create a complete 3D environment specifically designed to demonstrate and evaluate the movement system.
+Define what a room is, and prove that rooms can be stitched together seamlessly, entrance to exit, in a straight line.
 
 ### Tasks
 
-- Expand the existing gray-box testing environment into a deliberate parkour course.
-- Design sections involving:
-  - Ramps
-  - Slides
-  - Walls
-  - Gaps
-  - Vertical traversal
-  - High-speed movement
-- Establish obstacle spacing based on player speed and jump distance.
-- Create routes requiring multiple movement mechanics to be chained together.
-- Create alternate routes or shortcuts that reward maintaining momentum.
-- Import or create simple environmental assets where appropriate.
-- Conduct playtesting with the completed movement system.
-- Adjust the environment and controller based on testing results.
+- Define the room contract: Entry and Exit anchors, gate size, bounds, and room type. Size gates using the Week 9 reach envelope.
+- Create the room data on each room prefab, and set up a folder layout by room type (Forward, Left, Right, SlightLeft, SlightRight, Up, Down, TopOut, BottomOut).
+- Implement the heading frame: the generator keeps one position and rotation, and each room's Exit becomes the next room's Entry.
+- Place each new room by aligning its Entry to the previous Exit in both position and rotation, including gates at different heights.
+- Build an editor validator that checks every room for correct Entry and Exit anchors, gate size, and bounds.
+- Add a seeded random source so any run can be reproduced.
+- Add gizmos that draw anchors, gates, and bounds.
+- Author at least ten gray-box Forward rooms.
 
 ### Deliverable
 
-A complete 3D parkour demonstration environment designed around the required movement mechanics.
+A generator that chains ten or more Forward rooms end to end with no gaps or misalignment, and a validator that passes every room.
 
 ---
 
-## Week 14: Polish and Optional Advanced Traversal
+## Week 11: Horizontal Turns and Overlap Prevention
 
 ### Goal
 
-Polish the completed project and explore an additional traversal mechanic if the required movement system is complete and stable.
+Turn the player left and right, while guaranteeing generated rooms never overlap.
 
-### Core Tasks
+### Tasks
 
-- Fix remaining movement bugs and edge cases.
-- Improve transitions between movement states.
-- Refine speed-responsive camera effects.
-- Improve sliding and wall-riding camera feedback.
-- Add audio or visual feedback where appropriate.
-- Continue movement tuning based on playtesting.
-- Profile the project and address significant performance issues.
-
-### Stretch Goal: Automatic Bar Traversal
-
-If the required movement systems are complete and stable:
-
-- Create environmental traversal bars.
-- Detect valid bar interactions automatically.
-- Determine whether player direction and speed permit interaction.
-- Automatically attach the player without requiring additional input.
-- Measure incoming player velocity.
-- Convert incoming horizontal velocity into rotational movement around the bar.
-- Automatically determine an appropriate release point.
-- Automatically release the player.
-- Redirect momentum primarily into vertical and forward launch velocity.
-- Scale the resulting launch based on incoming speed.
-- Integrate bar traversal with existing airborne movement.
+- Author turn rooms: 90 degree left and right, and 45 degree slight left and slight right. Turn rooms only redirect the player and are never angled up or down.
+- Rotate the heading frame when a turn room is placed.
+- Implement weighted room selection with starting weights, and bias turns back toward the original heading when total rotation drifts too far.
+- Store each room's bounds and test every new room against recently placed rooms. Re-roll on overlap, with a fallback when no turn fits.
+- Delete rooms far behind the player so that only recent rooms need to be checked.
+- Build an editor preview window that chains about 20 random rooms.
+- Test generated turns with the real controller at speed.
 
 ### Deliverable
 
-A polished version of the required movement system. Automatic bar traversal may be included if development time permits.
+An endless winding path across the horizontal plane, built from a small pool of authored rooms, with no overlaps.
 
 ---
 
-## Week 15: Final Testing, Documentation, and Optional Rail Grinding
+## Week 12: Vertical Sections and Recovery Rooms
 
 ### Goal
 
-Complete testing and documentation of the project while using any remaining development time for final polish or additional experimentation.
+Turn the player up and down, and bring them back to level movement afterward.
+
+### Tasks
+
+- Author Up sections (a wall climb of 1-2 rooms) and Down sections (a drop of 5-10 floors). Author them as world-vertical shafts rather than rotated copies, because gravity always points world-down.
+- Author top-out and bottom-out rooms that end a climb or drop. Each is randomly rotated 0, 90, 180, or 270 degrees, and may be slanted 45 degrees.
+- Extend the generator to treat a vertical section as a sequence that must end in the matching top-out or bottom-out room.
+- Extend the overlap check to three dimensions, and never place an Up directly after a Down.
+- Support entrances and exits at different heights.
+- Add Up and Down to the weighted selection.
+- Verify with the controller that climbs are achievable with the wall mechanics and that drops end in a satisfying landing.
+
+### Deliverable
+
+A generator that can redirect the player left, right, up, and down, and always return them to level movement.
+
+---
+
+## Week 13: Runtime Streaming, Seeds, and Pacing
+
+### Goal
+
+Make the generator behave like a real endless run: continuous, hitch-free, reproducible, and paced.
+
+### Tasks
+
+- Spawn rooms by distance ahead of the player (several hundred meters of path), and delete rooms far behind.
+- Avoid hitches with pooling or asynchronous instantiation, and avoid visible pop-in.
+- Add a seed system for reproducing bugs and sharing runs.
+- Add a pacing and difficulty ramp: change the room pool by distance and insert breather rooms.
+- Check floating-point precision on very long runs, and add origin shifting if it becomes a problem.
+- Confirm that lighting works correctly on rooms that are spawned at runtime.
+- Profile spawn cost, memory, and garbage collection.
+
+### Deliverable
+
+An endless run that can continue indefinitely without hitches or growing memory use.
+
+---
+
+## Week 14: Core Gameplay Layer
+
+### Goal
+
+Add the hazards and the chaser that turn the generated rooms into a playable game.
+
+### Tasks
+
+- Add a controller function for hazard hits that sets a bounce velocity and a temporary air-speed limit, cleared when the player touches the ground.
+- Build hazards: lava that limits the player's air speed but never ends the run, and bouncing walls along arena edges that stop running along or wall jumping off the edges.
+- Build the chaser: a floating skull that pursues the player directly through walls, is always visible, and ends the run when it catches the player. Settle the open numbers in the design notes (distances, speeds, and the vertical limit).
+- Build the run loop: start, fail on being caught, restart with a new seed, and a distance score.
+- Author additional rooms that use the hazards.
+- Tune the chaser and hazards against the movement engine.
+
+### Deliverable
+
+A complete playable loop: run, get chased, fail, and restart.
+
+---
+
+## Week 15: Final Testing, Documentation, and Demonstration
+
+### Goal
+
+Complete testing and documentation of the project, and use any remaining time for the stretch goals.
 
 ### Core Tasks
 
-- Conduct end-to-end testing of all required traversal mechanics.
+- Add an automated test that generates 1,000 seeds and checks for overlaps, disconnected gates, and rooms that fail validation.
+- Conduct end-to-end playtesting of the endless run, and tune pacing, hazards, and the chaser.
 - Fix remaining high-priority bugs.
-- Record final movement parameters.
-- Document movement architecture and state transitions.
-- Document relevant vector mathematics and physics calculations.
+- Record final movement parameters and final generator parameters (weights, distances, limits).
+- Document the generator architecture: the room contract, the heading frame, overlap prevention, and streaming.
+- Document the movement architecture and state transitions.
+- Document relevant vector mathematics, rotation math, and physics calculations.
 - Explain how momentum is preserved or redirected by each major traversal mechanic.
-- Compare the initial first-person controller with the completed movement system.
-- Record a final demonstration of the parkour environment.
+- Compare the initial first-person controller with the completed system.
+- Record a final demonstration of the endless run.
 - Complete a written reflection on technical challenges, design decisions, and results.
 
-### Stretch Goal: Rail Grinding
+### Stretch Goals
 
-If the required project, documentation, and automatic bar traversal are complete:
-
-- Create grindable rail objects.
-- Detect valid rail contact.
-- Automatically attach the player to a rail.
-- Determine travel direction using incoming velocity.
-- Constrain movement along the rail.
-- Preserve momentum when entering and leaving the rail.
-- Accelerate or decelerate based on rail slope.
-- Allow the player to jump from the rail.
-- Transfer rail velocity back into normal airborne movement.
+If the required scope, documentation, and testing are complete, pursue the stretch goals listed in the Stretch Goals section below.
 
 ### Final Deliverables
 
-- Playable first-person parkour demonstration.
+- Playable procedurally generated endless run.
 - Complete Unity project and C# source code.
-- 3D parkour demonstration environment.
+- Room authoring guide and generator documentation.
 - Documented movement architecture.
 - Movement-state diagram.
-- Technical explanation of physics and momentum calculations.
+- Technical explanation of physics, momentum, and generator calculations.
 - Final demonstration video.
 - Written reflection on development and results.
-- Any completed stretch-goal traversal mechanics.
+- Any completed stretch-goal work.
 
 ---
 
@@ -485,15 +545,21 @@ Successful completion of the independent study will require implementation and i
 9. Wall jumping
 10. Wall riding
 11. Movement chaining and momentum preservation
-12. A 3D parkour environment demonstrating the completed movement system
+12. A stable, documented, and thoroughly tested movement engine
+13. A room contract and generator that stitches rooms together from each exit to the next entrance
+14. Procedural turns left, right, up, and down, with overlap prevention and recovery rooms
+15. Runtime streaming of an endless, seeded run
+16. A core gameplay layer: hazards, a chaser, and a start, fail, and restart loop
+
+Items 1-11 were completed ahead of schedule.
 
 ---
 
 # Stretch Goals
 
-The following mechanics are outside the required scope of the independent study and will only be pursued after the required movement system is complete and stable.
+The following work is outside the required scope of the independent study and will only be pursued after the required systems are complete and stable.
 
-## Automatic Bar Traversal
+## Automatic Bar Traversal (Bar Swings)
 
 The player will automatically interact with horizontal traversal bars when approaching from a valid direction and speed.
 
@@ -501,13 +567,23 @@ The system will use the player's incoming velocity to automatically attach the p
 
 This mechanic will explore the conversion and redirection of player momentum without requiring explicit grab or release input.
 
-## Rail Grinding
+If pursued, it would involve:
 
-The player will automatically attach to valid rails and travel along their path while preserving momentum.
+- Creating environmental traversal bars.
+- Detecting valid bar interactions automatically.
+- Determining whether player direction and speed permit interaction.
+- Automatically attaching the player without requiring additional input.
+- Measuring incoming player velocity.
+- Converting incoming horizontal velocity into rotational movement around the bar.
+- Automatically determining an appropriate release point.
+- Automatically releasing the player.
+- Redirecting momentum primarily into vertical and forward launch velocity.
+- Scaling the resulting launch based on incoming speed.
+- Integrating bar traversal with existing airborne movement, and with the room contract so that bars can appear in generated rooms.
 
-Rail slope may influence acceleration and deceleration, and momentum will be transferred back into normal movement when the player leaves or jumps from the rail.
+## Visual Presentation
 
-Rail grinding will be treated as a secondary stretch goal and will only be pursued if the required project and other higher-priority development tasks are complete.
+Making the game look good: factory-themed environment art, lighting, shaders, fog, post-processing, and audio polish. The core gameplay and the code behind it are the priority, and this work is deliberately out of the required scope.
 
 ---
 
@@ -524,8 +600,9 @@ Progress will be evaluated based on:
 - Preservation and redirection of momentum between movement states.
 - Quality and maintainability of the C# codebase.
 - Integration and consistency between movement mechanics.
-- Quality of the final parkour demonstration environment.
+- Correctness and robustness of the procedural room generation: stitching, turning in all four directions, and overlap prevention.
+- Quality and playability of the endless-run demonstration, including its core gameplay.
 - Clarity and completeness of technical documentation.
 - Analysis of design decisions, technical challenges, and results.
 
-Completion of automatic bar traversal and rail grinding is not required for successful completion of the independent study.
+Completion of automatic bar traversal and the visual presentation work is not required for successful completion of the independent study.

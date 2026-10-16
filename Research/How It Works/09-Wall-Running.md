@@ -58,7 +58,7 @@ When the grace period runs out, requirement 5 fails, `AirMove` runs with slip gr
 - **Slip needs no look check.** The spec says any wall touch slips you; only the jump and the run need the look angle.
 - **Shared requirements helper.** A wall run needs exactly what a wall jump needs, so both call `TryGetWallJumpWall` and can't drift apart.
 - **Momentum locked, Y paused.** "Wall runs do not hinder forward momentum whatsoever." Skipping `AirMove` also skips its air control, takeoff-speed cap and overspeed bleed. Pausing Y (`y = 0`) covers rising and falling in one line.
-- **Overrides an air slide.** `Move()` checks `wallRunning` first. Slide jump -> wall run -> wall jump is the intended chain (syllabus Week 10).
+- **Overrides an air slide.** `Move()` checks `wallRunning` first. Slide jump -> wall run -> wall jump is the intended chain (original syllabus Week 10, now consolidated under Week 8 as complete).
 - **Grace is a budget.** It refills on a wall jump or landing, so chaining wall jumps between walls is unlimited but you can't hop on and off one wall for free time.
 - **"Moving away" guard.** After a wall jump the push-away is 10 m/s, but if it is ever tuned small the wall can still be in range next tick; without this a wall run would zero the jump's upward speed.
 - **`ApplyWallJump` clears `currentWall`.** The wall we just pushed off must not give slip gravity or a wall run in the same step.

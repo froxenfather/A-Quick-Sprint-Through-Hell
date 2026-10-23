@@ -1277,10 +1277,10 @@ public class CustomPlayerController : MonoBehaviour
         ref Vector3 remainingMotion,
         ref Vector3 calculatedMovement)
     {
-        // Surface faces upward but is too steep to walk on.
+        // Surface faces upward but is too steep to walk on. Anything within wallMaxNormalY of vertical counts as a WALL, not a slope, so a tiny float error in a wall's normal (Chisel meshes, cylinder facets) can't kill our upward motion.
         bool steepUpward =
             !IsWalkable(surfaceNormal) &&
-            surfaceNormal.y > 0f;
+            surfaceNormal.y > wallMaxNormalY;
 
         // Slide equation:
         //

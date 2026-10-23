@@ -1,0 +1,739 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1012613106836128138
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7682605144488746704}
+  - component: {fileID: 6380114429921223119}
+  m_Layer: 0
+  m_Name: Box
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7682605144488746704
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1012613106836128138}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 0, y: -10, z: 0}
+  m_LocalScale: {x: 1.0000005, y: 1, z: 1.0000005}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3371442524166357641}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6380114429921223119
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1012613106836128138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4375cb78f1847d4f9133ef97219fcb2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.chisel.unity.components::Chisel.Components.ChiselBrushComponent
+  operation: 0
+  contents: 0
+  pivotOffset: {x: 0, y: 0, z: 0}
+  definition:
+    version: 1
+    brushOutline:
+      version: 1
+      vertices:
+      - x: -0.5
+        y: 0
+        z: 5
+      - x: -0.5
+        y: 0
+        z: -5
+      - x: 0.5
+        y: 0
+        z: -5
+      - x: 0.5
+        y: 0
+        z: 5
+      - x: -0.5
+        y: 20
+        z: 5
+      - x: -0.5
+        y: 20
+        z: -5
+      - x: 0.5
+        y: 20
+        z: -5
+      - x: 0.5
+        y: 20
+        z: 5
+      halfEdges:
+      - vertexIndex: 1
+        twinIndex: 11
+      - vertexIndex: 0
+        twinIndex: 6
+      - vertexIndex: 4
+        twinIndex: 21
+      - vertexIndex: 5
+        twinIndex: 16
+      - vertexIndex: 3
+        twinIndex: 13
+      - vertexIndex: 0
+        twinIndex: 22
+      - vertexIndex: 1
+        twinIndex: 1
+      - vertexIndex: 2
+        twinIndex: 10
+      - vertexIndex: 6
+        twinIndex: 19
+      - vertexIndex: 2
+        twinIndex: 14
+      - vertexIndex: 1
+        twinIndex: 7
+      - vertexIndex: 5
+        twinIndex: 0
+      - vertexIndex: 3
+        twinIndex: 23
+      - vertexIndex: 2
+        twinIndex: 4
+      - vertexIndex: 6
+        twinIndex: 9
+      - vertexIndex: 7
+        twinIndex: 18
+      - vertexIndex: 4
+        twinIndex: 3
+      - vertexIndex: 7
+        twinIndex: 20
+      - vertexIndex: 6
+        twinIndex: 15
+      - vertexIndex: 5
+        twinIndex: 8
+      - vertexIndex: 4
+        twinIndex: 17
+      - vertexIndex: 0
+        twinIndex: 2
+      - vertexIndex: 3
+        twinIndex: 5
+      - vertexIndex: 7
+        twinIndex: 12
+      halfEdgePolygonIndices: 000000000000000000000000000000000100000001000000010000000100000002000000020000000200000002000000030000000300000003000000030000000400000004000000040000000400000005000000050000000500000005000000i
+      polygons:
+      - firstEdge: 0
+        edgeCount: 4
+        descriptionIndex: 0
+      - firstEdge: 4
+        edgeCount: 4
+        descriptionIndex: 1
+      - firstEdge: 8
+        edgeCount: 4
+        descriptionIndex: 2
+      - firstEdge: 12
+        edgeCount: 4
+        descriptionIndex: 3
+      - firstEdge: 16
+        edgeCount: 4
+        descriptionIndex: 4
+      - firstEdge: 20
+        edgeCount: 4
+        descriptionIndex: 5
+      planes:
+      - x: -1
+        y: 0
+        z: 0
+        w: -0.5
+      - x: 0
+        y: -1
+        z: 0
+        w: 0
+      - x: 0
+        y: 0
+        z: -1
+        w: -5
+      - x: 1
+        y: 0
+        z: 0
+        w: -0.5
+      - x: 0
+        y: 1
+        z: 0
+        w: -20
+      - x: 0
+        y: 0
+        z: 1
+        w: -5
+    inputPlanes: []
+    derivedFromHash: 0
+    isInsideOut: 0
+    validState: 1
+  surfaceArray:
+    surfaces:
+    - chiselMaterial:
+        material: {fileID: 2100000, guid: 77307a10e728dad46a0234ebb7be88b9, type: 2}
+        surfaceMetadata: {fileID: 0}
+      surfaceDetails:
+        smoothingGroup:
+          value: 0
+        detailFlags: 0
+        UV0:
+          U: {x: 1, y: 0, z: 0, w: 0.5}
+          V: {x: 0, y: 1, z: 0, w: 0.5}
+        hotspot:
+          pinnedTile: 0
+          pinnedSheet: 0
+          seed: 2818185152
+          rotation: 0
+          density: 0
+          mirror: 0
+          mirrorY: 0
+          offset:
+            x: 0
+            y: 0
+    - chiselMaterial:
+        material: {fileID: 2100000, guid: 77307a10e728dad46a0234ebb7be88b9, type: 2}
+        surfaceMetadata: {fileID: 0}
+      surfaceDetails:
+        smoothingGroup:
+          value: 0
+        detailFlags: 0
+        UV0:
+          U: {x: 1, y: 0, z: 0, w: 0.5}
+          V: {x: 0, y: 1, z: 0, w: 0.5}
+        hotspot:
+          pinnedTile: 0
+          pinnedSheet: 0
+          seed: 3809160971
+          rotation: 0
+          density: 0
+          mirror: 0
+          mirrorY: 0
+          offset:
+            x: 0
+            y: 0
+    - chiselMaterial:
+        material: {fileID: 2100000, guid: 77307a10e728dad46a0234ebb7be88b9, type: 2}
+        surfaceMetadata: {fileID: 0}
+      surfaceDetails:
+        smoothingGroup:
+          value: 0
+        detailFlags: 0
+        UV0:
+          U: {x: 1, y: 0, z: 0, w: 0.5}
+          V: {x: 0, y: 1, z: 0, w: 0.5}
+        hotspot:
+          pinnedTile: 0
+          pinnedSheet: 0
+          seed: 955969894
+          rotation: 0
+          density: 0
+          mirror: 0
+          mirrorY: 0
+          offset:
+            x: 0
+            y: 0
+    - chiselMaterial:
+        material: {fileID: 2100000, guid: 77307a10e728dad46a0234ebb7be88b9, type: 2}
+        surfaceMetadata: {fileID: 0}
+      surfaceDetails:
+        smoothingGroup:
+          value: 0
+        detailFlags: 0
+        UV0:
+          U: {x: 1, y: 0, z: 0, w: 0.5}
+          V: {x: 0, y: 1, z: 0, w: 0.5}
+        hotspot:
+          pinnedTile: 0
+          pinnedSheet: 0
+          seed: 22045756
+          rotation: 0
+          density: 0
+          mirror: 0
+          mirrorY: 0
+          offset:
+            x: 0
+            y: 0
+    - chiselMaterial:
+        material: {fileID: 2100000, guid: 77307a10e728dad46a0234ebb7be88b9, type: 2}
+        surfaceMetadata: {fileID: 0}
+      surfaceDetails:
+        smoothingGroup:
+          value: 0
+        detailFlags: 0
+        UV0:
+          U: {x: 1, y: 0, z: 0, w: 0.5}
+          V: {x: 0, y: 1, z: 0, w: 0.5}
+        hotspot:
+          pinnedTile: 0
+          pinnedSheet: 0
+          seed: 1511047901
+          rotation: 0
+          density: 0
+          mirror: 0
+          mirrorY: 0
+          offset:
+            x: 0
+            y: 0
+    - chiselMaterial:
+        material: {fileID: 2100000, guid: 77307a10e728dad46a0234ebb7be88b9, type: 2}
+        surfaceMetadata: {fileID: 0}
+      surfaceDetails:
+        smoothingGroup:
+          value: 0
+        detailFlags: 0
+        UV0:
+          U: {x: 1, y: 0, z: 0, w: 0.5}
+          V: {x: 0, y: 1, z: 0, w: 0.5}
+        hotspot:
+          pinnedTile: 0
+          pinnedSheet: 0
+          seed: 3906992184
+          rotation: 0
+          density: 0
+          mirror: 0
+          mirrorY: 0
+          offset:
+            x: 0
+            y: 0
+--- !u!1 &2253416688497936793
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7959920543762026040}
+  m_Layer: 0
+  m_Name: Anchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7959920543762026040
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2253416688497936793}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3371442524166357641}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!1 &6272753018730376717
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6407263812227431606}
+  - component: {fileID: 5470459091733592185}
+  m_Layer: 0
+  m_Name: Brush
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6407263812227431606
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6272753018730376717}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.7071068, y: 0.7071067, z: 0, w: 0}
+  m_LocalPosition: {x: 0.5, y: -0.5, z: 0}
+  m_LocalScale: {x: 1.0000001, y: 1.0000001, z: 1.0000002}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3371442524166357641}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5470459091733592185
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6272753018730376717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4375cb78f1847d4f9133ef97219fcb2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.chisel.unity.components::Chisel.Components.ChiselBrushComponent
+  operation: 1
+  contents: 0
+  pivotOffset: {x: 0, y: 0, z: 0}
+  definition:
+    version: 1
+    brushOutline:
+      version: 1
+      vertices:
+      - x: -8.5
+        y: -0.99999875
+        z: 4
+      - x: -8.5
+        y: -0.99999875
+        z: -4
+      - x: 9.5
+        y: -0.9999975
+        z: -4
+      - x: 9.5
+        y: -0.9999975
+        z: 4
+      - x: -8.5
+        y: -0.0000012516975
+        z: 4
+      - x: -8.5
+        y: -0.0000012516975
+        z: -4
+      - x: 9.5
+        y: 0
+        z: -4
+      - x: 9.5
+        y: 0
+        z: 4
+      halfEdges:
+      - vertexIndex: 1
+        twinIndex: 11
+      - vertexIndex: 0
+        twinIndex: 6
+      - vertexIndex: 4
+        twinIndex: 21
+      - vertexIndex: 5
+        twinIndex: 16
+      - vertexIndex: 3
+        twinIndex: 13
+      - vertexIndex: 0
+        twinIndex: 22
+      - vertexIndex: 1
+        twinIndex: 1
+      - vertexIndex: 2
+        twinIndex: 10
+      - vertexIndex: 6
+        twinIndex: 19
+      - vertexIndex: 2
+        twinIndex: 14
+      - vertexIndex: 1
+        twinIndex: 7
+      - vertexIndex: 5
+        twinIndex: 0
+      - vertexIndex: 3
+        twinIndex: 23
+      - vertexIndex: 2
+        twinIndex: 4
+      - vertexIndex: 6
+        twinIndex: 9
+      - vertexIndex: 7
+        twinIndex: 18
+      - vertexIndex: 4
+        twinIndex: 3
+      - vertexIndex: 7
+        twinIndex: 20
+      - vertexIndex: 6
+        twinIndex: 15
+      - vertexIndex: 5
+        twinIndex: 8
+      - vertexIndex: 4
+        twinIndex: 17
+      - vertexIndex: 0
+        twinIndex: 2
+      - vertexIndex: 3
+        twinIndex: 5
+      - vertexIndex: 7
+        twinIndex: 12
+      halfEdgePolygonIndices: 000000000000000000000000000000000100000001000000010000000100000002000000020000000200000002000000030000000300000003000000030000000400000004000000040000000400000005000000050000000500000005000000i
+      polygons:
+      - firstEdge: 0
+        edgeCount: 4
+        descriptionIndex: 0
+      - firstEdge: 4
+        edgeCount: 4
+        descriptionIndex: 1
+      - firstEdge: 8
+        edgeCount: 4
+        descriptionIndex: 2
+      - firstEdge: 12
+        edgeCount: 4
+        descriptionIndex: 3
+      - firstEdge: 16
+        edgeCount: 4
+        descriptionIndex: 4
+      - firstEdge: 20
+        edgeCount: 4
+        descriptionIndex: 5
+      planes:
+      - x: -1
+        y: 0
+        z: 0
+        w: -8.5
+      - x: 0.00000006953875
+        y: -1
+        z: 0
+        w: -0.99999815
+      - x: 0
+        y: 0
+        z: -1
+        w: -4
+      - x: 1
+        y: 0
+        z: 0
+        w: -9.5
+      - x: -0.00000006953875
+        y: 1
+        z: 0
+        w: 0.0000006606181
+      - x: 0
+        y: 0
+        z: 1
+        w: -4
+    inputPlanes: []
+    derivedFromHash: 0
+    isInsideOut: 0
+    validState: 1
+  surfaceArray:
+    surfaces:
+    - chiselMaterial:
+        material: {fileID: 2100000, guid: 77307a10e728dad46a0234ebb7be88b9, type: 2}
+        surfaceMetadata: {fileID: 0}
+      surfaceDetails:
+        smoothingGroup:
+          value: 0
+        detailFlags: 0
+        UV0:
+          U: {x: 1, y: 0, z: 0, w: 0.5}
+          V: {x: 0, y: 1, z: 0, w: 0.5}
+        hotspot:
+          pinnedTile: 0
+          pinnedSheet: 0
+          seed: 1687165528
+          rotation: 0
+          density: 0
+          mirror: 0
+          mirrorY: 0
+          offset:
+            x: 0
+            y: 0
+    - chiselMaterial:
+        material: {fileID: 2100000, guid: 77307a10e728dad46a0234ebb7be88b9, type: 2}
+        surfaceMetadata: {fileID: 0}
+      surfaceDetails:
+        smoothingGroup:
+          value: 0
+        detailFlags: 0
+        UV0:
+          U: {x: 1, y: 0, z: 0, w: 0.5}
+          V: {x: 0, y: 1, z: 0, w: 0.5}
+        hotspot:
+          pinnedTile: 0
+          pinnedSheet: 0
+          seed: 1575801350
+          rotation: 0
+          density: 0
+          mirror: 0
+          mirrorY: 0
+          offset:
+            x: 0
+            y: 0
+    - chiselMaterial:
+        material: {fileID: 2100000, guid: 77307a10e728dad46a0234ebb7be88b9, type: 2}
+        surfaceMetadata: {fileID: 0}
+      surfaceDetails:
+        smoothingGroup:
+          value: 0
+        detailFlags: 0
+        UV0:
+          U: {x: 1, y: 0, z: 0, w: 0.5}
+          V: {x: 0, y: 1, z: 0, w: 0.5}
+        hotspot:
+          pinnedTile: 0
+          pinnedSheet: 0
+          seed: 4084533615
+          rotation: 0
+          density: 0
+          mirror: 0
+          mirrorY: 0
+          offset:
+            x: 0
+            y: 0
+    - chiselMaterial:
+        material: {fileID: 2100000, guid: 77307a10e728dad46a0234ebb7be88b9, type: 2}
+        surfaceMetadata: {fileID: 0}
+      surfaceDetails:
+        smoothingGroup:
+          value: 0
+        detailFlags: 0
+        UV0:
+          U: {x: 1, y: 0, z: 0, w: 0.5}
+          V: {x: 0, y: 1, z: 0, w: 0.5}
+        hotspot:
+          pinnedTile: 0
+          pinnedSheet: 0
+          seed: 3166651943
+          rotation: 0
+          density: 0
+          mirror: 0
+          mirrorY: 0
+          offset:
+            x: 0
+            y: 0
+    - chiselMaterial:
+        material: {fileID: 2100000, guid: 77307a10e728dad46a0234ebb7be88b9, type: 2}
+        surfaceMetadata: {fileID: 0}
+      surfaceDetails:
+        smoothingGroup:
+          value: 0
+        detailFlags: 0
+        UV0:
+          U: {x: 1, y: 0, z: 0, w: 0.5}
+          V: {x: 0, y: 1, z: 0, w: 0.5}
+        hotspot:
+          pinnedTile: 0
+          pinnedSheet: 0
+          seed: 284705223
+          rotation: 0
+          density: 0
+          mirror: 0
+          mirrorY: 0
+          offset:
+            x: 0
+            y: 0
+    - chiselMaterial:
+        material: {fileID: 2100000, guid: 77307a10e728dad46a0234ebb7be88b9, type: 2}
+        surfaceMetadata: {fileID: 0}
+      surfaceDetails:
+        smoothingGroup:
+          value: 0
+        detailFlags: 0
+        UV0:
+          U: {x: 1, y: 0, z: 0, w: 0.5}
+          V: {x: 0, y: 1, z: 0, w: 0.5}
+        hotspot:
+          pinnedTile: 0
+          pinnedSheet: 0
+          seed: 3614602354
+          rotation: 0
+          density: 0
+          mirror: 0
+          mirrorY: 0
+          offset:
+            x: 0
+            y: 0
+--- !u!1 &8261986382819193922
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3371442524166357641}
+  - component: {fileID: 4632711620467978627}
+  m_Layer: 0
+  m_Name: Gateway
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3371442524166357641
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8261986382819193922}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 7682605144488746704}
+  - {fileID: 6407263812227431606}
+  - {fileID: 7959920543762026040}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4632711620467978627
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8261986382819193922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 042d680e77b8739488b044eb2f546854, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.chisel.unity.components::Chisel.Components.ChiselModelComponent
+  generated:
+    generatedDataContainer: {fileID: 0}
+    colliderContainer: {fileID: 0}
+    colliders: []
+    renderables: []
+    meshRenderers: []
+    debugVisualizationRenderables: []
+    debugMeshRenderers: []
+    visibilityState: 1
+    needVisibilityMeshUpdate: 0
+    inputHash:
+      serializedVersion: 2
+      Hash: 00000000000000000000000000000000
+    componentInputHash:
+      serializedVersion: 2
+      Hash: 00000000000000000000000000000000
+  hotspotLinks: []
+  colliderSettings:
+    isTrigger: 0
+    convex: 0
+    cookingOptions: 14
+  renderSettings:
+    lightProbeProxyVolumeOverride: {fileID: 0}
+    probeAnchor: {fileID: 0}
+    motionVectorGenerationMode: 1
+    reflectionProbeUsage: 1
+    lightProbeUsage: 1
+    allowOcclusionWhenDynamic: 1
+    renderingLayerMask: 4294967295
+    receiveGI: 2
+    castShadows: 1
+    receiveShadows: 1
+    subtractiveWorkflow: 0
+    normalSmoothing: 0
+    normalSmoothingAngle: 45
+    lightmapTexelsPerUnit: 40
+    lightmapPaddingTexels: 2
+    lightmapMaxSize: 0
+    lightmapParameters: {fileID: 0}
+    importantGI: 0
+    optimizeUVs: 0
+    ignoreNormalsForChartDetection: 0
+    autoUVMaxDistance: 0.5
+    autoUVMaxAngle: 89
+    minimumChartSize: 4
+    stitchLightmapSeams: 0
+    scaleInLightmap: 1
+    uvGenerationSettings:
+      angleError: 0.08
+      areaError: 0.15
+      hardAngle: 88
+      packMarginPixels: 2
+  CreateRenderComponents: 1
+  CreateColliderComponents: 1
+  VertexChannelMask: 14

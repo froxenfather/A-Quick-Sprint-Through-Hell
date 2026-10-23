@@ -585,6 +585,14 @@ If pursued, it would involve:
 
 Making the game look good: factory-themed environment art, lighting, shaders, fog, post-processing, and audio polish. The core gameplay and the code behind it are the priority, and this work is deliberately out of the required scope.
 
+Gate presentation ideas, to make crossing from one room into the next feel like an entrance:
+
+- A bright frame glow on each gate, which also helps hide pop-in.
+- A sound sting and a "ROOM 14" HUD tick when the player crosses a gate, to give a sense of progress.
+- A light color change per section, such as hotter colors as the run goes on.
+- A steam or sparks burst as the player crosses.
+- An iris-style gate that opens based on the player's distance rather than on a timer. It is visual only and has no colliders, so it can never block the player's momentum.
+
 ---
 
 # Evaluation

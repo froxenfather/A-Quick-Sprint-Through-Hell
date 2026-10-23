@@ -3333,7 +3333,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: f336538a92e28ad47b2cd0f7c5b50316, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4005,6 +4005,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5315293731761347685, guid: 8c32914850d31d7478e0e778afd93126, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5315293731761347685, guid: 8c32914850d31d7478e0e778afd93126, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 3a511db41dcea6542ad9439ffe14467a, type: 2}
     - target: {fileID: 5671759919446417473, guid: 8c32914850d31d7478e0e778afd93126, type: 3}
       propertyPath: m_Name
       value: tower base

@@ -25,12 +25,26 @@ public class RoomChain : MonoBehaviour
     [Min(0)]
     [SerializeField] private int roomsBehind = 1;
 
+    [Header("Entry seal")]
+    // The wall that fills a room's Entry once the player is through it. Uses ProBuilder's default if empty.
+    [SerializeField] private Material sealMaterial;
+
+    [Min(0.01f)]
+    [SerializeField] private float sealThickness = 1f;
+
+    // How far past the Entry gate the player has to be before it seals, so the wall never appears inside them.
+    [Min(0f)]
+    [SerializeField] private float sealDistance = 2f;
+
     private readonly List<Room> rooms = new List<Room>();
     private System.Random random;
 
     // How many rooms the player has gone all the way through (crossed the Exit gate of).
     // The room the player is in right now is rooms[passedCount].
     private int passedCount;
+
+    // How many rooms have had their Entry sealed. Rooms are sealed in order, oldest first.
+    private int sealedCount;
 
     private void Start()
     {
@@ -65,8 +79,23 @@ public class RoomChain : MonoBehaviour
         while (passedCount < rooms.Count && HasPassed(rooms[passedCount].Exit))
             passedCount++;
 
+        // Close the way back behind the player.
+        while (sealedCount < rooms.Count && IsPastBy(rooms[sealedCount].Entry, sealDistance))
+        {
+            rooms[sealedCount].SealEntry(sealMaterial, sealThickness);
+            sealedCount++;
+        }
+
         BuildAhead();
         RemoveOldRooms();
+    }
+
+    // True when the player is at least this far in front of the gate (on the side its arrow points to).
+    private bool IsPastBy(RoomGate gate, float distance)
+    {
+        Vector3 toPlayer = player.position - gate.transform.position;
+
+        return Vector3.Dot(toPlayer, gate.transform.forward) > distance;
     }
 
     // In front of the gate means on the side its arrow points to.
@@ -158,6 +187,7 @@ public class RoomChain : MonoBehaviour
             Destroy(rooms[0].gameObject);
             rooms.RemoveAt(0);
             passedCount--;
+            sealedCount = Mathf.Max(0, sealedCount - 1);
         }
     }
 }

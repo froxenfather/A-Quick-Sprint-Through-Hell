@@ -9,7 +9,6 @@ using UnityEngine.ProBuilder;
 
 // The slab is centered on this object. Width runs along its X, height along its Y, and thickness along its Z.
 // Point the gate the same way (its blue arrow along the slab's Z, or the opposite way). The gate can be rolled 90 degrees, the opening is measured in the slab's space. Keep the scale of this object and the gate at (1, 1, 1).
-
 // The pieces are rebuilt in the editor only. They are saved with the scene or prefab, so rooms spawned at runtime already have them.
 [ExecuteAlways]
 public class WallWithOpening : MonoBehaviour

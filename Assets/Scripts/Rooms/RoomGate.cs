@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// serves as both a script for the main engine and a nifty builder tool!
 public enum GateType
 {
     Entry,
@@ -9,7 +10,7 @@ public enum GateType
 // A connection point on a room. The transform IS the gate:
 //   position = the middle of the opening
 //   forward  = the blue Z arrow = the direction the player travels THROUGH the gate
-//
+
 // Entry and Exit gates both point the way the player travels, so stitching two rooms together is just
 // "put the next room's Entry exactly on top of the previous room's Exit".
 // Nothing here knows about floors or heights, a gate can be anywhere in a room.

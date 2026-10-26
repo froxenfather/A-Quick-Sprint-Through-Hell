@@ -3,16 +3,14 @@ using UnityEngine.ProBuilder;
 
 // A flat slab (wall, floor or ceiling) with a rectangular hole cut out where a gate is.
 // Move the gate and the slab rebuilds itself around it, so the opening follows the gate.
-//
+
 // The slab is built out of up to four ProBuilder boxes around the opening: left, right, below and above.
 // Pieces that would have no size (the gate touches an edge) are skipped.
-//
+
 // The slab is centered on this object. Width runs along its X, height along its Y, and thickness along its Z.
-// Point the gate the same way (its blue arrow along the slab's Z, or the opposite way). The gate can be rolled
-// 90 degrees, the opening is measured in the slab's space. Keep the scale of this object and the gate at (1, 1, 1).
-//
-// The pieces are rebuilt in the editor only. They are saved with the scene or prefab, so rooms spawned
-// at runtime already have them.
+// Point the gate the same way (its blue arrow along the slab's Z, or the opposite way). The gate can be rolled 90 degrees, the opening is measured in the slab's space. Keep the scale of this object and the gate at (1, 1, 1).
+
+// The pieces are rebuilt in the editor only. They are saved with the scene or prefab, so rooms spawned at runtime already have them.
 [ExecuteAlways]
 public class WallWithOpening : MonoBehaviour
 {
@@ -104,8 +102,7 @@ public class WallWithOpening : MonoBehaviour
             return false;
         }
 
-        // Take the four corners of the opening into the slab's space. Using the corners means a gate rolled
-        // 90 degrees still gets the right width and height.
+        // Take the four corners of the opening into the slab's space. Using the corners means a gate rolled 90 degrees still gets the right width and height.
         Vector2 halfOpening = gate.OpeningSize * 0.5f;
 
         min = new Vector2(float.MaxValue, float.MaxValue);

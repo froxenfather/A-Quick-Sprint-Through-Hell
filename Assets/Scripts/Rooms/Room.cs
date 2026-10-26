@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.ProBuilder;
 
 // Put this on the root of a room prefab.
 // A room needs exactly one Entry gate and one Exit gate (RoomGate) somewhere inside it.
@@ -8,9 +9,35 @@ public class Room : MonoBehaviour
     public RoomGate Entry { get; private set; }
     public RoomGate Exit { get; private set; }
 
+    private bool entrySealed;
+
     private void Awake()
     {
         FindGates();
+    }
+
+    // Fills the Entry opening with a solid wall of exactly the opening's size, so the player cannot go back.
+    public void SealEntry(Material material, float thickness)
+    {
+        if (entrySealed || Entry == null)
+            return;
+
+        entrySealed = true;
+
+        Vector2 openingSize = Entry.OpeningSize;
+        ProBuilderMesh seal = ShapeGenerator.GenerateCube(PivotLocation.Center, new Vector3(openingSize.x, openingSize.y, thickness));
+        seal.name = "Entry Seal";
+        seal.transform.SetParent(Entry.transform, false);
+        seal.transform.localPosition = Vector3.zero;
+        seal.transform.localRotation = Quaternion.identity;
+
+        seal.ToMesh();
+        seal.Refresh();
+
+        seal.GetComponent<MeshRenderer>().sharedMaterial = material != null ? material : BuiltinMaterials.defaultMaterial;
+
+        // Built outside the ProBuilder editor menus, so nothing adds the collider for us.
+        seal.gameObject.AddComponent<MeshCollider>();
     }
 
     // Looks through the children for the gates. Safe to call more than once.

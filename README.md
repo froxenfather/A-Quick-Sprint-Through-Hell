@@ -6,7 +6,7 @@ A coding papertrail and code repository for my first 3D game for my independant 
 
 This repository is organized so it can be used directly as a Unity project root and as a study/work log:
 
-- `/Assets/Scripts` for your Unity code.
+- `/Assets/Scripts` for my Unity code.
 - `/Packages` and `/ProjectSettings` as Unity project folders.
 - `/resources` for tutorial links and reference material.
 - `/Research` for coding papertrails and notes.

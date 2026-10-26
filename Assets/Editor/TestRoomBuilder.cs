@@ -9,8 +9,8 @@ using UnityEngine;
 public static class TestRoomBuilder
 {
     private const string Folder = "Assets/Prefabs/Rooms";
-    private const string GreyMaterialPath = "Assets/Textures/Prototype/general/Materials/prototype_grid_grey.mat";
-    private const string OrangeMaterialPath = "Assets/Textures/Prototype/general/Materials/prototype_grid_orange.mat";
+    private const string GreyMaterialPath = "Assets/Materials/prototype_grid_grey.mat";
+    private const string OrangeMaterialPath = "Assets/Materials/prototype_grid_orange.mat";
 
     // The gate opening. These match the gizmo defaults in RoomGate.
     private const float OpeningWidth = 8f;

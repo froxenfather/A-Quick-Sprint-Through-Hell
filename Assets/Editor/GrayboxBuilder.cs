@@ -7,7 +7,7 @@ public static class GrayboxBuilder
     private const float FloorSize = 100f;
     private const float FloorThickness = 1f;
     private const string MaterialPath = "Assets/Materials/Graybox_Grid.mat";
-    private const string GridTexturePath = "Assets/Textures/Prototype/general/prototype_grid_grey.png";
+    private const string GridTexturePath = "Assets/Materials/prototype_grid_grey.png";
 
     [MenuItem("A Quick Sprint Through Hell/Build Graybox Floor")]
     public static void BuildFloor()

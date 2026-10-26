@@ -97,4 +97,28 @@
 
 ## 10/14/2026
 - Began total refactor on project from Parkour Simulator to Full Game
-- A Short Walk in Hell
+- A Short Stay in Hell - A Quick Sprint Through Hell
+
+## 10/20/2026
+- Probuilder Tutorial and walkthrough
+- Messed around with it for a while
+
+## 10/21/2026
+- On October 20, 2026, I decided to move away from ProBuilder because I wasn't particularly happy with how it worked. Instead, I started experimenting with a newer level-building utility called Chisel.
+- However, Chisel is still in active development, and I encountered several bugs while using it in Unity. Rather than working around them, I ended up digging into Chisel's source code, identifying the issues, and developing fixes myself. I then submitted those fixes to the project's repository for review.
+- Update (10/23/2026): THEY ACCEPTED MY CHANGES!
+- My bug fixes were officially accepted into Chisel's repository, making this my first contribution to the tool itself!
+
+## 10/22/2026
+- Heartbreak, Chisel cannot compile while the game is running, Reverting to probuilder
+
+## 10/24/2026
+- Generated a new scene in Unity to put final product
+
+## 10/25/2026
+- Implemented Gatecode for Entrances and Exits
+
+## 10/26/2026
+
+### MILESTONE: Room stiching prototype finished and properly implemented!
+- Nebula Shader!

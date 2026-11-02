@@ -108,6 +108,28 @@ public class CustomPlayerController : MonoBehaviour
     // Hard cap (m/s) on that landing boost, so a very tall drop can't launch you.
     [SerializeField] private float slideLandingBoostMax = 12f;
 
+    [Header("Dash")]
+    // How strongly a dash turns our flat velocity toward where the camera is looking, in percent.
+    // 100 = we go exactly where we look. 10 = we mostly keep our old direction. Only the direction changes, never the speed.
+    [Range(0f, 100f)]
+    [SerializeField] private float dashDirectionInfluence = 80f;
+
+    // Speed (m/s) added to our current flat speed by a dash.
+    [SerializeField] private float dashSpeedBonus = 5f;
+
+    // A dash never leaves us slower than this, so it is still useful from a standstill. Sprint (Shift held) uses the higher one.
+    [SerializeField] private float dashMinSpeedSprint = 35f;
+    [SerializeField] private float dashMinSpeedWalk = 20f;
+
+    // Seconds before we can dash again.
+    [Min(0f)]
+    [SerializeField] private float dashCooldown = 1.5f;
+
+    // Seconds of no gravity right after a dash: we glide level instead of dropping. 0 turns the hang off.
+    // A jump or wall jump ends it early, and landing doesn't need it (gravity isn't used on the ground).
+    [Min(0f)]
+    [SerializeField] private float dashHangTime = 0.25f;
+
     [Header("Wall Jump")]
     // How high (meters) a wall jump lifts us, measured with normal gravity. A normal jump is about 3.6 m with the default jumpVelocity and gravity.
     // Touching a wall halves gravity (Wall Slip), so the real jump goes a little higher while we are still next to the wall.
@@ -254,6 +276,13 @@ public class CustomPlayerController : MonoBehaviour
     private bool slideHeld;
     private float slideStartTime = -999f;
 
+    // Dash state. dashQueued is the same one-frame-press trick as jumpQueued; lastDashTime is when the last dash happened (-999 = never, so the first one is always allowed).
+    private bool dashQueued;
+    private float lastDashTime = -999f;
+
+    // Gravity is switched off until this time (see dashHangTime). In the past = no hang.
+    private float dashHangEndTime = -999f;
+
     // Crouch state. Crouching and sliding share the same button; only one is ever true at once.
     private bool crouching;
 
@@ -313,6 +342,9 @@ public class CustomPlayerController : MonoBehaviour
     public bool IsSliding => sliding;
     public bool IsCrouching => crouching;
     public bool IsWallRunning => wallRunning;
+
+    // Fired the moment a dash happens, so effects (like the FOV punch) can react without the controller knowing about them.
+    public event System.Action Dashed;
 
     // Flat speed relative to whatever we're standing on, so riding a fast platform doesn't count as running.
     public float HorizontalSpeed => Flatten(velocity - currentPlatformVelocity).magnitude;
@@ -379,6 +411,9 @@ public class CustomPlayerController : MonoBehaviour
 
         // Decide slide/crouch BEFORE jumping, so pressing slide and jump on the same frame still counts as a slide jump instead of missing it by one frame.
         UpdateSlideAndCrouch(ref calculatedMovement, dt);
+
+        // Dash before the jump, so pressing both on the same frame still gives the jump the dash's speed (and airSpeedCap).
+        TryDash(ref calculatedMovement);
 
         // Change velocity.
         // Leaving the ground can happen two ways: we jump, or the ground launches us (like if you fly off a platform or launchpad) (falling off a platform also counts)
@@ -503,19 +538,91 @@ public class CustomPlayerController : MonoBehaviour
         if (keyboard.spaceKey.wasPressedThisFrame)
             jumpQueued = true;
 
-        // Slide is on either thumb button of the mouse. Same queue trick as jump for the press, and a plain "is it down" for holding the slide.
+        // Dash is E, or the forward thumb button of the mouse (checked below). Same queue trick as jump.
+        if (keyboard.eKey.wasPressedThisFrame)
+            dashQueued = true;
+
+        // Slide is the back thumb button of the mouse. Same queue trick as jump for the press, and a plain "is it down" for holding the slide.
         Mouse mouse = Mouse.current;
         if (mouse == null) return;
 
-        slideHeld = mouse.backButton.isPressed || mouse.forwardButton.isPressed;
+        if (mouse.forwardButton.wasPressedThisFrame)
+            dashQueued = true;
 
-        if (mouse.backButton.wasPressedThisFrame || mouse.forwardButton.wasPressedThisFrame)
+        slideHeld = mouse.backButton.isPressed;
+
+        if (mouse.backButton.wasPressedThisFrame)
             slideQueued = true;
     }
 
     // ============================================================
     // VELOCITY STEPS: JUMP / SLIDE / CROUCH / MOVE
     // ============================================================
+
+    // Dash: an instant turn toward where we look, plus some speed, for quick course corrections that keep our momentum.
+    //   - Direction: our flat velocity turns toward the camera's flat look direction by dashDirectionInfluence percent of the angle between them. Standing still has no direction to turn, so we go the way we look.
+    //   - Speed: current flat speed + dashSpeedBonus, but never below dashMinSpeedSprint (Shift held) or dashMinSpeedWalk.
+    //   - Vertical speed is set to 0, so a dash also stops any rising or falling.
+    //   - airSpeedCap is raised to the dash speed (never lowered), so air control can rebuild up to it afterwards.
+    //
+    // Doesn't care whether we are grounded, in the air, sliding or wall running: it only changes calculatedMovement, and every movement model reads that afterwards.
+    // The press is used up either way, so pressing dash while it is on cooldown does not secretly buffer a dash.
+    private void TryDash(ref Vector3 calculatedMovement)
+    {
+        bool dashPressed = dashQueued;
+        dashQueued = false;
+
+        if (!dashPressed || Time.time - lastDashTime < dashCooldown)
+            return;
+
+        Vector3 flat = Flatten(calculatedMovement);
+        float speed = flat.magnitude;
+
+        Vector3 look = Flatten(transform.forward);
+        bool hasLook = look.sqrMagnitude > 0.0001f;
+
+        if (hasLook)
+            look.Normalize();
+
+        Vector3 direction;
+
+        if (speed < 0.01f)
+        {
+            // Standing still: nothing to turn, so go where we look. (Looking straight up or down leaves nothing to go toward either, so do nothing.)
+            if (!hasLook)
+                return;
+
+            direction = look;
+        }
+        else
+        {
+            direction = flat / speed;
+
+            if (hasLook)
+            {
+                // Turn by a fraction of the angle between where we go and where we look.
+                // SignedAngle also handles dashing straight backwards: it gives exactly 180, so the turn is a plain rotation and never a zero-length vector.
+                float angleToLook = Vector3.SignedAngle(direction, look, Vector3.up);
+                direction = Quaternion.AngleAxis(angleToLook * (dashDirectionInfluence / 100f), Vector3.up) * direction;
+            }
+        }
+
+        float minimumSpeed = sprinting ? dashMinSpeedSprint : dashMinSpeedWalk;
+        float newSpeed = Mathf.Max(speed + dashSpeedBonus, minimumSpeed);
+
+        calculatedMovement.x = direction.x * newSpeed;
+        calculatedMovement.z = direction.z * newSpeed;
+
+        // The dash cancels any rising or falling, so it is a clean horizontal burst.
+        calculatedMovement.y = 0f;
+
+        // Max() so a dash can never LOWER the cap. Same reason as the wall jump: AirMove would clamp the new speed away otherwise.
+        airSpeedCap = Mathf.Max(airSpeedCap, newSpeed);
+
+        lastDashTime = Time.time;
+        dashHangEndTime = Time.time + dashHangTime;
+        Dashed?.Invoke();
+    }
 
     // All hail the jump button lol.
     // Returns true if we jumped OFF THE GROUND (which means we left the ground this step). A wall jump happens in the air, not a jump like this
@@ -561,6 +668,9 @@ public class CustomPlayerController : MonoBehaviour
         // Jump is simply an immediate upward velocity assignment.
         // (In a coyote jump we may have already started falling - this overwrites that fall.)
         calculatedMovement.y = jumpVelocity;
+
+        // A jump ends a dash hang, otherwise we would rise with no gravity for the rest of it.
+        dashHangEndTime = -999f;
 
         // Pseudocode:
         // - Only if `sliding` is true AND we're still within slideGrace seconds of when the slide started (compare Time.time - slideStartTime against slideGrace):
@@ -631,6 +741,9 @@ public class CustomPlayerController : MonoBehaviour
     {
         // Like any jump, upward speed is assigned, not added - so a wall jump always gives the same height no matter how fast we were falling.
         calculatedMovement.y = Mathf.Sqrt(2f * gravity * wallJumpHeight);
+
+        // Same as a ground jump: ends any dash hang.
+        dashHangEndTime = -999f;
 
         // Both vectors are flat (normal and forwardTangent have no height), so this is purely sideways.
         Vector3 boost =
@@ -1008,6 +1121,10 @@ public class CustomPlayerController : MonoBehaviour
     // When a wall run's grace period runs out, AirMove lands here with Y at 0: that is the "slip down the wall as normal".
     private float CurrentGravity()
     {
+        // Right after a dash we glide level (see dashHangTime).
+        if (Time.time < dashHangEndTime)
+            return 0f;
+
         return currentWall.valid ? gravity * wallSlipGravityScale : gravity;
     }
 
@@ -1999,7 +2116,7 @@ public class CustomPlayerController : MonoBehaviour
         }
 
         GUI.Label(
-            new Rect(10f, 10f, 420f, 220f),
+            new Rect(10f, 10f, 420f, 240f),
             $"speed: {velocity.magnitude:F1}   horizontal: {horizontalVelocity.magnitude:F1}\n" +
             $"velocity: {velocity}\n" +
             $"grounded: {grounded}   slope: {slopeAngle:F0} deg\n" +
@@ -2007,7 +2124,8 @@ public class CustomPlayerController : MonoBehaviour
             $"platform: {platformName}\n" +
             $"coyote left: {Mathf.Max(0f, coyoteTime - (Time.time - lastGroundedTime)):F2}s (window {coyoteTime:F2}s)\n" +
             $"wall: {wallText}\n" +
-            $"wall run: {wallRunning}   grace left: {Mathf.Max(0f, wallRunGracePeriod - wallRunTimeUsed):F2}s"
+            $"wall run: {wallRunning}   grace left: {Mathf.Max(0f, wallRunGracePeriod - wallRunTimeUsed):F2}s\n" +
+            $"dash cooldown left: {Mathf.Max(0f, dashCooldown - (Time.time - lastDashTime)):F2}s"
         );
     }
 }

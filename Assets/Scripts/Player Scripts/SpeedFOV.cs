@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// Widens the camera FOV as the player speeds up. Put it on the Camera.
+// Widens the camera FOV as the player speeds up, and punches it wider for a moment when they dash. Put it on the Camera.
 [RequireComponent(typeof(Camera))]
 public class SpeedFOV : MonoBehaviour
 {
@@ -20,13 +20,51 @@ public class SpeedFOV : MonoBehaviour
     [Range(1f, 200f)]
     [SerializeField] private float fovChangeSpeed = 60f;   // degrees per second
 
+    [Header("Dash punch")]
+    // Extra degrees of FOV right after a dash. On top of the speed boost above.
+    [Range(0f, 60f)]
+    [SerializeField] private float dashFovBoost = 25f;
+
+    // How fast the punch opens up (degrees per second). High = nearly instant.
+    [Range(1f, 2000f)]
+    [SerializeField] private float dashFovRiseSpeed = 800f;
+
+    // How fast it settles back (degrees per second). 120 takes about a fifth of a second for the default boost.
+    [Range(1f, 600f)]
+    [SerializeField] private float dashFovFadeSpeed = 120f;
+
     private Camera cam;
     private float baseFov;
+
+    // The FOV from our speed alone. Kept here (not read back from the camera) so the dash punch can sit on top of it without the two fighting.
+    private float speedFov;
+
+    // The extra degrees from a dash right now, and where it is heading (the boost on the way up, 0 on the way down).
+    private float dashPunch;
+    private float dashPunchTarget;
 
     private void Start()
     {
         cam = GetComponent<Camera>();
         baseFov = cam.fieldOfView;
+        speedFov = baseFov;
+    }
+
+    private void OnEnable()
+    {
+        if (player != null)
+            player.Dashed += OnDashed;
+    }
+
+    private void OnDisable()
+    {
+        if (player != null)
+            player.Dashed -= OnDashed;
+    }
+
+    private void OnDashed()
+    {
+        dashPunchTarget = dashFovBoost;
     }
 
     // Camera work runs per frame, not in FixedUpdate.
@@ -37,6 +75,15 @@ public class SpeedFOV : MonoBehaviour
 
         float targetFov = baseFov + maxFovBoost * speedFraction;
 
-        cam.fieldOfView = Mathf.MoveTowards(cam.fieldOfView, targetFov, fovChangeSpeed * Time.deltaTime);
+        speedFov = Mathf.MoveTowards(speedFov, targetFov, fovChangeSpeed * Time.deltaTime);
+
+        // Open up fast toward the punch, and as soon as it gets there start settling back to 0.
+        float punchRate = dashPunch < dashPunchTarget ? dashFovRiseSpeed : dashFovFadeSpeed;
+        dashPunch = Mathf.MoveTowards(dashPunch, dashPunchTarget, punchRate * Time.deltaTime);
+
+        if (dashPunchTarget > 0f && dashPunch >= dashPunchTarget)
+            dashPunchTarget = 0f;
+
+        cam.fieldOfView = speedFov + dashPunch;
     }
 }

@@ -2,7 +2,7 @@
 
 Source: `CustomPlayerController.cs` -> `FixedUpdate()`. Fixed timestep = 0.02 s (50 Hz), so `dt = 0.02`.
 
-`Update()` only reads input. Jump and slide presses are stored as flags (`jumpQueued`, `slideQueued`) so a one-frame press can't fall between two physics steps.
+`Update()` only reads input. Jump, slide and dash presses are stored as flags (`jumpQueued`, `slideQueued`, `dashQueued`) so a one-frame press can't fall between two physics steps.
 
 All movement math works in **platform-relative velocity**: `rel = velocity - platformVelocity`.
 
@@ -14,6 +14,7 @@ All movement math works in **platform-relative velocity**: `rel = velocity - pla
 | 4 | `rel = velocity - platformVelocity` | |
 | 5 | capture `airSpeedCap` (only if grounded) | **Air Movement** |
 | 6 | `UpdateSlideAndCrouch` | **Sliding** (start / stop) |
+| 6b | `TryDash` | **Dash** |
 | 7 | `Jump()` then `LaunchOffMovingGround` | **Coyote Time**, **Wall Jumping**, slide jump |
 | 7b | `UpdateWallRun` | **Wall Running** (decides `wallRunning` for this tick) |
 | 8 | `Move()` picks ONE model | **Walking/Sprinting**, **Air Movement**, **Sliding**, **Wall Running** |

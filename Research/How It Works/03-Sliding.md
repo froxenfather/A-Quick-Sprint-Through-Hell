@@ -20,7 +20,7 @@
 
 ## Steps
 
-**Input:** mouse back/forward thumb button. Press is queued, hold is `slideHeld`.
+**Input:** mouse back thumb button (button 4). The forward thumb button is the dash (see `10-Dash.md`). Press is queued, hold is `slideHeld`.
 
 **Start (step 6)**, on a press while not already sliding or crouching:
 

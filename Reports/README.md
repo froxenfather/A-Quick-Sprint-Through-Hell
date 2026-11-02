@@ -122,4 +122,9 @@
 
 ### MILESTONE: Room stiching prototype finished and properly implemented!
 - Nebula Shader!
-- 
+
+## 11/1/2026
+- Implemented 4 More Rooms
+- Pipeslide, Lava, Injector, and Stairs
+- TODO: Make the Gates a LITTLE Wider!!!
+- TODO: Add a DASH

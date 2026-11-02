@@ -1,6 +1,10 @@
 using UnityEngine;
 using UnityEngine.ProBuilder;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 // A flat slab (wall, floor or ceiling) with a rectangular hole cut out where a gate is.
 // Move the gate and the slab rebuilds itself around it, so the opening follows the gate.
 
@@ -16,6 +20,9 @@ public class WallWithOpening : MonoBehaviour
     private const string ContainerName = "Wall Pieces";
     private const float MinPieceSize = 0.001f;
 
+    // How long (in seconds) nothing has to change before the pieces are rebuilt.
+    private const double SettleSeconds = 0.35;
+
     // How closely the gate has to face along the slab's thickness (1 = exactly).
     private const float ParallelTolerance = 0.99f;
 
@@ -27,13 +34,25 @@ public class WallWithOpening : MonoBehaviour
 
     [SerializeField] private Material material;
 
-    // What the pieces were last built from, so we only rebuild when something changed.
-    private Vector3 lastGatePosition;
-    private Quaternion lastGateRotation;
-    private Vector2 lastOpeningSize;
-    private Vector2 lastSize;
-    private float lastThickness;
-    private Material lastMaterial;
+    // Everything the pieces depend on, so we can tell when they are out of date.
+    private struct BuildState
+    {
+        public bool hasGate;
+        public Vector3 gatePosition;
+        public Quaternion gateRotation;
+        public Vector2 openingSize;
+        public Vector2 size;
+        public float thickness;
+        public Material material;
+    }
+
+    // What the pieces were last built from.
+    private BuildState builtState;
+
+    // What we saw on the previous editor tick. While this keeps changing, something is still being dragged.
+    private BuildState seenState;
+
+    private double lastChangeTime;
 
     private void OnEnable()
     {
@@ -44,17 +63,43 @@ public class WallWithOpening : MonoBehaviour
             Rebuild();
         else
             RememberState();
+
+        seenState = builtState;
+
+#if UNITY_EDITOR
+        EditorApplication.update += CheckForChanges;
+#endif
     }
 
-    private void Update()
+    private void OnDisable()
+    {
+#if UNITY_EDITOR
+        EditorApplication.update -= CheckForChanges;
+#endif
+    }
+
+#if UNITY_EDITOR
+    // Runs every editor tick. The pieces are only rebuilt once nothing has changed for a moment, so dragging a gate
+    // or a size slider does not rebuild (and re-save the prefab) on every single step.
+    private void CheckForChanges()
     {
         // Rooms spawned at runtime already have their pieces, nothing to do.
         if (Application.isPlaying)
             return;
 
-        if (HasChanged())
+        BuildState current = ReadState();
+
+        if (!Same(current, seenState))
+        {
+            seenState = current;
+            lastChangeTime = EditorApplication.timeSinceStartup;
+            return;
+        }
+
+        if (!Same(current, builtState) && EditorApplication.timeSinceStartup - lastChangeTime >= SettleSeconds)
             Rebuild();
     }
+#endif
 
     [ContextMenu("Rebuild")]
     private void Rebuild()
@@ -62,7 +107,7 @@ public class WallWithOpening : MonoBehaviour
         Transform existing = transform.Find(ContainerName);
 
         if (existing != null)
-            DestroyImmediate(existing.gameObject);
+            DestroyPieces(existing.gameObject);
 
         GameObject container = new GameObject(ContainerName);
         container.transform.SetParent(transform, false);
@@ -151,40 +196,59 @@ public class WallWithOpening : MonoBehaviour
         piece.gameObject.AddComponent<MeshCollider>();
     }
 
-    private bool HasChanged()
+    // Deletes the pieces and their meshes. Destroying a GameObject on its own leaves its mesh behind,
+    // so without this every rebuild would leak a few meshes into memory.
+    private static void DestroyPieces(GameObject container)
     {
-        if (size != lastSize || thickness != lastThickness || material != lastMaterial)
-            return true;
+#if UNITY_EDITOR
+        foreach (MeshFilter filter in container.GetComponentsInChildren<MeshFilter>(true))
+        {
+            Mesh mesh = filter.sharedMesh;
 
-        if (gate == null)
-            return lastOpeningSize != Vector2.zero;
+            // Meshes saved inside an asset are not ours to destroy.
+            if (mesh != null && !EditorUtility.IsPersistent(mesh))
+                DestroyImmediate(mesh);
+        }
+#endif
 
-        GetGateInSlabSpace(out Vector3 position, out Quaternion rotation);
-
-        return position != lastGatePosition || rotation != lastGateRotation || gate.OpeningSize != lastOpeningSize;
+        DestroyImmediate(container);
     }
 
     private void RememberState()
     {
-        lastSize = size;
-        lastThickness = thickness;
-        lastMaterial = material;
-
-        if (gate == null)
-        {
-            lastOpeningSize = Vector2.zero;
-            return;
-        }
-
-        GetGateInSlabSpace(out lastGatePosition, out lastGateRotation);
-        lastOpeningSize = gate.OpeningSize;
+        builtState = ReadState();
     }
 
-    // The gate relative to the slab, so moving the whole room around does not count as a change.
-    private void GetGateInSlabSpace(out Vector3 position, out Quaternion rotation)
+    // The gate is measured relative to the slab, so moving the whole room around does not count as a change.
+    private BuildState ReadState()
     {
-        position = transform.InverseTransformPoint(gate.transform.position);
-        rotation = Quaternion.Inverse(transform.rotation) * gate.transform.rotation;
+        BuildState state = new BuildState
+        {
+            hasGate = gate != null,
+            size = size,
+            thickness = thickness,
+            material = material
+        };
+
+        if (gate != null)
+        {
+            state.gatePosition = transform.InverseTransformPoint(gate.transform.position);
+            state.gateRotation = Quaternion.Inverse(transform.rotation) * gate.transform.rotation;
+            state.openingSize = gate.OpeningSize;
+        }
+
+        return state;
+    }
+
+    private static bool Same(BuildState a, BuildState b)
+    {
+        return a.hasGate == b.hasGate
+            && a.size == b.size
+            && a.thickness == b.thickness
+            && a.material == b.material
+            && a.gatePosition == b.gatePosition
+            && a.gateRotation == b.gateRotation
+            && a.openingSize == b.openingSize;
     }
 
     private void OnDrawGizmosSelected()

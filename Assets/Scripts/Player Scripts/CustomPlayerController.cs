@@ -109,9 +109,10 @@ public class CustomPlayerController : MonoBehaviour
     [SerializeField] private float slideLandingBoostMax = 12f;
 
     [Header("Wall Jump")]
-    // Upward speed of a wall jump, as a fraction of jumpVelocity. 0.66 = two thirds of a normal jump.
-    [Range(0f, 1.5f)]
-    [SerializeField] private float wallJumpHeightMultiplier = 0.66f;
+    // How high (meters) a wall jump lifts us, measured with normal gravity. A normal jump is about 3.6 m with the default jumpVelocity and gravity.
+    // Touching a wall halves gravity (Wall Slip), so the real jump goes a little higher while we are still next to the wall.
+    [Min(0f)]
+    [SerializeField] private float wallJumpHeight = 1.56f;
 
     // Flat speed added straight away from the wall (along the wall normal).
     [SerializeField] private float wallJumpPushAway = 10f;
@@ -620,7 +621,7 @@ public class CustomPlayerController : MonoBehaviour
     }
 
     // The wall jump's velocity change, three parts:
-    //   1. UP:         jumpVelocity * wallJumpHeightMultiplier (default 66% of a normal jump).
+    //   1. UP:         the speed that reaches wallJumpHeight meters, sqrt(2 * gravity * height).
     //   2. AWAY:       wallJumpPushAway along the wall normal.
     //   3. FORWARD:    wallJumpForwardBoost along the wall, in the direction we're facing.
     //
@@ -629,7 +630,7 @@ public class CustomPlayerController : MonoBehaviour
     private void ApplyWallJump(WallContact wall, ref Vector3 calculatedMovement)
     {
         // Like any jump, upward speed is assigned, not added - so a wall jump always gives the same height no matter how fast we were falling.
-        calculatedMovement.y = jumpVelocity * wallJumpHeightMultiplier;
+        calculatedMovement.y = Mathf.Sqrt(2f * gravity * wallJumpHeight);
 
         // Both vectors are flat (normal and forwardTangent have no height), so this is purely sideways.
         Vector3 boost =

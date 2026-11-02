@@ -12,6 +12,11 @@ public class RoomChain : MonoBehaviour
     // 0 means pick a new random seed every run (it is printed to the Console, so you can reuse it to repeat a run).
     [SerializeField] private int seed = 0;
 
+    // Chance that a room is flipped left-to-right (across its Entry gate's forward direction) when it is spawned.
+    // Only rooms with Can Mirror turned on are ever flipped.
+    [Range(0f, 1f)]
+    [SerializeField] private float mirrorChance = 0.5f;
+
     [Header("Streaming")]
     // Found automatically if left empty.
     [SerializeField] private Transform player;
@@ -31,7 +36,13 @@ public class RoomChain : MonoBehaviour
     [Min(0.01f)]
     [SerializeField] private float sealThickness = 1f;
 
-    // How far past the Entry gate the player has to be before it seals, so the wall never appears inside them.
+    // How many rooms behind the player an Entry has to be before it seals.
+    // 0 seals a room's Entry as soon as the player is through it. 1 seals it once the player is through the room's Exit as well.
+    [Min(0)]
+    [SerializeField] private int sealRoomsBehind = 1;
+
+    // Only used when Seal Rooms Behind is 0. How far past the Entry gate the player has to be before it seals,
+    // so the wall never appears inside them.
     [Min(0f)]
     [SerializeField] private float sealDistance = 2f;
 
@@ -79,7 +90,7 @@ public class RoomChain : MonoBehaviour
             passedCount++;
 
         // Close the way back behind the player.
-        while (sealedCount < rooms.Count && IsPastBy(rooms[sealedCount].Entry, sealDistance))
+        while (sealedCount < rooms.Count && ShouldSeal(sealedCount))
         {
             rooms[sealedCount].SealEntry(sealMaterial, sealThickness);
             sealedCount++;
@@ -89,12 +100,21 @@ public class RoomChain : MonoBehaviour
         RemoveOldRooms();
     }
 
+    private bool ShouldSeal(int roomIndex)
+    {
+        if (sealRoomsBehind == 0)
+            return IsPastBy(rooms[roomIndex].Entry, sealDistance);
+
+        // passedCount is the room the player is in, so this is how many rooms behind the player this one is.
+        return passedCount - roomIndex >= sealRoomsBehind;
+    }
+
     // True when the player is at least this far in front of the gate (on the side its arrow points to).
     private bool IsPastBy(RoomGate gate, float distance)
     {
         Vector3 toPlayer = player.position - gate.transform.position;
 
-        return Vector3.Dot(toPlayer, gate.transform.forward) > distance;
+        return Vector3.Dot(toPlayer, gate.WorldForward) > distance;
     }
 
     // In front of the gate means on the side its arrow points to.
@@ -102,7 +122,7 @@ public class RoomChain : MonoBehaviour
     {
         Vector3 toPlayer = player.position - gate.transform.position;
 
-        return Vector3.Dot(toPlayer, gate.transform.forward) > 0f;
+        return Vector3.Dot(toPlayer, gate.WorldForward) > 0f;
     }
 
     private void BuildAhead()
@@ -131,10 +151,10 @@ public class RoomChain : MonoBehaviour
         }
         else
         {
-            Transform previousExit = rooms[rooms.Count - 1].Exit.transform;
+            RoomGate previousExit = rooms[rooms.Count - 1].Exit;
 
-            targetPosition = previousExit.position;
-            targetRotation = previousExit.rotation;
+            targetPosition = previousExit.transform.position;
+            targetRotation = previousExit.WorldRotation;
         }
 
         Room prefab = roomPrefabs[random.Next(roomPrefabs.Length)];
@@ -145,6 +165,9 @@ public class RoomChain : MonoBehaviour
             return false;
         }
 
+        // Always roll, even for rooms that cannot mirror, so a seed gives the same rooms whatever Can Mirror is set to.
+        bool mirror = random.NextDouble() < mirrorChance && prefab.CanMirror;
+
         Room room = Instantiate(prefab, transform);
 
         // Room.Awake has already looked for the gates, and logged the problem if there is one.
@@ -154,14 +177,16 @@ public class RoomChain : MonoBehaviour
             return false;
         }
 
-        PlaceEntryAt(room, targetPosition, targetRotation);
+        PlaceEntryAt(room, targetPosition, targetRotation, mirror);
         rooms.Add(room);
 
         return true;
     }
 
     // Moves the whole room so its Entry gate lands exactly on the given position and rotation.
-    private static void PlaceEntryAt(Room room, Vector3 position, Quaternion rotation)
+    // If mirror is true the room is also flipped left-to-right across the Entry gate's forward direction.
+    // The Entry stays where it is, only the rest of the room swaps sides.
+    private static void PlaceEntryAt(Room room, Vector3 position, Quaternion rotation, bool mirror)
     {
         Transform entry = room.Entry.transform;
 
@@ -173,10 +198,22 @@ public class RoomChain : MonoBehaviour
         //   rootRotation * entryLocalRotation                = rotation
         //   rootPosition + rootRotation * entryLocalPosition = position
         // so:
-        Quaternion rootRotation = rotation * Quaternion.Inverse(entryLocalRotation);
-        Vector3 rootPosition = position - rootRotation * entryLocalPosition;
+        Quaternion inverseEntryRotation = Quaternion.Inverse(entryLocalRotation);
+        Vector3 flip = Vector3.one;
+
+        if (mirror)
+        {
+            // The room is flipped by a scale of -1 along the gate's left-right (X) direction.
+            // Flipping an axis reverses turns around the other two axes, so the inverse rotation has to flip the same way.
+            flip = new Vector3(-1f, 1f, 1f);
+            inverseEntryRotation = new Quaternion(inverseEntryRotation.x, -inverseEntryRotation.y, -inverseEntryRotation.z, inverseEntryRotation.w);
+        }
+
+        Quaternion rootRotation = rotation * inverseEntryRotation;
+        Vector3 rootPosition = position - rootRotation * Vector3.Scale(entryLocalPosition, flip);
 
         room.transform.SetPositionAndRotation(rootPosition, rootRotation);
+        room.transform.localScale = flip;
     }
 
     private void RemoveOldRooms()

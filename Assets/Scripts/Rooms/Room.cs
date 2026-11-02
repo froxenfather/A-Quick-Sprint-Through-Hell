@@ -6,6 +6,12 @@ using UnityEngine.ProBuilder;
 // Keep the root's scale at (1, 1, 1).
 public class Room : MonoBehaviour
 {
+    // Lets the RoomChain flip this room left-to-right. Turn it off for rooms that have text, conveyor belts,
+    // or anything else that points a direction, because those do not mirror along with the room.
+    [SerializeField] private bool canMirror = true;
+
+    public bool CanMirror => canMirror;
+
     public RoomGate Entry { get; private set; }
     public RoomGate Exit { get; private set; }
 

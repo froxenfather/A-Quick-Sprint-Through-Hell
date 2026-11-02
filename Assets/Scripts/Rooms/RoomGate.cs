@@ -34,6 +34,14 @@ public class RoomGate : MonoBehaviour
         set => openingSize = value;
     }
 
+    // The gate's direction and up in the world, read from its full matrix. When a room is mirrored,
+    // transform.forward and transform.rotation do not follow the mirror, but these do. Use these for stitching.
+    public Vector3 WorldForward => transform.localToWorldMatrix.MultiplyVector(Vector3.forward).normalized;
+
+    public Vector3 WorldUp => transform.localToWorldMatrix.MultiplyVector(Vector3.up).normalized;
+
+    public Quaternion WorldRotation => Quaternion.LookRotation(WorldForward, WorldUp);
+
     private void OnDrawGizmos()
     {
         // Gizmo settings stay set after we draw, so remember them and put them back at the end.

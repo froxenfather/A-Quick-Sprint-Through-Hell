@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8409864554707659475}
   - component: {fileID: 5338817045456198103}
   m_Layer: 0
-  m_Name: GatewayPro
+  m_Name: GatewayProSmall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

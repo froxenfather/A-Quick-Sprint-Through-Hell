@@ -333,6 +333,19 @@ public class CustomPlayerController : MonoBehaviour
     private readonly RaycastHit[] hitBuffer = new RaycastHit[16];
     private readonly Collider[] overlapBuffer = new Collider[16];
 
+    // Hazard surfaces (SpeedCapSurface) we are touching, each with the normal of the touch.
+    // Filled during the step (collide and slide hits) and at its end (ground and wall), then used and cleared by ApplySurfaceHazards on the next step.
+    private struct SurfaceTouch
+    {
+        public SpeedCapSurface surface;
+        public Vector3 normal;
+    }
+
+    private readonly List<SurfaceTouch> surfaceTouches = new List<SurfaceTouch>();
+
+    // The hazards we touched the step before, so only the FIRST touch of one bounces us.
+    private readonly HashSet<SpeedCapSurface> surfacesTouchedLastStep = new HashSet<SpeedCapSurface>();
+
     // Track collision contacts so events fire once on contact.
     private readonly HashSet<Collider> contactsThisStep = new HashSet<Collider>();
     private readonly HashSet<Collider> contactsLastStep = new HashSet<Collider>();
@@ -425,6 +438,9 @@ public class CustomPlayerController : MonoBehaviour
 
         calculatedMovement = Move(calculatedMovement, dt);
 
+        // Hazard surfaces get the last word on our speed, AFTER the movement model, which would otherwise speed us straight back up. This also caps a dash. A bounce counts as leaving the ground, like a jump does.
+        leftGround |= ApplySurfaceHazards(ref calculatedMovement);
+
         // Change position.
         // displacement = velocity * time
         // x_new = x_old + v * dt
@@ -435,6 +451,9 @@ public class CustomPlayerController : MonoBehaviour
 
         // make sure we remember any wall we're next to, for the next step's wall jump (and the debug rays).
         UpdateWallContact();
+
+        // Remember any hazard we ended the step on or next to, for the next step.
+        CollectSurfaceTouches();
 
         // convert relative velocity back into world velocity.
         velocity = calculatedMovement + currentPlatformVelocity;
@@ -1330,6 +1349,9 @@ public class CustomPlayerController : MonoBehaviour
 
             contactsThisStep.Add(hit.collider);
 
+            if (hit.collider.TryGetComponent(out SpeedCapSurface hazard))
+                surfaceTouches.Add(new SurfaceTouch { surface = hazard, normal = hit.normal });
+
             // Move as far as safely possible, keep whatever motion remains.
             remainingMotion = MoveUpToHit(hit, direction, distance);
 
@@ -1984,6 +2006,101 @@ public class CustomPlayerController : MonoBehaviour
         platformLocalPos = platform.InverseTransformPoint(position);
 
         platformLastRot = platform.rotation;
+    }
+
+    // ============================================================
+    // HAZARD SURFACES
+    // ============================================================
+
+    // Adds the hazards we are standing on or next to (the collide and slide hits were added as they happened).
+    private void CollectSurfaceTouches()
+    {
+        if (grounded && groundCollider != null && groundCollider.TryGetComponent(out SpeedCapSurface floor))
+            surfaceTouches.Add(new SurfaceTouch { surface = floor, normal = groundNormal });
+
+        if (currentWall.valid && currentWall.collider != null && currentWall.collider.TryGetComponent(out SpeedCapSurface wall))
+            surfaceTouches.Add(new SurfaceTouch { surface = wall, normal = currentWall.normal });
+    }
+
+    // What touching a SpeedCapSurface does, for the touches the last step collected:
+    //   1. Caps our flat speed at its maxSpeed. Speed AWAY from a wall is left alone, so a bounce off an electric wall isn't squashed, but running along it is.
+    //   2. Lowers airSpeedCap to it. airSpeedCap only refreshes when we are on the ground, so after leaving the hazard in the air we cannot get faster until we land.
+    //   3. On the FIRST touch of a hazard, bounces us along its normal: our speed along the normal becomes at least bounceSpeed (assigned, like a jump).
+    //
+    // Runs after Move() so the movement model can't speed us back up, and before MoveAndSlide.
+    // Returns true if the bounce threw us off the ground (like a jump does).
+    private bool ApplySurfaceHazards(ref Vector3 calculatedMovement)
+    {
+        bool leftGround = false;
+        bool bounced = false;
+
+        foreach (SurfaceTouch touch in surfaceTouches)
+        {
+            if (touch.surface == null)
+                continue;
+
+            float maxSpeed = touch.surface.MaxSpeed;
+            Vector3 flat = Flatten(calculatedMovement);
+
+            // For a wall, the part of our speed pointing away from it is exempt from the cap.
+            Vector3 away = Vector3.zero;
+            Vector3 awayDirection = Flatten(touch.normal);
+
+            if (!IsWalkable(touch.normal) && awayDirection.sqrMagnitude > 0.0001f)
+            {
+                awayDirection.Normalize();
+                away = awayDirection * Mathf.Max(0f, Vector3.Dot(flat, awayDirection));
+            }
+
+            Vector3 rest = flat - away;
+
+            if (rest.magnitude > maxSpeed)
+                rest = rest.normalized * maxSpeed;
+
+            flat = rest + away;
+            calculatedMovement.x = flat.x;
+            calculatedMovement.z = flat.z;
+
+            airSpeedCap = Mathf.Min(airSpeedCap, maxSpeed);
+        }
+
+        foreach (SurfaceTouch touch in surfaceTouches)
+        {
+            if (bounced || touch.surface == null || touch.surface.BounceSpeed <= 0f || surfacesTouchedLastStep.Contains(touch.surface))
+                continue;
+
+            bounced = true;
+
+            float speedAway = Vector3.Dot(calculatedMovement, touch.normal);
+
+            if (speedAway < touch.surface.BounceSpeed)
+                calculatedMovement += touch.normal * (touch.surface.BounceSpeed - speedAway);
+
+            if (IsWalkable(touch.normal))
+            {
+                // Thrown off the floor on purpose: no coyote jump, same as a jump or a launch.
+                grounded = false;
+                lastGroundedTime = NeverGrounded;
+                leftGround = true;
+            }
+            else
+            {
+                // We just got thrown off this wall, so it must not count as touching it this step (no slip gravity), same as after a wall jump.
+                currentWall = default;
+            }
+        }
+
+        surfacesTouchedLastStep.Clear();
+
+        foreach (SurfaceTouch touch in surfaceTouches)
+        {
+            if (touch.surface != null)
+                surfacesTouchedLastStep.Add(touch.surface);
+        }
+
+        surfaceTouches.Clear();
+
+        return leftGround;
     }
 
     // ============================================================

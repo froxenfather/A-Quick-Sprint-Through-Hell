@@ -128,3 +128,7 @@
 - Pipeslide, Lava, Injector, and Stairs
 - TODO: Make the Gates a LITTLE Wider!!!
 - TODO: Add a DASH
+
+## 11/2/2026
+- Increased Exit and Entrance size and let them be better fit in the future
+- Added a DASH!

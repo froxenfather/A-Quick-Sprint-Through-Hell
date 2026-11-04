@@ -18,6 +18,7 @@ All movement math works in **platform-relative velocity**: `rel = velocity - pla
 | 7 | `Jump()` then `LaunchOffMovingGround` | **Coyote Time**, **Wall Jumping**, slide jump |
 | 7b | `UpdateWallRun` | **Wall Running** (decides `wallRunning` for this tick) |
 | 8 | `Move()` picks ONE model | **Walking/Sprinting**, **Air Movement**, **Sliding**, **Wall Running** |
+| 8b | `ApplySurfaceHazards` | **Hazard Surfaces** (speed cap and bounce) |
 | 9 | `MoveAndSlide(rel * dt)` | collision, step-up, slope redirect |
 | 10 | `UpdateGrounded` | ground snap, coyote timestamp, landing time |
 | 11 | `UpdateWallContact` | **Wall Jumping** (detection, used next step) |

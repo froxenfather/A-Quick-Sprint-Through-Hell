@@ -507,7 +507,11 @@ MonoBehaviour:
   - {fileID: 487381481014500433, guid: 87708715d58218340b056858758a6b65, type: 3}
   - {fileID: 8778050843666654460, guid: 522f7757eef51bc42bc651eda4eec13e, type: 3}
   - {fileID: 6026878337139546205, guid: 8de5148007df6b8459f45c6d96fc3380, type: 3}
-  seed: 0
+  - {fileID: 5067064258449662214, guid: 4a935d1a15509104085023523baaf937, type: 3}
+  - {fileID: 2353999934351408152, guid: e0b28be0bf04f3b46b550d9d097c6054, type: 3}
+  - {fileID: 1688619471128331407, guid: db61a1389835ea8419aa2672c550a6de, type: 3}
+  - {fileID: 4103393865650268899, guid: d13f7d7c8c573f04e9c0027e993c0398, type: 3}
+  seed: 7
   mirrorChance: 0.5
   player: {fileID: 450152359}
   roomsAhead: 3
@@ -688,7 +692,7 @@ Transform:
   m_GameObject: {fileID: 450152358}
   serializedVersion: 2
   m_LocalRotation: {x: -0.0011015572, y: -0.00017306878, z: -0.0014054623, w: 0.9999984}
-  m_LocalPosition: {x: -0.0044980436, y: 0.22, z: 0.0035241684}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -781,7 +785,7 @@ MonoBehaviour:
   landingGrace: 0.04
   jumpVelocity: 25
   gravity: 60
-  airControl: 55
+  airControl: 50
   maxAirSpeed: 20
   airOverspeedDecel: 15
   coyoteTime: 0.3
@@ -794,18 +798,20 @@ MonoBehaviour:
   slideUphillGravityScale: 0.8
   slideGrace: 0.5
   slideJumpBoost: 5
-  slideLandingBoostScale: 0.5
+  slideLandingBoostScale: 0.3
   slideLandingBoostMax: 100
-  dashDirectionInfluence: 85.9
+  slideAirGravityMultiplier: 2
+  dashDirectionInfluence: 100
   dashSpeedBonus: 5
   dashMinSpeedSprint: 35
   dashMinSpeedWalk: 20
-  dashCooldown: 3
+  dashCooldown: 2
   dashHangTime: 0.25
   wallJumpHeight: 8
   wallJumpPushAway: 25
-  wallJumpForwardBoost: 3
+  wallJumpForwardBoost: 5
   wallJumpLookTolerance: 45
+  wallJumpAnyDirection: 1
   wallDetectDistance: 0.15
   wallProbeDirections: 8
   wallMaxNormalY: 0.25

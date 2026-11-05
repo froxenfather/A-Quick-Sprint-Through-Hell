@@ -41,7 +41,8 @@
    `scale` = `slideSlopeGravityScale` going downhill, `slideUphillGravityScale` going uphill.
 4. **Friction:** `v = MoveTowards(v, 0, slidingGroundFriction * dt)`
 
-**Air slide tick (`SlideAirMove`):** gravity only. No steering, no speed caps.
+**Air slide tick (`SlideAirMove`):** gravity only. No steering, no speed caps. Gravity is `CurrentGravity()`, which is multiplied by `slideAirGravityMultiplier` (default 4, new, not in the scenes yet) while `sliding`. It goes back to normal the step the slide ends. The ground slide's slope pull is not affected.
+Side effect: holding the button through a slide jump keeps the heavy gravity on, so the hop rises to about 1/4 of the height (apex `v² / 2g`).
 
 **Slide jump (step 7):** a ground jump while `sliding` and `now - slideStartTime < slideGrace`:
 `v.xz += flatDir * slideJumpBoost`, then `airSpeedCap = flat speed`.

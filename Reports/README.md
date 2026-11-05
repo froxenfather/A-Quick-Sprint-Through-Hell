@@ -132,3 +132,9 @@
 ## 11/2/2026
 - Increased Exit and Entrance size and let them be better fit in the future
 - Added a DASH!
+
+## 11/3/2026
+- Void Glass: Hides incoming rooms
+- New Rooms
+- - Spillway
+- - Walls

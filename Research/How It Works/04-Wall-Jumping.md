@@ -8,6 +8,7 @@
 | `wallJumpPushAway` | 10 | 10 |
 | `wallJumpForwardBoost` | 8 | 3 |
 | `wallJumpLookTolerance` | 30° | 30° |
+| `wallJumpAnyDirection` | off | new, off until ticked in the scene |
 | `wallDetectDistance` | 0.15 | 0.15 |
 | `wallProbeDirections` | 8 | 8 |
 | `wallMaxNormalY` | 0.3 | 0.3 |
@@ -28,13 +29,21 @@
 - `a+ = Angle(look, tangent)`, `a- = Angle(look, -tangent)`. Take the smaller; that direction becomes `forwardTangent`.
 - `lookOk = smaller angle <= wallJumpLookTolerance`.
 
-**3. Jump (step 7).** Ground/coyote jump is checked first; the wall jump only runs if that fails. Needs: airborne, `currentWall.valid`, `lookOk`.
+**3. Jump (step 7).** Ground/coyote jump is checked first; the wall jump only runs if that fails. Needs: airborne, `currentWall.valid`, and `lookOk` **unless `wallJumpAnyDirection` is on**, in which case any wall touch is enough. (`TryGetWallContact` does the airborne + wall + live look part; wall running reuses it and always demands `lookOk`.)
 
-- `v.y = jumpVelocity * wallJumpHeightMultiplier` (assigned)
-- `v.xz += normal * wallJumpPushAway + forwardTangent * wallJumpForwardBoost`
+- `v.y = sqrt(2 * gravity * wallJumpHeight)` (assigned)
+- `v.xz += pushNormal * wallJumpPushAway`, where `pushNormal` comes from step 4
+- `v.xz += forwardTangent * wallJumpForwardBoost` **only if `lookOk`**. A kick from outside the look range (only possible with `wallJumpAnyDirection`) has no along-the-wall direction, so it goes straight away from the wall.
 - `airSpeedCap = max(airSpeedCap, new flat speed)`
 - `sliding = false`
 - `wallRunTimeUsed = 0` and `currentWall` cleared (refills the wall run grace period; see `09-Wall-Running.md`)
+
+**4. Push direction (`ResolveWallJumpNormal`, only runs on a jump).**
+
+- Re-run the probe ring and collect every wall-shaped surface in range, using the same corrected normals as detection. Normals within ~15° of each other count as one wall.
+- One wall: the push is exactly `currentWall.normal`.
+- Several walls (a corner): the push is the normalized **sum** of their normals, which points out of the corner, away from all of them. A 90° corner kicks along the diagonal.
+- If the sum is shorter than 0.5 (walls facing nearly opposite, like a narrow shaft), fall back to the closest wall's normal. Otherwise the sum would normalize into a direction along the walls.
 
 No cooldown or counter exists.
 
@@ -54,6 +63,8 @@ No cooldown or counter exists.
 - **Raises `airSpeedCap`.** Otherwise `AirMove` clamps the boost away on the very next line. `Max()` so it can never lower the cap.
 - **Ends an air slide.** `SlideAirMove` would lock momentum and ignore air control.
 - **Ground jump wins.** Near a ledge and a wall you get the stronger ground jump.
+- **`wallJumpAnyDirection` is a toggle, not a bigger cone.** It lets you run face first into a wall, jump up it, and kick off up and backwards. The push always stays along the wall normal; only the look gate and the sideways boost change.
+- **Corner normal is computed at jump time, not every tick.** Detection still keeps one closest wall (slip, wall run and the look check use it), so a corner costs nothing per tick. Pushing along one face of a V-shaped corner would drive into the other face and `SlideAlongSurface` would eat the kick, leaving only a straight-up jump.
 
 ## Issues
 

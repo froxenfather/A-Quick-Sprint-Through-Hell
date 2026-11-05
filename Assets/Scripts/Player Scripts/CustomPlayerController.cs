@@ -108,6 +108,12 @@ public class CustomPlayerController : MonoBehaviour
     // Hard cap (m/s) on that landing boost, so a very tall drop can't launch you.
     [SerializeField] private float slideLandingBoostMax = 12f;
 
+    // Gravity multiplier while sliding in the AIR: 4 = four times normal gravity, 1 = off.
+    // It follows `sliding` every step, so the moment the slide ends (button released, wall jump) gravity is back to normal.
+    // Ground slides don't use it: their slope pull has its own scales (slideSlopeGravityScale / slideUphillGravityScale).
+    [Min(0f)]
+    [SerializeField] private float slideAirGravityMultiplier = 4f;
+
     [Header("Dash")]
     // How strongly a dash turns our flat velocity toward where the camera is looking, in percent.
     // 100 = we go exactly where we look. 10 = we mostly keep our old direction. Only the direction changes, never the speed.
@@ -146,6 +152,11 @@ public class CustomPlayerController : MonoBehaviour
     // How far off "looking parallel to the wall" we can be and still wall jump. Applies to BOTH directions along the wall, so 30 gives a 60 degree cone around each one.
     [Range(0f, 90f)]
     [SerializeField] private float wallJumpLookTolerance = 30f;
+
+    // On: we can wall jump off ANY wall we touch in the air, whichever way we face (run face first into a wall, jump up it, kick off backwards). Off: we must look along the wall, as before.
+    // Wall RUNNING always needs the look, whatever this says.
+    // A kick from outside the look range is just up and straight away from the wall: the sideways boost along the wall (wallJumpForwardBoost) only happens when we are looking along it.
+    [SerializeField] private bool wallJumpAnyDirection = false;
 
     // How close (meters, from the capsule surface, on top of skinWidth) a wall must be to count.
     [SerializeField] private float wallDetectDistance = 0.15f;
@@ -225,6 +236,12 @@ public class CustomPlayerController : MonoBehaviour
 
     // Speed (m/s) away from a surface above which we count as leaving it.
     private const float MovingAwaySpeed = 0.1f;
+
+    // Two wall normals with a dot above this (about 15 degrees apart) are the same wall seen by two probes.
+    private const float SameWallNormalDot = 0.966f;
+
+    // Summed corner normals shorter than this are thrown away. Two normals with angle phi between them sum to 2 * cos(phi / 2), so 0.5 means walls facing nearly opposite (over about 151 degrees apart, a narrow shaft).
+    private const float MinCornerNormalLength = 0.5f;
 
     // Slack (m/s) on wallRunMinSpeed, so a speed that is "exactly 20" but 19.99999 after float math still counts.
     private const float WallRunSpeedTolerance = 0.05f;
@@ -332,6 +349,7 @@ public class CustomPlayerController : MonoBehaviour
     // Reused buffers avoid allocating straight garbage every physics frame.
     private readonly RaycastHit[] hitBuffer = new RaycastHit[16];
     private readonly Collider[] overlapBuffer = new Collider[16];
+    private readonly Vector3[] wallNormalBuffer = new Vector3[16];
 
     // Hazard surfaces (SpeedCapSurface) we are touching, each with the normal of the touch.
     // Filled during the step (collide and slide hits) and at its end (ground and wall), then used and cleared by ApplySurfaceHazards on the next step.
@@ -717,26 +735,30 @@ public class CustomPlayerController : MonoBehaviour
         return true;
     }
 
-    // Wall jump: needs an airborne player next to a wall they're looking roughly along.
+    // Wall jump: needs an airborne player next to a wall they're looking roughly along (or any wall at all, with wallJumpAnyDirection).
     // Returns true if the jump happened.
     //
     // Flow (same order as the spec's flowchart):
     //   grounded?            -> no wall jump (the ground jump handles it)
     //   wall in range?       -> currentWall.valid, found by UpdateWallContact() last step
-    //   looking along it?    -> within wallJumpLookTolerance of either direction along the wall
+    //   looking along it?    -> within wallJumpLookTolerance of either direction along the wall (skipped when wallJumpAnyDirection is on)
     //   all yes              -> ApplyWallJump
     private bool TryWallJump(ref Vector3 calculatedMovement)
     {
-        if (!TryGetWallJumpWall(out WallContact wall))
+        if (!TryGetWallContact(out WallContact wall))
+            return false;
+
+        // Looking along the wall is required, unless wallJumpAnyDirection lets us kick off from any angle.
+        if (!wall.lookOk && !wallJumpAnyDirection)
             return false;
 
         ApplyWallJump(wall, ref calculatedMovement);
         return true;
     }
 
-    // The wall jump requirements: airborne, a wall in range, looking along it. Wall running needs exactly these too, so both ask here and can't drift apart.
-    // Hands back the wall with the look re-checked against where we face right now.
-    private bool TryGetWallJumpWall(out WallContact wall)
+    // The part of the wall jump requirements that wall running shares: airborne with a wall in range.
+    // Hands back the wall with the look re-checked against where we face right now (wall.lookOk may be false: the caller decides if that matters).
+    private bool TryGetWallContact(out WallContact wall)
     {
         wall = currentWall;
 
@@ -746,13 +768,13 @@ public class CustomPlayerController : MonoBehaviour
         // currentWall was measured at the end of the last physics step, but the mouse can turn us between steps. Copy it and re-check just the look part against where we face right now.
         EvaluateWallLook(ref wall);
 
-        return wall.lookOk;
+        return true;
     }
 
     // The wall jump's velocity change, three parts:
     //   1. UP:         the speed that reaches wallJumpHeight meters, sqrt(2 * gravity * height).
-    //   2. AWAY:       wallJumpPushAway along the wall normal.
-    //   3. FORWARD:    wallJumpForwardBoost along the wall, in the direction we're facing.
+    //   2. AWAY:       wallJumpPushAway along the wall normal (in a corner: the normal of the corner, see ResolveWallJumpNormal).
+    //   3. FORWARD:    wallJumpForwardBoost along the wall, in the direction we're facing. Only when we are looking along the wall (lookOk): a wallJumpAnyDirection kick from any other angle gets no sideways boost.
     //
     // The flat parts are ADDED to the velocity we already have (not replaced), exactly like the slide jump boost.
     // Deterministic: the result only depends on current velocity + the wall.
@@ -764,10 +786,12 @@ public class CustomPlayerController : MonoBehaviour
         // Same as a ground jump: ends any dash hang.
         dashHangEndTime = -999f;
 
-        // Both vectors are flat (normal and forwardTangent have no height), so this is purely sideways.
-        Vector3 boost =
-            wall.normal * wallJumpPushAway +
-            wall.forwardTangent * wallJumpForwardBoost;
+        // Both vectors are flat (the push direction and forwardTangent have no height), so this is purely sideways.
+        Vector3 boost = ResolveWallJumpNormal(wall) * wallJumpPushAway;
+
+        // Facing the wall (or anywhere outside the look range) there is no "forward along the wall", and forwardTangent would just pick a random side. So no sideways boost: straight away from the wall.
+        if (wall.lookOk)
+            boost += wall.forwardTangent * wallJumpForwardBoost;
 
         calculatedMovement.x += boost.x;
         calculatedMovement.z += boost.z;
@@ -786,6 +810,71 @@ public class CustomPlayerController : MonoBehaviour
         // We just pushed off this wall, so it must not count as touching it this step (no slip gravity, no wall run).
         // UpdateWallContact measures again at the end of the step.
         currentWall = default;
+    }
+
+    // Which way a wall jump pushes us away. One wall in range: exactly that wall's normal. In a corner: the sum of EVERY wall's normal in range, which points out of the corner, away from all of them.
+    // Pushing along just one face of a V-shaped corner would drive us into the other face, and collide-and-slide would eat the kick (we'd only go straight up the crease).
+    //
+    // Why only here and not in TryFindWall? Slip, wall run and the look check keep using the single closest wall, and this ring of probes only runs on a wall jump, so it costs nothing per tick.
+    private Vector3 ResolveWallJumpNormal(WallContact wall)
+    {
+        // Distinct wall normals found so far. The closest wall goes first, so a single wall gives back exactly wall.normal.
+        int count = 0;
+        wallNormalBuffer[count++] = wall.normal;
+
+        int directions = Mathf.Max(wallProbeDirections, 4);
+
+        for (int i = 0; i < directions; i++)
+        {
+            // Same ring as TryFindWall.
+            Vector3 direction = Quaternion.Euler(0f, 360f * i / directions, 0f) * Vector3.forward;
+
+            if (!SweepCapsule(position, direction, wallDetectDistance + skinWidth, out RaycastHit hit) || !IsWallNormal(hit.normal))
+                continue;
+
+            // Same correction as TryFindWall: capsule hit normals lie near edges and corners, so ask the surface itself.
+            Vector3 normal = ResolveWallNormal(hit);
+
+            if (!IsWallNormal(normal))
+                continue;
+
+            Vector3 flatNormal = Flatten(normal);
+
+            if (flatNormal.sqrMagnitude < 0.0001f)
+                continue;
+
+            flatNormal.Normalize();
+
+            // Several probes usually hit the same wall. Count each wall once, or a wall with more probes on it would win the sum.
+            bool alreadyCounted = false;
+
+            for (int n = 0; n < count; n++)
+            {
+                if (Vector3.Dot(wallNormalBuffer[n], flatNormal) > SameWallNormalDot)
+                {
+                    alreadyCounted = true;
+                    break;
+                }
+            }
+
+            if (!alreadyCounted && count < wallNormalBuffer.Length)
+                wallNormalBuffer[count++] = flatNormal;
+        }
+
+        // Only one wall: nothing to combine.
+        if (count == 1)
+            return wall.normal;
+
+        Vector3 sum = Vector3.zero;
+
+        for (int n = 0; n < count; n++)
+            sum += wallNormalBuffer[n];
+
+        // Walls facing each other (a narrow shaft) cancel out. A near-zero sum would normalize into a direction ALONG the walls, so fall back to the closest wall's normal.
+        if (sum.magnitude < MinCornerNormalLength)
+            return wall.normal;
+
+        return sum.normalized;
     }
 
     // A platform that stops (or slows down) faster than gravity can pull us back down leaves us flying with the speed it had.
@@ -894,7 +983,7 @@ public class CustomPlayerController : MonoBehaviour
     // Decides whether we are wall running this step. Runs every tick, right before Move().
     //
     // A wall run needs ALL of these:
-    //   - every wall jump requirement (airborne, wall in range, looking along it), via TryGetWallJumpWall
+    //   - airborne with a wall in range, AND looking along it (TryGetWallContact + lookOk). Always needed here, even when wallJumpAnyDirection lets a wall JUMP skip the look.
     //   - sprint held
     //   - flat speed of at least wallRunMinSpeed
     //   - not already moving away from the wall. Without this, the tick after a wall jump (wall still in range if the push is small) would freeze the jump's upward speed.
@@ -911,7 +1000,7 @@ public class CustomPlayerController : MonoBehaviour
             return;
         }
 
-        if (!TryGetWallJumpWall(out WallContact wall))
+        if (!TryGetWallContact(out WallContact wall) || !wall.lookOk)
             return;
 
         bool fastEnough = Flatten(calculatedMovement).magnitude >= wallRunMinSpeed - WallRunSpeedTolerance;
@@ -1113,17 +1202,17 @@ public class CustomPlayerController : MonoBehaviour
         // v = v0 + g * dt
         //
         // Downward direction makes acceleration negative in Y.
-        calculatedMovement += Vector3.down * CurrentGravity() * dt;
+        calculatedMovement += Vector3.down * CurrentGravity(calculatedMovement.y) * dt;
         // Gotta be careful to not clamp gravity here!
 
         return calculatedMovement;
     }
 
-    // Sliding in midair means momentum is locked in: no steering, no speed caps, just gravity.
+    // Sliding in midair means momentum is locked in: no steering, no speed caps, just gravity (slideAirGravityMultiplier times heavier, see CurrentGravity).
     // (You get here by jumping out of a slide, or sliding off a ledge, with the button still held.)
     private Vector3 SlideAirMove(Vector3 calculatedMovement, float dt)
     {
-        calculatedMovement += Vector3.down * CurrentGravity() * dt;
+        calculatedMovement += Vector3.down * CurrentGravity(calculatedMovement.y) * dt;
         return calculatedMovement;
     }
 
@@ -1138,13 +1227,20 @@ public class CustomPlayerController : MonoBehaviour
     // Gravity for the air models. Touching a wall swaps it for the lower wall slip gravity; one step after we leave the wall it is normal again.
     // currentWall is only ever valid while airborne (UpdateWallContact clears it on the ground), and so is every caller, so this never touches ground movement.
     // When a wall run's grace period runs out, AirMove lands here with Y at 0: that is the "slip down the wall as normal".
-    private float CurrentGravity()
+    private float CurrentGravity(float verticalSpeed)
     {
         // Right after a dash we glide level (see dashHangTime).
         if (Time.time < dashHangEndTime)
             return 0f;
 
-        return currentWall.valid ? gravity * wallSlipGravityScale : gravity;
+        float currentGravity = gravity;
+
+        // Sliding in the air pulls us down harder, but only once we are already falling (so jumping and sliding doesn't cut the rise short).
+        // Checked every step, so it is gone the moment the slide ends.
+        if (sliding && verticalSpeed < 0f)
+            currentGravity *= slideAirGravityMultiplier;
+
+        return currentWall.valid ? currentGravity * wallSlipGravityScale : currentGravity;
     }
 
     // ============================================================
@@ -2229,7 +2325,8 @@ public class CustomPlayerController : MonoBehaviour
         {
             WallContact wall = currentWall;
             EvaluateWallLook(ref wall);
-            wallText = $"{(wall.lookOk ? "OK" : "blocked")}  look angle: {wall.lookAngle:F0} deg";
+            string verdictText = wall.lookOk ? "OK" : (wallJumpAnyDirection ? "jump only (any direction)" : "blocked");
+            wallText = $"{verdictText}  look angle: {wall.lookAngle:F0} deg";
         }
 
         GUI.Label(

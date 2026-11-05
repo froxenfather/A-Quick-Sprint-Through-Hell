@@ -30,7 +30,7 @@ New code defaults only. Check `CustomPlay.unity` for overrides.
 
 All of these must hold, or `wallRunning` is false this tick:
 
-1. **Every wall jump requirement.** Calls `TryGetWallJumpWall`, the same helper `TryWallJump` uses: airborne, wall in range, flat look within `wallJumpLookTolerance` of a direction along the wall.
+1. **Airborne, wall in range, and looking along it.** Calls `TryGetWallContact`, the same helper `TryWallJump` uses, then requires `lookOk` (flat look within `wallJumpLookTolerance` of a direction along the wall). The `wallJumpAnyDirection` checkbox lets a wall *jump* skip the look; a wall run never does.
 2. **Sprint held.**
 3. **Flat speed >= `wallRunMinSpeed`** (minus a 0.05 m/s float tolerance).
 4. **Not moving away from the wall** (`dot(v, wall.normal) <= 0.1`).
@@ -56,7 +56,7 @@ When the grace period runs out, requirement 5 fails, `AirMove` runs with slip gr
 
 - **Multiplier, not m/s^2.** Half of gravity keeps following `gravity` if it is retuned, same pattern as `slideSlopeGravityScale`.
 - **Slip needs no look check.** The spec says any wall touch slips you; only the jump and the run need the look angle.
-- **Shared requirements helper.** A wall run needs exactly what a wall jump needs, so both call `TryGetWallJumpWall` and can't drift apart.
+- **Shared requirements helper.** A wall run needs what a wall jump needs, so both call `TryGetWallContact` (airborne + wall + live look) and can't drift apart. The jump then skips the look check when `wallJumpAnyDirection` is on; the run does not.
 - **Momentum locked, Y paused.** "Wall runs do not hinder forward momentum whatsoever." Skipping `AirMove` also skips its air control, takeoff-speed cap and overspeed bleed. Pausing Y (`y = 0`) covers rising and falling in one line.
 - **Overrides an air slide.** `Move()` checks `wallRunning` first. Slide jump -> wall run -> wall jump is the intended chain (original syllabus Week 10, now consolidated under Week 8 as complete).
 - **Grace is a budget.** It refills on a wall jump or landing, so chaining wall jumps between walls is unlimited but you can't hop on and off one wall for free time.

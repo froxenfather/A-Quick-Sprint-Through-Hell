@@ -517,20 +517,58 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1bf84c65f8cd90418c1ce00c7b5d8ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoomChain
-  roomPrefabs:
-  - {fileID: 6380444923456330828, guid: 80e76add227cfb743b76be2f8653562f, type: 3}
-  - {fileID: 4060359367065607814, guid: 982e01805e00ec64095d9454c8783f0c, type: 3}
-  - {fileID: 6380444923456330828, guid: 84e561ee72fad554fb273a04e1192b5b, type: 3}
-  - {fileID: 6393994183003314920, guid: 5ad8a238f2e511746b7350b9aae1cbf6, type: 3}
-  - {fileID: 487381481014500433, guid: 87708715d58218340b056858758a6b65, type: 3}
-  - {fileID: 8778050843666654460, guid: 522f7757eef51bc42bc651eda4eec13e, type: 3}
-  - {fileID: 6026878337139546205, guid: 8de5148007df6b8459f45c6d96fc3380, type: 3}
-  - {fileID: 5067064258449662214, guid: 4a935d1a15509104085023523baaf937, type: 3}
-  - {fileID: 2353999934351408152, guid: e0b28be0bf04f3b46b550d9d097c6054, type: 3}
-  - {fileID: 1688619471128331407, guid: db61a1389835ea8419aa2672c550a6de, type: 3}
-  - {fileID: 4103393865650268899, guid: d13f7d7c8c573f04e9c0027e993c0398, type: 3}
-  seed: 7
+  forwardRooms:
+  - room: {fileID: 6380444923456330828, guid: 80e76add227cfb743b76be2f8653562f, type: 3}
+    weight: 1
+  - room: {fileID: 4060359367065607814, guid: 982e01805e00ec64095d9454c8783f0c, type: 3}
+    weight: 1
+  - room: {fileID: 6380444923456330828, guid: 84e561ee72fad554fb273a04e1192b5b, type: 3}
+    weight: 1
+  - room: {fileID: 6393994183003314920, guid: 5ad8a238f2e511746b7350b9aae1cbf6, type: 3}
+    weight: 1
+  - room: {fileID: 487381481014500433, guid: 87708715d58218340b056858758a6b65, type: 3}
+    weight: 1
+  - room: {fileID: 8778050843666654460, guid: 522f7757eef51bc42bc651eda4eec13e, type: 3}
+    weight: 1
+  - room: {fileID: 6026878337139546205, guid: 8de5148007df6b8459f45c6d96fc3380, type: 3}
+    weight: 1
+  - room: {fileID: 5067064258449662214, guid: 4a935d1a15509104085023523baaf937, type: 3}
+    weight: 0.8
+  - room: {fileID: 2353999934351408152, guid: e0b28be0bf04f3b46b550d9d097c6054, type: 3}
+    weight: 1
+  - room: {fileID: 1688619471128331407, guid: db61a1389835ea8419aa2672c550a6de, type: 3}
+    weight: 1
+  - room: {fileID: 4103393865650268899, guid: d13f7d7c8c573f04e9c0027e993c0398, type: 3}
+    weight: 1
+  - room: {fileID: 5283417095838355880, guid: af70f78fd81f52746b4ca0b992c54b6e, type: 3}
+    weight: 1
+  - room: {fileID: 3212327402885206415, guid: 0830dad7e09e29f4f9dd74f8f8f5ca8b, type: 3}
+    weight: 0.5
+  - room: {fileID: 7961655269294340874, guid: 210c105a000ec004fa078f6a566cdfb7, type: 3}
+    weight: 1
+  - room: {fileID: 5319169140494915336, guid: c89e42a759d68ad4581d1408406788b0, type: 3}
+    weight: 1
+  - room: {fileID: 1447607183093539569, guid: bd4d3a326bd8a564cbe6f4239cc9c855, type: 3}
+    weight: 1
+  - room: {fileID: 6307566298423624665, guid: 94ce95de4ed98324caa4a2aa45fa9e26, type: 3}
+    weight: 1
+  - room: {fileID: 6119939201644301755, guid: 6d2b38203a901bc49852cfbdffcf3ab7, type: 3}
+    weight: 1
+  turnRooms: []
+  upTransitions: []
+  downTransitions: []
+  upRooms: []
+  upReturns: []
+  downRooms: []
+  downReturns: []
+  sectionRoomsMin: 1
+  sectionRoomsMax: 3
+  seed: 0
   mirrorChance: 0.5
+  exitClearanceSize: {x: 30, y: 30, z: 30}
+  gateTolerance: 5
+  overlapTolerance: 0.25
+  maxBacktracks: 6
   player: {fileID: 450152359}
   roomsAhead: 3
   roomsBehind: 2
@@ -538,6 +576,9 @@ MonoBehaviour:
   sealThickness: 1
   sealRoomsBehind: 1
   sealDistance: 2
+  drawFootprints: 0
+  simulateRooms: 200
+  roomPrefabs: []
 --- !u!4 &386516197
 Transform:
   m_ObjectHideFlags: 0
@@ -715,7 +756,7 @@ Transform:
   m_GameObject: {fileID: 450152358}
   serializedVersion: 2
   m_LocalRotation: {x: -0.0011015572, y: -0.00017306878, z: -0.0014054623, w: 0.9999984}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 20.5, z: 23}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -856,7 +897,7 @@ MonoBehaviour:
   playerMass: 2
   pushStrength: 2
   showDebugHUD: 1
-  drawDebugRays: 1
+  showDebugRays: 0
 --- !u!114 &450152366
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -978,7 +1019,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerBurn
   player: {fileID: 0}
-  burnPerTouch: 0.1
+  burnPerTouch: 1
   sprintSpeedLostPerTouch: 1
   touchCooldown: 0.4
 --- !u!1 &716040413

@@ -34,7 +34,7 @@ States: **Locomotion** (blend tree on `Speed`: Idle 0, Walk 6, Run 14, Run Fast 
 | Lava touch, Electric touch | `PlayerBurn.Burned`, picked by the surface's `HazardType` |
 | Wall run loop | while `IsWallRunning`, faded in and out |
 | Wall slide loop | while `IsWallSliding` (airborne, touching a wall, falling, not wall running) |
-| Slide loop | while `IsSliding` (ground or air slide) and not wall running. A deliberately soft, smooth glide, quieter than the wall sounds |
+| Slide loop | while `IsSliding` and `IsGrounded` (an air slide is silent). A deliberately soft, smooth glide, quieter than the wall sounds |
 
 - All sources are 2D and live on child objects of the Player. Each one-shot gets a small random pitch change.
 - The clips are **generated placeholders** (noise and sine building blocks). Drag better clips into the slots on `PlayerAudio` any time; an empty slot is silent.

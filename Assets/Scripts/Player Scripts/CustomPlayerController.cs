@@ -219,7 +219,7 @@ public class CustomPlayerController : MonoBehaviour
 
     [Header("Debug")]
     [SerializeField] private bool showDebugHUD = true;
-    [SerializeField] private bool drawDebugRays = true;
+    [SerializeField] private bool showDebugRays = false;
 
     // value for lastGroundedTime meaning "no coyote jump available". far enough in the past to never match
     private const float NeverGrounded = -999f;
@@ -2310,7 +2310,7 @@ public class CustomPlayerController : MonoBehaviour
 
     private void DrawDebugRays()
     {
-        if (!drawDebugRays)
+        if (!showDebugRays)
             return;
 
         // green = ground normal

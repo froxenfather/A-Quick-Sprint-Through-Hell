@@ -34,6 +34,9 @@ public class WallWithOpening : MonoBehaviour
 
     [SerializeField] private Material material;
 
+    // draws the slab's size as a cyan box in the Scene view while it is selected. off unless you want it
+    [SerializeField] private bool drawOutline = false;
+
     // everything the pieces depend on, so we can tell when they are out of date
     private struct BuildState
     {
@@ -253,6 +256,9 @@ public class WallWithOpening : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
+        if (!drawOutline)
+            return;
+
         Matrix4x4 previousMatrix = Gizmos.matrix;
         Color previousColor = Gizmos.color;
 

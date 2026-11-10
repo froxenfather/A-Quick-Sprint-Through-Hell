@@ -114,8 +114,8 @@ public class PlayerAudio : MonoBehaviour
         FadeLoop(wallRunSource, player.IsWallRunning);
         FadeLoop(wallSlideSource, player.IsWallSliding);
 
-        // wall run overrides an air slide (it has its own sound), so the slide loop stays quiet during one
-        FadeLoop(slideSource, player.IsSliding && !player.IsWallRunning);
+        // the slide sound only plays on the ground, an air slide is silent
+        FadeLoop(slideSource, player.IsSliding && player.IsGrounded);
     }
 
     // ============================================================

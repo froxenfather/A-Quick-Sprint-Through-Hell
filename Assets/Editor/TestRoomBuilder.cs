@@ -131,11 +131,15 @@ public static class TestRoomBuilder
         }
 
         SerializedObject serialized = new SerializedObject(chain);
-        SerializedProperty list = serialized.FindProperty("roomPrefabs");
+        SerializedProperty list = serialized.FindProperty("forwardRooms");
         list.arraySize = rooms.Length;
 
         for (int i = 0; i < rooms.Length; i++)
-            list.GetArrayElementAtIndex(i).objectReferenceValue = rooms[i];
+        {
+            SerializedProperty entry = list.GetArrayElementAtIndex(i);
+            entry.FindPropertyRelative("room").objectReferenceValue = rooms[i];
+            entry.FindPropertyRelative("weight").floatValue = 1f;
+        }
 
         serialized.ApplyModifiedProperties();
         Selection.activeObject = chain.gameObject;

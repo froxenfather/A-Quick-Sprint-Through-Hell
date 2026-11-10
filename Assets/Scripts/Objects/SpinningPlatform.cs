@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// Test platform for rotation carry. Needs a kinematic Rigidbody (turn on Interpolate for smooth riding).
+// test platform for rotation carry. needs a kinematic Rigidbody (turn on Interpolate for smooth riding)
 [RequireComponent(typeof(Rigidbody))]
 public class SpinningPlatform : MonoBehaviour
 {

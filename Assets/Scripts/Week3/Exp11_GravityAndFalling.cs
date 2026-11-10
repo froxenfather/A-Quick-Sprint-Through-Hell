@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// Learning Objective: gravity is acceleration — velocity changes continuously over time, it isn't an instantly-applied speed.
+// learning Objective: gravity is acceleration — velocity changes continuously over time, it isn't an instantly-applied speed
 public class Exp11_GravityAndFalling : MonoBehaviour
 {
     [SerializeField] float fallingLeeway;

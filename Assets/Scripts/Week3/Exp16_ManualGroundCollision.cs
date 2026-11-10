@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// Learning Objective: without a Rigidbody, nothing stops the object from falling through the floor - moving a Transform never triggers physics collision resolution. YOU have to detect the ground and cancel velocity.
-// Requires: a Collider on the ground below (no Rigidbody on this object).
+// learning Objective: without a Rigidbody, nothing stops the object from falling through the floor - moving a Transform never triggers physics collision resolution. YOU have to detect the ground and cancel velocity
+// requires: a Collider on the ground below (no Rigidbody on this object)
 public class Exp16_ManualGroundCollision : MonoBehaviour
 {
     [SerializeField] private float gravity = 9.81f;
@@ -18,7 +18,7 @@ public class Exp16_ManualGroundCollision : MonoBehaviour
     {
         startPosition = transform.position;
 
-        // im a fucking GOD bro this makes the raycast start at thge actual bottom, not its pivot - works for any object size, nmanual "height" number to keep in sync.
+        // im a fucking GOD bro this makes the raycast start at thge actual bottom, not its pivot - works for any object size, nmanual "height" number to keep in sync
         Renderer rend = GetComponentInChildren<Renderer>();
         halfHeight = rend != null ? rend.bounds.extents.y : 0f;
     }

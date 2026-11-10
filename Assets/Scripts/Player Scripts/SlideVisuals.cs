@@ -1,7 +1,7 @@
 using UnityEngine;
 
-// Lowers the camera and tilts the body model while sliding. Rough/placeholder - doesn't need to look good, just needs to read as "the character is sliding" from third person.
-// Put this on the Player object, next to CustomPlayerController.
+// lowers the camera and tilts the body model while sliding. rough/placeholder - doesn't need to look good, just needs to read as "the character is sliding" from third person
+// put this on the Player object, next to CustomPlayerController
 public class SlideVisuals : MonoBehaviour
 {
     [SerializeField] private CustomPlayerController player;
@@ -18,7 +18,7 @@ public class SlideVisuals : MonoBehaviour
     [SerializeField] private float slideModelPivotHeight = 1.1f;
     [SerializeField] private float tiltSpeed = 540f; // degrees per second
 
-    // CameraPivot's normal height, read once so we know what to ease back to.
+    // CameraPivot's normal height, read once so we know what to ease back to
     private float standCameraHeight;
 
     private void Start()
@@ -26,7 +26,7 @@ public class SlideVisuals : MonoBehaviour
         standCameraHeight = cameraPivot.localPosition.y;
     }
 
-    // Camera/model work runs per frame, not in FixedUpdate.
+    // camera/model work runs per frame, not in FixedUpdate
     private void Update()
     {
         UpdateCameraHeight();
@@ -51,15 +51,15 @@ public class SlideVisuals : MonoBehaviour
     {
         float targetAngle = player.IsSliding ? slideTiltAngle : 0f;
 
-        // localEulerAngles wraps to 0-360, so convert to a -180..180 range before easing toward a target that might be "behind" 0 (otherwise MoveTowardsAngle can spin the long way around).
+        // localEulerAngles wraps to 0-360, so convert to a -180..180 range before easing toward a target that might be "behind" 0 (otherwise MoveTowardsAngle can spin the long way around)
         float currentAngle = model.localEulerAngles.x;
         if (currentAngle > 180f)
             currentAngle -= 360f;
 
         float newAngle = Mathf.MoveTowardsAngle(currentAngle, targetAngle, tiltSpeed * Time.deltaTime);
 
-        // Lean back around the HIPS, not the feet - that's why we don't just rotate the model in place.
-        // Flip the sign on newAngle below if this leans the wrong way for your model's forward axis.
+        // lean back around the HIPS, not the feet - that's why we don't just rotate the model in place
+        // flip the sign on newAngle below if this leans the wrong way for your model's forward axis
         Vector3 pivot = new Vector3(0f, slideModelPivotHeight, 0f);
         Quaternion tilt = Quaternion.Euler(-newAngle, 0f, 0f);
 

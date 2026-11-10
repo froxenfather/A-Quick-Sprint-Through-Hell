@@ -1,7 +1,7 @@
 using UnityEngine;
 
-// Learning Objective: the dot product of two normalized vectors measures alignment.
-// 1 = same direction, 0 = perpendicular, -1 = opposite direction.
+// learning Objective: the dot product of two normalized vectors measures alignment
+// 1 = same direction, 0 = perpendicular, -1 = opposite direction
 public class Exp04_DotProduct : MonoBehaviour
 {
     [SerializeField] private Transform target;
@@ -12,8 +12,8 @@ public class Exp04_DotProduct : MonoBehaviour
     {
         if (target == null) return;
 
-        // TODO: compute the dot product between this object's forward and the normalized direction to the target.
-        // Pseudocode:
+        // TODO: compute the dot product between this object's forward and the normalized direction to the target
+        // pseudocode:
         //   - get the normalized direction from this object to the target
         //   - take the dot product of this object's forward vector and that
         //     normalized direction - result is a single float between -1 and 1
@@ -25,7 +25,7 @@ public class Exp04_DotProduct : MonoBehaviour
         float dot = Vector3.Dot(transform.forward, direction);
         Debug.Log("DotProduct: " + dot);
 
-        // TODO (Homework Task): classify the target using dot thresholds you choose.
+        // TODO (Homework Task): classify the target using dot thresholds you choose
         float inFrontThreshold = 0.5f;
         float behindThreshold = -0.5f;
 

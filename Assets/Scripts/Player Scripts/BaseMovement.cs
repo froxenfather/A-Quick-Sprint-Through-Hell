@@ -82,7 +82,7 @@ public class PlayerMovement : MonoBehaviour
 
             bool inLandingGrace = Time.time - landTime < landingGrace;
 
-            // Work in support-relative space so moving platforms still carry us.
+            // work in support-relative space so moving platforms still carry us
             Vector3 relVel = rb.linearVelocity - supportVelocity;
             Vector3 horiz = new Vector3(relVel.x, 0f, relVel.z);
 
@@ -93,7 +93,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 Vector3 targetVel = moveDirection * targetSpeed;
 
-                // Gentler rate when we're already over target (came in hot from a boost / air landing) than when accelerating up to it.
+                // gentler rate when we're already over target (came in hot from a boost / air landing) than when accelerating up to it
                 float rate = horiz.magnitude > targetSpeed
                     ? groundOverspeedDecel
                     : groundAccel;
@@ -106,8 +106,8 @@ public class PlayerMovement : MonoBehaviour
             }
             else if (!inLandingGrace)
             {
-                // High groundFriction -> decelerates very quickly to a stop
-                // (near-instant, but still frame-rate independent). Suppressed during the landing grace window so jump momentum carries.
+                // high groundFriction -> decelerates very quickly to a stop
+                // (near-instant, but still frame-rate independent). suppressed during the landing grace window so jump momentum carries
                 horiz = Vector3.MoveTowards(
                     horiz,
                     Vector3.zero,

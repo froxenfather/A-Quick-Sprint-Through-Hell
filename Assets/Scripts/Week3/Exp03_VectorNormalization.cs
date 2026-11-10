@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// Learning Objective: understand what normalizing a vector does — direction keeps distance baked in, normalizedDirection has magnitude 1.
+// learning Objective: understand what normalizing a vector does — direction keeps distance baked in, normalizedDirection has magnitude 1
 public class Exp03_VectorNormalization : MonoBehaviour
 {
     [SerializeField] private Transform target;
@@ -9,8 +9,8 @@ public class Exp03_VectorNormalization : MonoBehaviour
     {
         if (target == null) return;
 
-        // TODO: compute the direction to target, and its normalized form.
-        // Pseudocode:
+        // TODO: compute the direction to target, and its normalized form
+        // pseudocode:
         //   - subtract this object's position from the target's position to get
         //     a vector pointing from here to the target (its length IS the distance)
         //   - get the normalized version of that vector (same direction, length 1)
@@ -25,8 +25,8 @@ public class Exp03_VectorNormalization : MonoBehaviour
         Debug.Log("The Tower is " + distance + " far away");
         Debug.Log("The Tower is facing" + direction);
 
-        // TODO: draw both vectors with different colors so the length difference is visible.
-        // Pseudocode:
+        // TODO: draw both vectors with different colors so the length difference is visible
+        // pseudocode:
         //   - draw a ray for the raw direction vector in one color
         //   - draw a ray for the normalized direction (scaled up a bit so it's
         //     visible, e.g. x3) in a different color

@@ -1,18 +1,18 @@
 using UnityEditor;
 using UnityEngine;
 
-// Builds two simple placeholder rooms out of plain cubes, so you can try the room stitching before you have
-// real rooms. Delete this file and Assets/Prefabs/Rooms once you do.
-//
-//   TestRoom_A: a straight platform, the Exit is straight ahead.
-//   TestRoom_B: a square platform, the Exit is on the right side, so the path turns 90 degrees.
+// builds two simple placeholder rooms out of plain cubes, so you can try the room stitching before you have
+// real rooms. delete this file and Assets/Prefabs/Rooms once you do
+
+//   TestRoom_A: a straight platform, the Exit is straight ahead
+//   TestRoom_B: a square platform, the Exit is on the right side, so the path turns 90 degrees
 public static class TestRoomBuilder
 {
     private const string Folder = "Assets/Prefabs/Rooms";
     private const string GreyMaterialPath = "Assets/Materials/prototype_grid_grey.mat";
     private const string OrangeMaterialPath = "Assets/Materials/prototype_grid_orange.mat";
 
-    // The gate opening. These match the gizmo defaults in RoomGate.
+    // the gate opening. these match the gizmo defaults in RoomGate
     private const float OpeningWidth = 8f;
     private const float OpeningHeight = 18f;
     private const float FrameThickness = 1f;
@@ -28,8 +28,8 @@ public static class TestRoomBuilder
 
         float gateY = OpeningHeight * 0.5f;
 
-        // Floor top is at y = 0, so a gate centered at y = 9 has the bottom of its opening level with the floor.
-        // That is just what these test rooms do, a gate can be placed at any height.
+        // floor top is at y = 0, so a gate centered at y = 9 has the bottom of its opening level with the floor
+        // that is just what these test rooms do, a gate can be placed at any height
         Room roomA = BuildRoom(
             "TestRoom_A", grey,
             floorSize: new Vector2(20f, 60f),
@@ -55,7 +55,7 @@ public static class TestRoomBuilder
         GameObject root = new GameObject(roomName);
         root.AddComponent<Room>();
 
-        // The floor starts at the Entry gate (z = 0) and runs forward.
+        // the floor starts at the Entry gate (z = 0) and runs forward
         GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
         floor.name = "Floor";
         floor.transform.SetParent(root.transform, false);
@@ -84,7 +84,7 @@ public static class TestRoomBuilder
         roomGate.Type = type;
         roomGate.OpeningSize = new Vector2(OpeningWidth, OpeningHeight);
 
-        // A frame made of two posts and a top beam. There is no bottom bar, the opening goes all the way down.
+        // a frame made of two posts and a top beam. there is no bottom bar, the opening goes all the way down
         float halfWidth = OpeningWidth * 0.5f;
         float halfHeight = OpeningHeight * 0.5f;
         float postHeight = OpeningHeight + FrameThickness;
@@ -118,7 +118,7 @@ public static class TestRoomBuilder
             target.GetComponent<MeshRenderer>().sharedMaterial = material;
     }
 
-    // Finds (or makes) a RoomChain in the open scene and gives it the test rooms.
+    // finds (or makes) a RoomChain in the open scene and gives it the test rooms
     private static void SetUpChainInScene(Room[] rooms)
     {
         RoomChain chain = Object.FindFirstObjectByType<RoomChain>();

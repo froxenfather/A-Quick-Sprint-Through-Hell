@@ -30,7 +30,7 @@ public static class GrayboxBuilder
         var renderer = floor.GetComponent<MeshRenderer>();
         renderer.sharedMaterial = GetOrCreateGridMaterial();
 
-        // Cube primitives already get a BoxCollider, which is what you want to walk/roll on.
+        // cube primitives already get a BoxCollider, which is what you want to walk/roll on
         floor.isStatic = true; // treat as non-moving level geometry (batching, baked lighting, navmesh)
 
         Selection.activeGameObject = floor;

@@ -28,9 +28,11 @@ public class LaunchBehavior : MonoBehaviour, IPlayerContact
         rb.linearVelocity = launchDirection;
     }
 
-    // The custom controller has no dynamic Rigidbody, so it reports contact itself instead of OnCollisionEnter.
+    // the custom controller has no dynamic Rigidbody, so it reports contact itself instead of OnCollisionEnter
     public void OnPlayerContact(CustomPlayerController player)
     {
-        player.SetVelocity(transform.up * launchUp + transform.forward * launchForward);
+        // launch straight up, keeping the player's horizontal momentum
+        Vector3 v = player.Velocity;
+        player.SetVelocity(new Vector3(v.x, launchUp, v.z));
     }
 }

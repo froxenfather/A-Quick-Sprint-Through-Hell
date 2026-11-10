@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// Learning Objective: understand how a raycast detects geometry (origin, direction, max distance, layer mask, RaycastHit).
+// learning Objective: understand how a raycast detects geometry (origin, direction, max distance, layer mask, RaycastHit)
 public class Exp06_RaycastBasics : MonoBehaviour
 {
     [SerializeField] private float maxDistance = 5f;
@@ -8,8 +8,8 @@ public class Exp06_RaycastBasics : MonoBehaviour
 
     private void Update()
     {
-        // TODO: cast a ray downward from this object and report what it hits.
-        // Pseudocode:
+        // TODO: cast a ray downward from this object and report what it hits
+        // pseudocode:
         //   - fire a raycast from this object's position, straight down, out to maxDistance,
         //     restricted to hitMask, and capture the hit info
         //   - if it hit something: log the hit collider's name, hit point, distance, and
@@ -20,42 +20,42 @@ public class Exp06_RaycastBasics : MonoBehaviour
         Vector3 direction = Vector3.down;
         Vector3 forward = transform.forward;
 
-        // 2. Fire the raycast and capture hit info
+        // 2. fire the raycast and capture hit info
         if (Physics.Raycast(origin, direction, out RaycastHit downHit, maxDistance, hitMask))
         {
             // IF IT HIT SOMETHING:
-            // Log the hit details
+            // log the hit details
             Debug.Log($"Hit Below: {downHit.collider.name} | Point: {downHit.point} | Distance: {downHit.distance} | Normal: {downHit.normal}");
 
-            // Draw a green ray from origin to the exact hit point
+            // draw a green ray from origin to the exact hit point
             Debug.DrawLine(origin, downHit.point, Color.green);
         }
         else
         {
             // IF IT DID NOT HIT ANYTHING:
-            // Calculate the full-length endpoint for the missed ray
+            // calculate the full-length endpoint for the missed ray
             Vector3 endPoint = origin + (direction * maxDistance);
 
-            // Draw a red ray showing the full length of the miss
+            // draw a red ray showing the full length of the miss
             Debug.DrawLine(origin, endPoint, Color.red);
         }
         
         if (Physics.Raycast(origin, forward, out RaycastHit forwardHit, maxDistance, hitMask))
         {
             // IF IT HIT SOMETHING:
-            // Log the hit details
+            // log the hit details
             Debug.Log($"Hit Front: {forwardHit.collider.name} | Point: {forwardHit.point} | Distance: {forwardHit.distance} | Normal: {forwardHit.normal}");
 
-            // Draw a green ray from origin to the exact hit point
+            // draw a green ray from origin to the exact hit point
             Debug.DrawLine(origin, forwardHit.point, Color.green);
         }
         else
         {
             // IF IT DID NOT HIT ANYTHING:
-            // Calculate the full-length endpoint for the missed ray
+            // calculate the full-length endpoint for the missed ray
             Vector3 endPoint = origin + (forward * maxDistance);
 
-            // Draw a red ray showing the full length of the miss
+            // draw a red ray showing the full length of the miss
             Debug.DrawLine(origin, endPoint, Color.red);
         }
     }

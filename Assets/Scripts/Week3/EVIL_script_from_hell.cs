@@ -1,13 +1,13 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// STRETCH EXPERIMENT (do only after the core experiments are done).
-// Learning Objective: on a ramp, gravity's pull ALONG the surface is g * sin(slope).
-// Steeper ramp -> faster acceleration down; sliding up a ramp slows you down.
-// Requires: a ramp Collider below (no Rigidbody on this object). Place it on Ramp_15 / Ramp_30 / Ramp_45 and compare. This is NOT the final slide system.
-//
-// this fucker took me an entire night. ramps werent even equal length.
-// gravity got added twice. seam ate velocity.y on steep ramps. and i was measuring distance from the wrong point the whole time. pool balls fixed me.
+// STRETCH EXPERIMENT (do only after the core experiments are done)
+// learning Objective: on a ramp, gravity's pull ALONG the surface is g * sin(slope)
+// steeper ramp -> faster acceleration down; sliding up a ramp slows you down
+// requires: a ramp Collider below (no Rigidbody on this object). place it on Ramp_15 / Ramp_30 / Ramp_45 and compare. this is NOT the final slide system
+
+// this fucker took me an entire night. ramps werent even equal length
+// gravity got added twice. seam ate velocity.y on steep ramps. and i was measuring distance from the wrong point the whole time. pool balls fixed me
 // those who know
 public class EVIL_script_from_hell : MonoBehaviour
 {
@@ -35,7 +35,7 @@ public class EVIL_script_from_hell : MonoBehaviour
 
     private void Update()
     {
-        if (Keyboard.current.rKey.wasPressedThisFrame) // R = start over
+        if (Keyboard.current.rKey.wasPressedThisFrame) // r = start over
         {
             transform.position = startPosition;
             velocity = Vector3.zero; // kill all momentum
@@ -135,4 +135,4 @@ public class EVIL_script_from_hell : MonoBehaviour
 //    30 deg -> d = 0.500L
 //    45 deg -> d = 0.707L
 //    60 deg -> d = 0.866L
-// 9. so: 60 > 45 > 30. checks out.
+// 9. so: 60 > 45 > 30. checks out

@@ -144,7 +144,7 @@ Transform:
   m_GameObject: {fileID: 62238682}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.6, z: 0}
+  m_LocalPosition: {x: 0, y: 1.3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -325,6 +325,7 @@ GameObject:
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
   - component: {fileID: 330585548}
+  - component: {fileID: 330585549}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -400,7 +401,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.00000019226091, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -470,6 +471,23 @@ MonoBehaviour:
   dashFovBoost: 15
   dashFovRiseSpeed: 400
   dashFovFadeSpeed: 60
+--- !u!114 &330585549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e76bbe4d02ccc94b8745fe04fe3c917, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraBob
+  player: {fileID: 0}
+  amount: 0.04
+  strideLength: 3.5
+  fullBobSpeed: 20
+  blendSpeed: 8
 --- !u!1 &386516195
 GameObject:
   m_ObjectHideFlags: 0
@@ -515,7 +533,7 @@ MonoBehaviour:
   mirrorChance: 0.5
   player: {fileID: 450152359}
   roomsAhead: 3
-  roomsBehind: 1
+  roomsBehind: 2
   sealMaterial: {fileID: 2100000, guid: 5c96a7bb111eb4e4688d32332ee33c79, type: 2}
   sealThickness: 1
   sealRoomsBehind: 1
@@ -676,6 +694,11 @@ GameObject:
   - component: {fileID: 450152364}
   - component: {fileID: 450152365}
   - component: {fileID: 450152366}
+  - component: {fileID: 450152371}
+  - component: {fileID: 450152370}
+  - component: {fileID: 450152369}
+  - component: {fileID: 450152368}
+  - component: {fileID: 450152367}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -713,7 +736,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   cameraPivot: {fileID: 62238683}
-  mouseSensitivity: 0.3
+  mouseSensitivity: 0.1
 --- !u!54 &450152361
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -797,7 +820,7 @@ MonoBehaviour:
   slideSlopeGravityScale: 1
   slideUphillGravityScale: 0.8
   slideGrace: 0.5
-  slideJumpBoost: 5
+  slideJumpBoost: 8
   slideLandingBoostScale: 0.3
   slideLandingBoostMax: 100
   slideAirGravityMultiplier: 2
@@ -855,6 +878,109 @@ MonoBehaviour:
   slideTiltAngle: 75
   slideModelPivotHeight: 1.1
   tiltSpeed: 540
+--- !u!114 &450152367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450152358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7429069358e9e3c4391d1819fb124a1c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAudio
+  player: {fileID: 0}
+  burn: {fileID: 0}
+  footsteps:
+  - {fileID: 8300000, guid: 12b1055d48f0ff14abf24c52a68d9bb8, type: 3}
+  - {fileID: 8300000, guid: 4aaac740d2519e845a026f331da834fa, type: 3}
+  - {fileID: 8300000, guid: 0d17adc361482fe4a9eca773fe4082c9, type: 3}
+  strideLength: 3.5
+  minStepSpeed: 1.5
+  footstepVolume: 0.358
+  footstepPitch: 0.585
+  jump: {fileID: 8300000, guid: c0acc90c26afe3d4a968cc911bec71b9, type: 3}
+  dash: {fileID: 8300000, guid: 7f942293c791c584581a389a1351fe9d, type: 3}
+  wallJump: {fileID: 8300000, guid: c0acc90c26afe3d4a968cc911bec71b9, type: 3}
+  lavaTouch: {fileID: 8300000, guid: c3c6fa9e51bf20e45815808bf915407e, type: 3}
+  electricTouch: {fileID: 8300000, guid: fae1f7b26ad0ef14d8db00e72b3951ef, type: 3}
+  effectsVolume: 0.7
+  pitchVariation: 0.04
+  wallRunLoop: {fileID: 8300000, guid: dc0ea3b32216ed64eae1734c32f5c8b1, type: 3}
+  wallSlideLoop: {fileID: 8300000, guid: c4944bbaf75411c40a3196a8b6ddcbb7, type: 3}
+  slideLoop: {fileID: 8300000, guid: dc0ea3b32216ed64eae1734c32f5c8b1, type: 3}
+  loopVolume: 0.5
+  loopFadeSpeed: 6
+--- !u!114 &450152368
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450152358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6dd5b81846f210344b002d4bc6f251cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimation
+  player: {fileID: 0}
+  animator: {fileID: 0}
+  controller: {fileID: 9100000, guid: d3596d17b22dfc541b805346775c2012, type: 2}
+  topSpeed: 30
+  slowestPlayback: 0.9
+  fastestPlayback: 1.4
+  speedSmoothing: 0.08
+--- !u!114 &450152369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450152358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f9e40994af9bb24ea26df68c5fdc618, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FirstPersonBody
+  headBone: {fileID: 0}
+  headBoneName: Neck
+  hideHead: 1
+--- !u!114 &450152370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450152358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c0e46985f376a243b8d74238d6b4ef2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BurnOverlay
+  burn: {fileID: 0}
+  maxMarks: 40
+  smallestMarkSize: 0.18
+  largestMarkSize: 0.7
+  growSpeed: 3
+  edgeDarkness: 0.85
+  healFadeTime: 0.6
+--- !u!114 &450152371
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450152358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffc1777ed1d6d7547a91f8401dc78139, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBurn
+  player: {fileID: 0}
+  burnPerTouch: 0.1
+  sprintSpeedLostPerTouch: 1
+  touchCooldown: 0.4
 --- !u!1 &716040413
 GameObject:
   m_ObjectHideFlags: 0

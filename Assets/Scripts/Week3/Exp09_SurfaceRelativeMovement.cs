@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// Learning Objective: combine input + surface normal to move along angled geometry (flat ground, 15/30/45 degree ramps) without the projected vector losing speed.
+// learning Objective: combine input + surface normal to move along angled geometry (flat ground, 15/30/45 degree ramps) without the projected vector losing speed
 public class Exp09_SurfaceRelativeMovement : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 4f;
@@ -39,8 +39,8 @@ public class Exp09_SurfaceRelativeMovement : MonoBehaviour
 
         Debug.DrawRay(hit.point, hit.normal * 2f, Color.green);
 
-        // TODO: project rawDirection onto the surface, normalize it, then set velocity.
-        // Pseudocode:
+        // TODO: project rawDirection onto the surface, normalize it, then set velocity
+        // pseudocode:
         //   - project rawDirection onto the plane defined by hit.normal (same idea as Exp08)
         //   - normalize the result - without this, speed would change with slope angle,
         //     which isn't what we want

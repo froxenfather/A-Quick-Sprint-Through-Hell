@@ -37,47 +37,47 @@ public class MovingPlatform : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // Increase the timer using Unity's physics timestep
+        // increase the timer using Unity's physics timestep
         timer += Time.fixedDeltaTime;
 
-        // Only move during movement phases
+        // only move during movement phases
         if (IsMovingPhase())
             MovePlatform();
 
-        // When the phase time ends, move to the next phase
+        // when the phase time ends, move to the next phase
         if (timer >= phaseTime)
             NextPhase();
     }
 
     private bool IsMovingPhase()
     {
-        // Even-numbered phases move
-        // Odd-numbered phases pause
+        // even-numbered phases move
+        // odd-numbered phases pause
         return phase % 2 == 0;
     }
 
     private void NextPhase()
     {
-        // Move to the next phase and loop back to 0 after phase 7
+        // move to the next phase and loop back to 0 after phase 7
         phase = (phase + 1) % 8;
 
-        // Reset the phase timer
+        // reset the phase timer
         timer = 0f;
 
-        // Set a new destination if the next phase involves movement
+        // set a new destination if the next phase involves movement
         SetTarget();
     }
 
     private void SetTarget()
     {
-        // Pause phases do not need a new target
+        // pause phases do not need a new target
         if (!IsMovingPhase())
             return;
 
-        // Save where this movement phase begins
+        // save where this movement phase begins
         startPosition = rb.position;
 
-        // Choose the new target based on the current phase
+        // choose the new target based on the current phase
         targetPosition = phase switch
         {
             0 => startPosition + Vector3.left * leftDistance,
@@ -90,23 +90,23 @@ public class MovingPlatform : MonoBehaviour
 
     private void MovePlatform()
     {
-        // Calculate how far this phase needs to travel
+        // calculate how far this phase needs to travel
         float distance = Vector3.Distance(
             startPosition,
             targetPosition
         );
 
-        // Calculate the speed needed to finish exactly within phaseTime
+        // calculate the speed needed to finish exactly within phaseTime
         float speed = distance / phaseTime;
 
-        // Calculate the next position for this physics frame
+        // calculate the next position for this physics frame
         Vector3 nextPosition = Vector3.MoveTowards(
             rb.position,
             targetPosition,
             speed * Time.fixedDeltaTime
         );
 
-        // Move the kinematic Rigidbody through Unity's physics system
+        // move the kinematic Rigidbody through Unity's physics system
         rb.MovePosition(nextPosition);
     }
 }

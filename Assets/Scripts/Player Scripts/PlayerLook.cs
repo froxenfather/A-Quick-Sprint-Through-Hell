@@ -8,12 +8,12 @@ public class PlayerLook : MonoBehaviour
 
     private float verticalRotation = 0f;
 
-    // The player's Rigidbody uses interpolation, which rewrites the transform's rotation every frame
-    // from the physics copy. Rotating only the transform gets snapped back (rubberbanding),
-    // so yaw is applied to the Rigidbody too, keeping both copies in agreement.
+    // the player's Rigidbody uses interpolation, which rewrites the transform's rotation every frame
+    // from the physics copy. rotating only the transform gets snapped back (rubberbanding),
+    // so yaw is applied to the Rigidbody too, keeping both copies in agreement
     private Rigidbody rb;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    // start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         Debug.Log("PlayerLook running");
@@ -23,7 +23,7 @@ public class PlayerLook : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-    // Update is called once per frame
+    // update is called once per frame
     void Update()
     {
         Vector2 mouseDelta = Mouse.current.delta.ReadValue();
@@ -34,7 +34,7 @@ public class PlayerLook : MonoBehaviour
         if (rb != null)
         {
             // rb.rotation is the physics truth (already includes any platform spin), so turn from there
-            // and write the result to both the Rigidbody and the transform.
+            // and write the result to both the Rigidbody and the transform
             Quaternion newRotation = rb.rotation * Quaternion.Euler(0f, mouseX, 0f);
             rb.rotation = newRotation;
             transform.rotation = newRotation;

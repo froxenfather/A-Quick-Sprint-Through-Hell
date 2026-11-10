@@ -1,59 +1,59 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Main Driving Engine for the game!
-// Spawns rooms one after another. Each new room is moved and rotated so its Entry gate lands exactly on the previous room's Exit gate, so the rooms connect no matter how they are shaped or how high their gates are.
-// The first room's Entry goes at this object's position and rotation. Keep this object's scale at (1, 1, 1).
+// main Driving Engine for the game!
+// spawns rooms one after another. each new room is moved and rotated so its Entry gate lands exactly on the previous room's Exit gate, so the rooms connect no matter how they are shaped or how high their gates are
+// the first room's Entry goes at this object's position and rotation. keep this object's scale at (1, 1, 1)
 public class RoomChain : MonoBehaviour
 {
     [Header("Rooms")]
     [SerializeField] private Room[] roomPrefabs;
 
-    // 0 means pick a new random seed every run (it is printed to the Console, so you can reuse it to repeat a run).
+    // 0 means pick a new random seed every run (it is printed to the Console, so you can reuse it to repeat a run)
     [SerializeField] private int seed = 0;
 
-    // Chance that a room is flipped left-to-right (across its Entry gate's forward direction) when it is spawned.
-    // Only rooms with Can Mirror turned on are ever flipped.
+    // chance that a room is flipped left-to-right (across its Entry gate's forward direction) when it is spawned
+    // only rooms with Can Mirror turned on are ever flipped
     [Range(0f, 1f)]
     [SerializeField] private float mirrorChance = 0.5f;
 
     [Header("Streaming")]
-    // Found automatically if left empty.
+    // found automatically if left empty
     [SerializeField] private Transform player;
 
-    // Rooms kept built in front of the room the player is in.
+    // rooms kept built in front of the room the player is in
     [Min(1)]
     [SerializeField] private int roomsAhead = 3;
 
-    // Rooms kept behind it before they get deleted.
+    // rooms kept behind it before they get deleted
     [Min(0)]
     [SerializeField] private int roomsBehind = 1;
 
     [Header("Entry seal")]
-    // The wall that fills a room's Entry once the player is through it. Uses ProBuilder's default if empty.
+    // the wall that fills a room's Entry once the player is through it. uses ProBuilder's default if empty
     [SerializeField] private Material sealMaterial;
 
     [Min(0.01f)]
     [SerializeField] private float sealThickness = 1f;
 
-    // How many rooms behind the player an Entry has to be before it seals.
-    // 0 seals a room's Entry as soon as the player is through it. 1 seals it once the player is through the room's Exit as well.
+    // how many rooms behind the player an Entry has to be before it seals
+    // 0 seals a room's Entry as soon as the player is through it. 1 seals it once the player is through the room's Exit as well
     [Min(0)]
     [SerializeField] private int sealRoomsBehind = 1;
 
-    // Only used when Seal Rooms Behind is 0. How far past the Entry gate the player has to be before it seals,
-    // so the wall never appears inside them.
+    // only used when Seal Rooms Behind is 0. how far past the Entry gate the player has to be before it seals,
+    // so the wall never appears inside them
     [Min(0f)]
     [SerializeField] private float sealDistance = 2f;
 
     private readonly List<Room> rooms = new List<Room>();
     private System.Random random;
 
-    // How many rooms the player has gone all the way through (crossed the Exit gate of).
-    // The room the player is in right now is rooms[passedCount].
+    // how many rooms the player has gone all the way through (crossed the Exit gate of)
+    // the room the player is in right now is rooms[passedCount]
     private int passedCount;
 
-    // How many rooms have had their Entry sealed. Rooms are sealed in order, oldest first.
+    // how many rooms have had their Entry sealed. rooms are sealed in order, oldest first
     private int sealedCount;
 
     private void Start()
@@ -85,11 +85,11 @@ public class RoomChain : MonoBehaviour
         if (player == null || rooms.Count == 0)
             return;
 
-        // A room counts as passed once the player is in front of its Exit gate.
+        // a room counts as passed once the player is in front of its Exit gate
         while (passedCount < rooms.Count && HasPassed(rooms[passedCount].Exit))
             passedCount++;
 
-        // Close the way back behind the player.
+        // close the way back behind the player
         while (sealedCount < rooms.Count && ShouldSeal(sealedCount))
         {
             rooms[sealedCount].SealEntry(sealMaterial, sealThickness);
@@ -105,11 +105,11 @@ public class RoomChain : MonoBehaviour
         if (sealRoomsBehind == 0)
             return IsPastBy(rooms[roomIndex].Entry, sealDistance);
 
-        // passedCount is the room the player is in, so this is how many rooms behind the player this one is.
+        // passedCount is the room the player is in, so this is how many rooms behind the player this one is
         return passedCount - roomIndex >= sealRoomsBehind;
     }
 
-    // True when the player is at least this far in front of the gate (on the side its arrow points to).
+    // true when the player is at least this far in front of the gate (on the side its arrow points to)
     private bool IsPastBy(RoomGate gate, float distance)
     {
         Vector3 toPlayer = player.position - gate.transform.position;
@@ -117,7 +117,7 @@ public class RoomChain : MonoBehaviour
         return Vector3.Dot(toPlayer, gate.WorldForward) > distance;
     }
 
-    // In front of the gate means on the side its arrow points to.
+    // in front of the gate means on the side its arrow points to
     private bool HasPassed(RoomGate gate)
     {
         Vector3 toPlayer = player.position - gate.transform.position;
@@ -129,7 +129,7 @@ public class RoomChain : MonoBehaviour
     {
         while (rooms.Count < passedCount + 1 + roomsAhead)
         {
-            // Stop instead of looping forever if a room could not be spawned.
+            // stop instead of looping forever if a room could not be spawned
             if (!SpawnNext())
             {
                 enabled = false;
@@ -140,7 +140,7 @@ public class RoomChain : MonoBehaviour
 
     private bool SpawnNext()
     {
-        // Where the new room's Entry gate has to end up.
+        // where the new room's Entry gate has to end up
         Vector3 targetPosition;
         Quaternion targetRotation;
 
@@ -165,12 +165,12 @@ public class RoomChain : MonoBehaviour
             return false;
         }
 
-        // Always roll, even for rooms that cannot mirror, so a seed gives the same rooms whatever Can Mirror is set to.
+        // always roll, even for rooms that cannot mirror, so a seed gives the same rooms whatever Can Mirror is set to
         bool mirror = random.NextDouble() < mirrorChance && prefab.CanMirror;
 
         Room room = Instantiate(prefab, transform);
 
-        // Room.Awake has already looked for the gates, and logged the problem if there is one.
+        // Room.Awake has already looked for the gates, and logged the problem if there is one
         if (room.Entry == null || room.Exit == null)
         {
             Destroy(room.gameObject);
@@ -183,18 +183,18 @@ public class RoomChain : MonoBehaviour
         return true;
     }
 
-    // Moves the whole room so its Entry gate lands exactly on the given position and rotation.
-    // If mirror is true the room is also flipped left-to-right across the Entry gate's forward direction.
-    // The Entry stays where it is, only the rest of the room swaps sides.
+    // moves the whole room so its Entry gate lands exactly on the given position and rotation
+    // if mirror is true the room is also flipped left-to-right across the Entry gate's forward direction
+    // the Entry stays where it is, only the rest of the room swaps sides
     private static void PlaceEntryAt(Room room, Vector3 position, Quaternion rotation, bool mirror)
     {
         Transform entry = room.Entry.transform;
 
-        // Where the Entry sits relative to the room's own root.
+        // where the Entry sits relative to the room's own root
         Vector3 entryLocalPosition = room.transform.InverseTransformPoint(entry.position);
         Quaternion entryLocalRotation = Quaternion.Inverse(room.transform.rotation) * entry.rotation;
 
-        // We want:
+        // we want:
         //   rootRotation * entryLocalRotation                = rotation
         //   rootPosition + rootRotation * entryLocalPosition = position
         // so:
@@ -203,8 +203,8 @@ public class RoomChain : MonoBehaviour
 
         if (mirror)
         {
-            // The room is flipped by a scale of -1 along the gate's left-right (X) direction.
-            // Flipping an axis reverses turns around the other two axes, so the inverse rotation has to flip the same way.
+            // the room is flipped by a scale of -1 along the gate's left-right (X) direction
+            // flipping an axis reverses turns around the other two axes, so the inverse rotation has to flip the same way
             flip = new Vector3(-1f, 1f, 1f);
             inverseEntryRotation = new Quaternion(inverseEntryRotation.x, -inverseEntryRotation.y, -inverseEntryRotation.z, inverseEntryRotation.w);
         }

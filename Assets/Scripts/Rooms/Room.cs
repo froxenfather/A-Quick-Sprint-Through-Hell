@@ -1,13 +1,13 @@
 using UnityEngine;
 using UnityEngine.ProBuilder;
 
-// Put this on the root of a room prefab.
-// A room needs exactly one Entry gate and one Exit gate (RoomGate) somewhere inside it.
-// Keep the root's scale at (1, 1, 1).
+// put this on the root of a room prefab
+// a room needs exactly one Entry gate and one Exit gate (RoomGate) somewhere inside it
+// keep the root's scale at (1, 1, 1)
 public class Room : MonoBehaviour
 {
-    // Lets the RoomChain flip this room left-to-right. Turn it off for rooms that have text, conveyor belts,
-    // or anything else that points a direction, because those do not mirror along with the room.
+    // lets the RoomChain flip this room left-to-right. turn it off for rooms that have text, conveyor belts,
+    // or anything else that points a direction, because those do not mirror along with the room
     [SerializeField] private bool canMirror = true;
 
     public bool CanMirror => canMirror;
@@ -22,7 +22,7 @@ public class Room : MonoBehaviour
         FindGates();
     }
 
-    // Fills the Entry opening with a solid wall of exactly the opening's size, so the player cannot go back.
+    // fills the Entry opening with a solid wall of exactly the opening's size, so the player cannot go back
     public void SealEntry(Material material, float thickness)
     {
         if (entrySealed || Entry == null)
@@ -42,12 +42,12 @@ public class Room : MonoBehaviour
 
         seal.GetComponent<MeshRenderer>().sharedMaterial = material != null ? material : BuiltinMaterials.defaultMaterial;
 
-        // Built outside the ProBuilder editor menus, so nothing adds the collider for us.
+        // built outside the ProBuilder editor menus, so nothing adds the collider for us
         seal.gameObject.AddComponent<MeshCollider>();
     }
 
-    // Looks through the children for the gates. Safe to call more than once.
-    // Returns false (and says why in the Console) if the room is set up wrong.
+    // looks through the children for the gates. safe to call more than once
+    // returns false (and says why in the Console) if the room is set up wrong
     public bool FindGates()
     {
         Entry = null;

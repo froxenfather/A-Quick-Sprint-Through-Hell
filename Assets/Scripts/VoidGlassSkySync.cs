@@ -5,8 +5,8 @@ using UnityEngine.Rendering;
 using UnityEditor;
 #endif
 
-// Copies the settings of the skybox material (the Red Nebula) into shader globals every frame, so the Void Glass shader can draw the exact same sky.
-// Nothing to put in the scene: it starts itself, in the editor and in play mode.
+// copies the settings of the skybox material (the Red Nebula) into shader globals every frame, so the Void Glass shader can draw the exact same sky
+// nothing to put in the scene: it starts itself, in the editor and in play mode
 public static class VoidGlassSkySync
 {
     private static readonly int VoidColor = Shader.PropertyToID("_VoidSky_VoidColor");
@@ -26,7 +26,7 @@ public static class VoidGlassSkySync
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void Register()
     {
-        // Unsubscribe first, so entering play mode without a domain reload can't subscribe twice.
+        // unsubscribe first, so entering play mode without a domain reload can't subscribe twice
         RenderPipelineManager.beginCameraRendering -= OnBeginCamera;
         RenderPipelineManager.beginCameraRendering += OnBeginCamera;
     }
@@ -35,7 +35,7 @@ public static class VoidGlassSkySync
     {
         Material sky = RenderSettings.skybox;
 
-        // Only the Red Nebula has these properties. Any other sky just leaves the glass as it was.
+        // only the Red Nebula has these properties. any other sky just leaves the glass as it was
         if (sky == null || !sky.HasProperty("_BrightColor"))
             return;
 

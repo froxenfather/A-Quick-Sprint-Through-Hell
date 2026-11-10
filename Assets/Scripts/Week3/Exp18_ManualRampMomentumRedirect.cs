@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// Learning Objective: this is Exp16's manual ground collision, but instead of just zeroing out downward velocity on impact, the FULL incoming velocity gets projected onto the surface plane - so a fast fall onto a steep ramp gets redirected down-slope instead of just stopping dead.
-// Requires: a Collider on the ramp below (no Rigidbody on this object).
+// learning Objective: this is Exp16's manual ground collision, but instead of just zeroing out downward velocity on impact, the FULL incoming velocity gets projected onto the surface plane - so a fast fall onto a steep ramp gets redirected down-slope instead of just stopping dead
+// requires: a Collider on the ramp below (no Rigidbody on this object)
 public class Exp18_ManualRampMomentumRedirect : MonoBehaviour
 {
     [SerializeField] private float gravity = 9.81f;

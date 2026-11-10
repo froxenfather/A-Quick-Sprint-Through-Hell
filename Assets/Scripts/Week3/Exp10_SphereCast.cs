@@ -1,7 +1,7 @@
 using UnityEngine;
 
-// Learning Objective: a raycast is an infinitely thin line; a spherecast
-// sweeps a volume through space and can catch edges a raycast would miss.
+// learning Objective: a raycast is an infinitely thin line; a spherecast
+// sweeps a volume through space and can catch edges a raycast would miss
 public class Exp10_SphereCast : MonoBehaviour
 {
     [SerializeField] private float maxDistance = 5f;
@@ -9,8 +9,8 @@ public class Exp10_SphereCast : MonoBehaviour
 
     private void Update()
     {
-        // TODO: cast both a raycast and a spherecast downward and compare results.
-        // Pseudocode:
+        // TODO: cast both a raycast and a spherecast downward and compare results
+        // pseudocode:
         //   - fire a standard raycast straight down out to maxDistance, note whether it hit
         //   - fire a spherecast of radius sphereRadius, same origin and direction and
         //     distance, note whether it hit
@@ -20,8 +20,8 @@ public class Exp10_SphereCast : MonoBehaviour
 
         Debug.Log($"ray: {rayHit}  sphere: {sphereHit}");
 
-        // TODO: visualize both casts.
-        // Pseudocode:
+        // TODO: visualize both casts
+        // pseudocode:
         //   - draw the raycast as a line in one color
         
         if (sphereHit)

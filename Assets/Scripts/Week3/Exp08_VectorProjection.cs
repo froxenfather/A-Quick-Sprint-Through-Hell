@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// Learning Objective: Vector3.ProjectOnPlane removes the portion of a vector that points into a surface, leaving a vector that lies along it.
+// learning Objective: Vector3.ProjectOnPlane removes the portion of a vector that points into a surface, leaving a vector that lies along it
 public class Exp08_VectorProjection : MonoBehaviour
 {
     [SerializeField] private Vector3 movementDirection = Vector3.forward;
@@ -12,13 +12,13 @@ public class Exp08_VectorProjection : MonoBehaviour
         if (!Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, maxDistance))
             return;
 
-        // TODO: project movementDirection onto the surface plane defined by hit.normal.
+        // TODO: project movementDirection onto the surface plane defined by hit.normal
         Vector3 projectedMovement = Vector3.ProjectOnPlane(movementDirection, hit.normal);
 
         
 
-        // TODO: draw the original movement vector, the surface normal, and the projected vector.
-        // Pseudocode:
+        // TODO: draw the original movement vector, the surface normal, and the projected vector
+        // pseudocode:
         //   - draw the raw movementDirection (scaled by rayLength) in one color
         //   - draw the surface normal (scaled by rayLength) from the hit point in another color
         //   - draw the projected direction (scaled by rayLength) in a third color, and

@@ -5,36 +5,36 @@ using UnityEngine.ProBuilder;
 using UnityEditor;
 #endif
 
-// A flat slab (wall, floor or ceiling) with a rectangular hole cut out where a gate is.
-// Move the gate and the slab rebuilds itself around it, so the opening follows the gate.
+// a flat slab (wall, floor or ceiling) with a rectangular hole cut out where a gate is
+// move the gate and the slab rebuilds itself around it, so the opening follows the gate
 
-// The slab is built out of up to four ProBuilder boxes around the opening: left, right, below and above.
-// Pieces that would have no size (the gate touches an edge) are skipped.
+// the slab is built out of up to four ProBuilder boxes around the opening: left, right, below and above
+// pieces that would have no size (the gate touches an edge) are skipped
 
-// The slab is centered on this object. Width runs along its X, height along its Y, and thickness along its Z.
-// Point the gate the same way (its blue arrow along the slab's Z, or the opposite way). The gate can be rolled 90 degrees, the opening is measured in the slab's space. Keep the scale of this object and the gate at (1, 1, 1).
-// The pieces are rebuilt in the editor only. They are saved with the scene or prefab, so rooms spawned at runtime already have them.
+// the slab is centered on this object. width runs along its X, height along its Y, and thickness along its Z
+// point the gate the same way (its blue arrow along the slab's Z, or the opposite way). the gate can be rolled 90 degrees, the opening is measured in the slab's space. keep the scale of this object and the gate at (1, 1, 1)
+// the pieces are rebuilt in the editor only. they are saved with the scene or prefab, so rooms spawned at runtime already have them
 [ExecuteAlways]
 public class WallWithOpening : MonoBehaviour
 {
     private const string ContainerName = "Wall Pieces";
     private const float MinPieceSize = 0.001f;
 
-    // How long (in seconds) nothing has to change before the pieces are rebuilt.
+    // how long (in seconds) nothing has to change before the pieces are rebuilt
     private const double SettleSeconds = 0.35;
 
-    // How closely the gate has to face along the slab's thickness (1 = exactly).
+    // how closely the gate has to face along the slab's thickness (1 = exactly)
     private const float ParallelTolerance = 0.99f;
 
     [SerializeField] private Vector2 size = new Vector2(40f, 20f);
     [SerializeField] private float thickness = 1f;
 
-    // The gate that cuts the hole. Leave empty for a solid slab.
+    // the gate that cuts the hole. leave empty for a solid slab
     [SerializeField] private RoomGate gate;
 
     [SerializeField] private Material material;
 
-    // Everything the pieces depend on, so we can tell when they are out of date.
+    // everything the pieces depend on, so we can tell when they are out of date
     private struct BuildState
     {
         public bool hasGate;
@@ -46,10 +46,10 @@ public class WallWithOpening : MonoBehaviour
         public Material material;
     }
 
-    // What the pieces were last built from.
+    // what the pieces were last built from
     private BuildState builtState;
 
-    // What we saw on the previous editor tick. While this keeps changing, something is still being dragged.
+    // what we saw on the previous editor tick. while this keeps changing, something is still being dragged
     private BuildState seenState;
 
     private double lastChangeTime;
@@ -79,11 +79,11 @@ public class WallWithOpening : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    // Runs every editor tick. The pieces are only rebuilt once nothing has changed for a moment, so dragging a gate
-    // or a size slider does not rebuild (and re-save the prefab) on every single step.
+    // runs every editor tick. the pieces are only rebuilt once nothing has changed for a moment, so dragging a gate
+    // or a size slider does not rebuild (and re-save the prefab) on every single step
     private void CheckForChanges()
     {
-        // Rooms spawned at runtime already have their pieces, nothing to do.
+        // rooms spawned at runtime already have their pieces, nothing to do
         if (Application.isPlaying)
             return;
 
@@ -117,7 +117,7 @@ public class WallWithOpening : MonoBehaviour
 
         if (!TryGetOpening(halfWidth, halfHeight, out Vector2 openingMin, out Vector2 openingMax))
         {
-            // No gate, or it is nowhere near the slab, so the slab stays solid.
+            // no gate, or it is nowhere near the slab, so the slab stays solid
             AddPiece(container.transform, "Solid", -halfWidth, halfWidth, -halfHeight, halfHeight);
             RememberState();
             return;
@@ -131,7 +131,7 @@ public class WallWithOpening : MonoBehaviour
         RememberState();
     }
 
-    // Works out where the gate's opening lands on the slab, in the slab's own X and Y.
+    // works out where the gate's opening lands on the slab, in the slab's own X and Y
     private bool TryGetOpening(float halfWidth, float halfHeight, out Vector2 min, out Vector2 max)
     {
         min = Vector2.zero;
@@ -146,7 +146,7 @@ public class WallWithOpening : MonoBehaviour
             return false;
         }
 
-        // Take the four corners of the opening into the slab's space. Using the corners means a gate rolled 90 degrees still gets the right width and height.
+        // take the four corners of the opening into the slab's space. using the corners means a gate rolled 90 degrees still gets the right width and height
         Vector2 halfOpening = gate.OpeningSize * 0.5f;
 
         min = new Vector2(float.MaxValue, float.MaxValue);
@@ -166,13 +166,13 @@ public class WallWithOpening : MonoBehaviour
             }
         }
 
-        // A gate sticking out past the slab only cuts the part that is inside it.
+        // a gate sticking out past the slab only cuts the part that is inside it
         min.x = Mathf.Max(min.x, -halfWidth);
         min.y = Mathf.Max(min.y, -halfHeight);
         max.x = Mathf.Min(max.x, halfWidth);
         max.y = Mathf.Min(max.y, halfHeight);
 
-        // Nothing of the opening is on the slab.
+        // nothing of the opening is on the slab
         return max.x - min.x > MinPieceSize && max.y - min.y > MinPieceSize;
     }
 
@@ -181,7 +181,7 @@ public class WallWithOpening : MonoBehaviour
         if (maxX - minX < MinPieceSize || maxY - minY < MinPieceSize)
             return;
 
-        // The box is built at its real size, so the piece keeps a scale of (1, 1, 1) and ProBuilder's UVs tile evenly.
+        // the box is built at its real size, so the piece keeps a scale of (1, 1, 1) and ProBuilder's UVs tile evenly
         ProBuilderMesh piece = ShapeGenerator.GenerateCube(PivotLocation.Center, new Vector3(maxX - minX, maxY - minY, thickness));
         piece.name = pieceName;
         piece.transform.SetParent(parent, false);
@@ -192,12 +192,12 @@ public class WallWithOpening : MonoBehaviour
 
         piece.GetComponent<MeshRenderer>().sharedMaterial = material != null ? material : BuiltinMaterials.defaultMaterial;
 
-        // Built outside the ProBuilder editor menus, so nothing adds the collider for us.
+        // built outside the ProBuilder editor menus, so nothing adds the collider for us
         piece.gameObject.AddComponent<MeshCollider>();
     }
 
-    // Deletes the pieces and their meshes. Destroying a GameObject on its own leaves its mesh behind,
-    // so without this every rebuild would leak a few meshes into memory.
+    // deletes the pieces and their meshes. destroying a GameObject on its own leaves its mesh behind,
+    // so without this every rebuild would leak a few meshes into memory
     private static void DestroyPieces(GameObject container)
     {
 #if UNITY_EDITOR
@@ -205,7 +205,7 @@ public class WallWithOpening : MonoBehaviour
         {
             Mesh mesh = filter.sharedMesh;
 
-            // Meshes saved inside an asset are not ours to destroy.
+            // meshes saved inside an asset are not ours to destroy
             if (mesh != null && !EditorUtility.IsPersistent(mesh))
                 DestroyImmediate(mesh);
         }
@@ -219,7 +219,7 @@ public class WallWithOpening : MonoBehaviour
         builtState = ReadState();
     }
 
-    // The gate is measured relative to the slab, so moving the whole room around does not count as a change.
+    // the gate is measured relative to the slab, so moving the whole room around does not count as a change
     private BuildState ReadState()
     {
         BuildState state = new BuildState

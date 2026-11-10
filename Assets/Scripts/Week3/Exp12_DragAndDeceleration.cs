@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// Learning Objective: compare three ways of losing speed —
-// 1 = Rigidbody linearDamping (set in Inspector, no code), 2 = opposing force, 3 = direct velocity change.
+// learning Objective: compare three ways of losing speed —
+// 1 = Rigidbody linearDamping (set in Inspector, no code), 2 = opposing force, 3 = direct velocity change
 public class Exp12_DragAndDeceleration : MonoBehaviour
 {
     [SerializeField] private float manualDecelForce = 10f;
@@ -27,12 +27,12 @@ public class Exp12_DragAndDeceleration : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // Key 1: rely entirely on Rigidbody.linearDamping in the Inspector — no code needed.
+        // key 1: rely entirely on Rigidbody.linearDamping in the Inspector — no code needed
 
         if (Keyboard.current.digit2Key.isPressed)
         {
-            // TODO: apply a force opposing current velocity to slow down manually.
-            // Pseudocode:
+            // TODO: apply a force opposing current velocity to slow down manually
+            // pseudocode:
             //   - get the current velocity's direction (normalized), and flip it (negate it)
             //     to get the opposing direction
             //   - add a force in that opposing direction, scaled by manualDecelForce, using
@@ -44,10 +44,10 @@ public class Exp12_DragAndDeceleration : MonoBehaviour
 
         if (Keyboard.current.digit3Key.isPressed)
         {
-            // TODO: directly manipulate velocity toward zero (no forces involved).
-            // Pseudocode:
+            // TODO: directly manipulate velocity toward zero (no forces involved)
+            // pseudocode:
             //   - there's a Vector3 method that moves a value toward a target by a fixed
-            //     step per call. Use it to move the rigidbody's velocity toward zero, at a
+            //     step per call. use it to move the rigidbody's velocity toward zero, at a
             //     rate of directVelocityDecelRate per second (multiply by fixed delta time
             //     for a frame-rate independent step)
             //   - assign the result back to the rigidbody's velocity

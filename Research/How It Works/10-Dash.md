@@ -12,19 +12,22 @@ An instant turn toward where you look, plus some speed. Built for quick trajecto
 | `dashSpeedBonus` | 5 | Added to your current flat speed (m/s) |
 | `dashMinSpeedSprint` | 35 | Dash speed never ends up below this while Shift is held |
 | `dashMinSpeedWalk` | 20 | ...and never below this otherwise |
-| `dashCooldown` | 1.5 s | Time before the next dash |
+| `maxDashCharges` | 3 | Dashes you can bank. Each dash uses one, and dashes can be done as fast as you press the button while you have charges |
+| `dashRechargeTime` | 3 s | Time to earn one charge back. Charges return one at a time |
 | `dashHangTime` | 0.25 s | Seconds of no gravity after a dash (level glide). 0 = off |
 
 ## Steps (`TryDash`)
 
-1. Take the queued press (it is used up either way, so pressing during the cooldown does not buffer a dash). Stop if `Time.time - lastDashTime < dashCooldown`.
+1. Take the queued press (it is used up either way, so pressing with no charge does not buffer a dash). Stop if `DashCharges < 1`.
+
+   **Charges:** stored as `dashChargeBase` (how many we had) and `dashChargeStamp` (when). `DashCharges = min(maxDashCharges, base + (Time.time - stamp) / dashRechargeTime)`, so it is exact between physics steps and refills one at a time with no timer to reset. A dash sets `base = charges - 1` and `stamp = now`, so progress toward the next charge is kept. The HUD reads `DashCharges` and `MaxDashCharges`.
 2. `flat` = flat velocity (relative to the platform you stand on), `look` = `Flatten(transform.forward)`, the camera's yaw. Same "look" the walk and wall jump code use.
 3. **Direction:**
    - Standing still (flat speed under 0.01): go along `look`. If you are looking dead up or down there is no flat look, so the dash does nothing.
    - Otherwise: `angle = SignedAngle(flatDirection, look, up)`, then rotate `flatDirection` by `angle * influence / 100` around `up`.
 4. **Speed:** `newSpeed = max(flatSpeed + dashSpeedBonus, sprinting ? dashMinSpeedSprint : dashMinSpeedWalk)`.
 5. Set `x` and `z` to `direction * newSpeed` and **`y` to 0**, so a dash also cancels any rising or falling. Gravity starts pulling again on the next tick (and a jump pressed on the same frame still sets its own upward speed afterwards).
-6. `airSpeedCap = max(airSpeedCap, newSpeed)`, `lastDashTime = Time.time`, `dashHangEndTime = Time.time + dashHangTime`, fire the `Dashed` event.
+6. `airSpeedCap = max(airSpeedCap, newSpeed)`, spend one charge, `dashHangEndTime = Time.time + dashHangTime`, fire the `Dashed` event.
 
 **Hang:** until `dashHangEndTime`, `CurrentGravity()` returns 0, so the air models add no gravity and we glide level. A ground jump or wall jump resets `dashHangEndTime`, so the jump rises and falls normally. `dashHangTime = 0` turns it off. Wall slip and the wall run need no special case.
 
@@ -49,7 +52,7 @@ On the ground there is no air cap involved: `GroundMoveTowards` pulls overspeed 
 
 - The speed-based FOV (`speedFov`) now lives in its own field instead of being read back from the camera, so the punch can sit on top without fighting the easing.
 - On `Dashed`: the punch target becomes `dashFovBoost` (25 degrees). It opens at `dashFovRiseSpeed` (800 deg/s, about 0.03 s), then fades back to 0 at `dashFovFadeSpeed` (120 deg/s, about 0.2 s). The camera shows `speedFov + dashPunch`.
-- The cooldown is longer than the punch, so punches never stack.
+- With charges, dashes can be chained faster than the punch fades. A new dash just sets the target back to `dashFovBoost`, so punches restart rather than stack.
 
 ## Math
 

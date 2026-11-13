@@ -4,7 +4,8 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 
 // sets up the player's animations, sounds, burn overlay and first-person body in the open scene, and makes the health pickup prefab
-// safe to run again: it only adds what is missing and refills the sound slots. save the scene afterwards (Ctrl+S)
+// safe to run again: it only adds what is missing and refills the sound slots.
+// save the scene afterwards (Ctrl+S)
 public static class PlayerFeedbackSetup
 {
     private const string AnimationFolder = "Assets/Animation";
@@ -42,6 +43,7 @@ public static class PlayerFeedbackSetup
         AddIfMissing<PlayerBurn>(playerObject);
         AddIfMissing<BurnOverlay>(playerObject);
         AddIfMissing<FirstPersonBody>(playerObject);
+        AddIfMissing<WindAudio>(playerObject);
 
         PlayerAnimation playerAnimation = AddIfMissing<PlayerAnimation>(playerObject);
         SetReference(playerAnimation, "controller", controller);
@@ -149,7 +151,8 @@ public static class PlayerFeedbackSetup
         SetUpTransition(toWallRun);
         toWallRun.AddCondition(AnimatorConditionMode.If, 0f, "WallRunning");
 
-        // jumps, wall jumps and dashes all fire the Jump trigger. letting it transition to itself restarts the clip each time
+        // jumps, wall jumps and dashes all fire the Jump trigger.
+        // letting it transition to itself restarts the clip each time
         AnimatorStateTransition toJump = machine.AddAnyStateTransition(air);
         SetUpTransition(toJump);
         toJump.canTransitionToSelf = true;
@@ -164,7 +167,8 @@ public static class PlayerFeedbackSetup
         AddTransition(crouch, locomotion, "Crouching", false);
         AddTransition(crouch, air, "Grounded", false);
 
-        // back to running once a slide or wall run ends. if we are airborne, locomotion hands over to the air state next
+        // back to running once a slide or wall run ends.
+        // if we are airborne, locomotion hands over to the air state next
         AddTransition(slide, locomotion, "Sliding", false);
         AddTransition(wallRun, locomotion, "WallRunning", false);
 
@@ -264,7 +268,8 @@ public static class PlayerFeedbackSetup
     {
         GameObject root = new GameObject("HealthPickup");
 
-        // the orb you see. it has no collider of its own: the trigger on the root does that job
+        // the orb you see.
+        // it has no collider of its own: the trigger on the root does that job
         GameObject orb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         orb.name = "Orb";
         orb.transform.SetParent(root.transform, false);
@@ -272,7 +277,8 @@ public static class PlayerFeedbackSetup
         Object.DestroyImmediate(orb.GetComponent<Collider>());
         orb.GetComponent<MeshRenderer>().sharedMaterial = GetOrCreatePickupMaterial();
 
-        // bigger than the orb so it is easy to run into at speed. is Trigger: the player passes straight through it
+        // bigger than the orb so it is easy to run into at speed.
+        // is Trigger: the player passes straight through it
         SphereCollider trigger = root.AddComponent<SphereCollider>();
         trigger.isTrigger = true;
         trigger.radius = 1.5f;

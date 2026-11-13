@@ -2,17 +2,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-// black burn marks across the screen that get worse the more the player is burnt. put this on the Player, next to PlayerBurn
+// black burn marks across the screen that get worse the more the player is burnt.
+// put this on the Player, next to PlayerBurn
 
 // it builds its own screen overlay when the game starts, so there is nothing to set up in the scene, and it draws its own
-// textures from noise, so there are no image files either. every burn adds a mark, the marks grow as the burn level rises,
-// and the edges of the screen darken. healing fades it all away
+// textures from noise, so there are no image files either.
+// every burn adds a mark, the marks grow as the burn level rises, and the edges of the screen darken.
+// healing fades it all away
 public class BurnOverlay : MonoBehaviour
 {
     [SerializeField] private PlayerBurn burn;
 
     [Header("Burn marks")]
-    // most marks on screen at once. older ones go first
+    // most marks on screen at once.
+    // older ones go first
     [Min(1)]
     [SerializeField] private int maxMarks = 40;
 
@@ -227,7 +230,8 @@ public class BurnOverlay : MonoBehaviour
         return texture;
     }
 
-    // a scorched, ragged blob: round at the heart, with an edge wobbled by noise. different seeds give different shapes
+    // a scorched, ragged blob: round at the heart, with an edge wobbled by noise.
+    // different seeds give different shapes
     private static Texture2D MakeMarkTexture(float seed)
     {
         Texture2D texture = new Texture2D(MarkTextureSize, MarkTextureSize, TextureFormat.RGBA32, false);

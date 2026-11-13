@@ -67,7 +67,7 @@ Right-click the **RoomChain** component and choose **Simulate Rooms**. It places
 - **overlapping pairs:** every room against every other. Should be 0, except around a forced room.
 - **rooms thrown away before one fit:** how often the check rejected a pick.
 - **times a room was taken back / forced in anyway:** if forced is above 0, the lists are too narrow for the layout (add turns that go the other way, more forward rooms, or smaller footprints).
-- **a count per list.**
+- **a count per list, and a count per room** (most used first), to check the weights behave.
 
 The simulation keeps rooms the live game would delete, so it is a harder test than playing. Footprints of the last run can be drawn in the Scene view (green), and the last rejected room in red: tick `drawFootprints` on the RoomChain (off by default). The orange boxes on a room's own Footprint object only show while that object is selected.
 
@@ -78,3 +78,26 @@ The simulation keeps rooms the live game would delete, so it is a harder test th
 - **Exit clearance as a one-step lookahead.** It stops dead ends cheaply. Backtracking handles the rest.
 - **Pure geometry.** The planner needs no spawned rooms, so candidates cost almost nothing and the safeguard can be tested in the editor.
 - **One source for the placement math.** The planner and the spawn use the same function, so the footprint that was checked is exactly where the room appears.
+
+## Starter room (the chute)
+
+The **Starter Room** slot on the RoomChain (header "Start") holds the room every run begins with, normally `thechute`.
+
+- It is placed first, with its Entry on the RoomChain object, never mirrored. `RoomPlanner.PlanStarter` commits it like any room (so it has a footprint and every later room is checked against it) but as *forced*, so the planner never takes it back. It is not counted in the per-list totals. Simulate Rooms places it first too.
+- The generator continues from its Exit as normal.
+- **The player** is teleported (`CustomPlayerController.Teleport`) to `Entry position + up * spawnHeightAboveEntry (100) + Entry forward * spawnDistanceInFront (1)`, turned to face the Entry's blue arrow and tilted straight down (`PlayerLook.SetLook(forward, 89)`).
+- **The Rooms counter** ignores the starter room: the first room passed is the chute and doesn't add to `RoomsPassed`.
+- Leave the slot empty to start with a normal random room, as before.
+- Give the chute a Footprint (Room component > Create Footprint From Renderers), or nothing is checked against it.
+- If 100 m up puts the player inside or above the chute's geometry, change the two spawn fields on the RoomChain.
+
+### Music
+The **Start Music** slot (and **Music Volume**) on the RoomChain holds a song. It starts the first time the player crosses the starter room's Exit (the same moment the starter room is counted as passed), and plays **once** (it does not loop). It plays through a 2D AudioSource added to the RoomChain object. Empty slot = no music.
+
+## Gate colors (plain look toggle)
+The RoomChain's **Gate colors** header has a **Plain Gate Look** checkbox.
+- **Ticked:** every gate's frame uses **Plain Gate Material** (`ProBuilderDefault_Copy`).
+- **Unticked:** entrances use **Entry Gate Material** (`Blue`), exits use **Exit Gate Material** (`orange stretch`).
+- The three material slots are filled in automatically in the editor when empty (by the materials' GUIDs). Clicking the checkbox changes the gates already in the scene straight away (`OnValidate` -> `ApplyGateLookToAll`, delayed one editor tick), and every room that spawns gets the current look (`SpawnPlanned` -> `ApplyGateLook`). It sets the material on the gate object's MeshRenderers (and its children's), so the prefab assets themselves are never changed.
+
+**Fade-in:** **Music Fade In Seconds** (slider 0 to 30, default 4) sets how long the song takes to rise from silence to **Music Volume**: `volume = musicVolume * clamp01(timeSinceStart / fadeSeconds)`. 0 = full volume at once. Both sliders are read every frame, so you can drag them while the song plays (changing the fade time while it is fading changes the curve at once). Uses unscaled time.

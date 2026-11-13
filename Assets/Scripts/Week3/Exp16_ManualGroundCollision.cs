@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// learning Objective: without a Rigidbody, nothing stops the object from falling through the floor - moving a Transform never triggers physics collision resolution. YOU have to detect the ground and cancel velocity
+// learning Objective: without a Rigidbody, nothing stops the object from falling through the floor - moving a Transform never triggers physics collision resolution.
+// YOU have to detect the ground and cancel velocity
 // requires: a Collider on the ground below (no Rigidbody on this object)
 public class Exp16_ManualGroundCollision : MonoBehaviour
 {

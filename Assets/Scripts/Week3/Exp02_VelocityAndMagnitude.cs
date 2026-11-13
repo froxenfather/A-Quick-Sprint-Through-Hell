@@ -1,7 +1,6 @@
 using UnityEngine;
 
-// learning Objective: velocity is a vector (direction + speed);
-// magnitude collapses it down to a single speed number
+// learning Objective: velocity is a vector (direction + speed); magnitude collapses it down to a single speed number
 public class Exp02_VelocityAndMagnitude : MonoBehaviour
 {
     [SerializeField] private float rayScale = 1f;

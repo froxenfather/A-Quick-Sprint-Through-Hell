@@ -35,7 +35,8 @@ public static class VoidGlassSkySync
     {
         Material sky = RenderSettings.skybox;
 
-        // only the Red Nebula has these properties. any other sky just leaves the glass as it was
+        // only the Red Nebula has these properties.
+        // any other sky just leaves the glass as it was
         if (sky == null || !sky.HasProperty("_BrightColor"))
             return;
 

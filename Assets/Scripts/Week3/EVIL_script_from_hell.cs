@@ -4,10 +4,16 @@ using UnityEngine.InputSystem;
 // STRETCH EXPERIMENT (do only after the core experiments are done)
 // learning Objective: on a ramp, gravity's pull ALONG the surface is g * sin(slope)
 // steeper ramp -> faster acceleration down; sliding up a ramp slows you down
-// requires: a ramp Collider below (no Rigidbody on this object). place it on Ramp_15 / Ramp_30 / Ramp_45 and compare. this is NOT the final slide system
+// requires: a ramp Collider below (no Rigidbody on this object).
+// place it on Ramp_15 / Ramp_30 / Ramp_45 and compare.
+// this is NOT the final slide system
 
-// this fucker took me an entire night. ramps werent even equal length
-// gravity got added twice. seam ate velocity.y on steep ramps. and i was measuring distance from the wrong point the whole time. pool balls fixed me
+// this fucker took me an entire night.
+// ramps werent even equal length
+// gravity got added twice.
+// seam ate velocity.y on steep ramps.
+// and i was measuring distance from the wrong point the whole time.
+// pool balls fixed me
 // those who know
 public class EVIL_script_from_hell : MonoBehaviour
 {
@@ -46,7 +52,9 @@ public class EVIL_script_from_hell : MonoBehaviour
             rampExitPosition = null;
         }
 
-        // ONLY place gravity gets added. do not add a second sin(theta) kick below, the projection already handles that. doubled it once, never again
+        // ONLY place gravity gets added.
+        // do not add a second sin(theta) kick below, the projection already handles that.
+        // doubled it once, never again
         velocity += Vector3.down * gravity * Time.deltaTime;
 
         Vector3 feetPosition = transform.position + Vector3.down * halfHeight; // actual bottom, not the pivot
@@ -77,8 +85,8 @@ public class EVIL_script_from_hell : MonoBehaviour
 
             if (wasOnSlope && slopeAngle <= 0.5f) // specifically leaving a ramp
             {
-                // this is the ramp->flat handoff. distance gets measured
-                // from HERE, not from wherever this thing started
+                // this is the ramp->flat handoff.
+                // distance gets measured from HERE, not from wherever this thing started
                 Debug.Log($"<color=orange>[{name}] EXIT RAMP - speed: {speedBeforeProjection:F2}</color>");
                 rampExitPosition = transform.position; // the ONE true reference point
             }
@@ -107,7 +115,8 @@ public class EVIL_script_from_hell : MonoBehaviour
         {
             hasLoggedFinal = true;
 
-            // y zeroed out, measured from ramp exit. this took 40 messages to get right
+            // y zeroed out, measured from ramp exit.
+            // this took 40 messages to get right
             Vector3 reference = rampExitPosition ?? startPosition; // fallback if it never left a ramp
             Vector3 referenceFlat = new Vector3(reference.x, 0f, reference.z); // kill height
             Vector3 endFlat = new Vector3(transform.position.x, 0f, transform.position.z); // kill height here too
@@ -135,4 +144,5 @@ public class EVIL_script_from_hell : MonoBehaviour
 //    30 deg -> d = 0.500L
 //    45 deg -> d = 0.707L
 //    60 deg -> d = 0.866L
-// 9. so: 60 > 45 > 30. checks out
+// 9. so: 60 > 45 > 30.
+//    checks out

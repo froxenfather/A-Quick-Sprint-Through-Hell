@@ -47,7 +47,8 @@ public class Exp12_DragAndDeceleration : MonoBehaviour
             // TODO: directly manipulate velocity toward zero (no forces involved)
             // pseudocode:
             //   - there's a Vector3 method that moves a value toward a target by a fixed
-            //     step per call. use it to move the rigidbody's velocity toward zero, at a
+            //     step per call.
+            //     use it to move the rigidbody's velocity toward zero, at a
             //     rate of directVelocityDecelRate per second (multiply by fixed delta time
             //     for a frame-rate independent step)
             //   - assign the result back to the rigidbody's velocity

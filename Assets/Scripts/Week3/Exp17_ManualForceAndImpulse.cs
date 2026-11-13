@@ -1,9 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// learning Objective: revisit Exp01's Force vs Impulse idea, but with no
-// rigidbody. "Force" becomes acceleration added every frame it's held;
-// "impulse" becomes a one-time jump added to velocity on the frame it's pressed
+// learning Objective: revisit Exp01's Force vs Impulse idea, but with no rigidbody.
+// "Force" becomes acceleration added every frame it's held; "impulse" becomes a one-time jump added to velocity on the frame it's pressed
 // requires: just a Transform
 public class Exp17_ManualForceAndImpulse : MonoBehaviour
 {

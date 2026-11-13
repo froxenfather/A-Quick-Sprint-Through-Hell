@@ -1,7 +1,8 @@
 using System;
 using UnityEngine;
 
-// burn damage from hazards (lava, electric walls). put this on the Player, next to CustomPlayerController
+// burn damage from hazards (lava, electric walls).
+// put this on the Player, next to CustomPlayerController
 
 // every touch of a SpeedCapSurface:
 //   - adds burnPerTouch to the burn level (0 = fine, 1 = fully burnt), which BurnOverlay shows on screen
@@ -11,11 +12,13 @@ public class PlayerBurn : MonoBehaviour
 {
     [SerializeField] private CustomPlayerController player;
 
-    // how much one touch adds to the burn level. 0.1 = ten touches to be fully burnt
+    // how much one touch adds to the burn level.
+    // 0.1 = ten touches to be fully burnt
     [Range(0.01f, 1f)]
     [SerializeField] private float burnPerTouch = 0.1f;
 
-    // max sprint speed (m/s) lost per touch. it never drops below the walk speed
+    // max sprint speed (m/s) lost per touch.
+    // it never drops below the walk speed
     [Min(0f)]
     [SerializeField] private float sprintSpeedLostPerTouch = 1f;
 

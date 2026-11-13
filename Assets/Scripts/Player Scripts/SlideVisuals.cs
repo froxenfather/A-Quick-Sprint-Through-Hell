@@ -1,6 +1,7 @@
 using UnityEngine;
 
-// lowers the camera and tilts the body model while sliding. rough/placeholder - doesn't need to look good, just needs to read as "the character is sliding" from third person
+// lowers the camera and tilts the body model while sliding.
+// rough/placeholder - doesn't need to look good, just needs to read as "the character is sliding" from third person
 // put this on the Player object, next to CustomPlayerController
 public class SlideVisuals : MonoBehaviour
 {

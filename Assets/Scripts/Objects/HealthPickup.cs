@@ -1,7 +1,8 @@
 using UnityEngine;
 
 // a pickup that heals the player fully when they walk into it: no burn, and the sprint speed back to what it was at the start
-// needs a Collider set to Is Trigger. the player's own movement ignores triggers, so it can walk straight through
+// needs a Collider set to Is Trigger.
+// the player's own movement ignores triggers, so it can walk straight through
 public class HealthPickup : MonoBehaviour
 {
     [SerializeField] private AudioClip pickupSound;
@@ -9,7 +10,8 @@ public class HealthPickup : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float volume = 0.8f;
 
-    // seconds until it comes back after being taken. 0 = gone for good
+    // seconds until it comes back after being taken.
+    // 0 = gone for good
     [Min(0f)]
     [SerializeField] private float respawnTime = 0f;
 

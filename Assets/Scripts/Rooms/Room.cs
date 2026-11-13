@@ -6,8 +6,8 @@ using UnityEngine.ProBuilder;
 // keep the root's scale at (1, 1, 1)
 public class Room : MonoBehaviour
 {
-    // lets the RoomChain flip this room left-to-right. turn it off for rooms that have text, conveyor belts,
-    // or anything else that points a direction, because those do not mirror along with the room
+    // lets the RoomChain flip this room left-to-right.
+    // turn it off for rooms that have text, conveyor belts, or anything else that points a direction, because those do not mirror along with the room
     [SerializeField] private bool canMirror = true;
 
     public bool CanMirror => canMirror;
@@ -48,14 +48,16 @@ public class Room : MonoBehaviour
 
 #if UNITY_EDITOR
     // makes the room's footprint: the boxes the RoomChain uses to make sure rooms never overlap
-    // open the room prefab first (double-click it), then use the three dots on the Room component. one box per piece of the room is the most exact
+    // open the room prefab first (double-click it), then use the three dots on the Room component.
+    // one box per piece of the room is the most exact
     [ContextMenu("Create Footprint From Renderers")]
     private void CreateFootprintFromRenderers()
     {
         BuildFootprint(false);
     }
 
-    // one big box around the whole room. quick, but it counts the empty corners of an L-shaped or turning room as filled
+    // one big box around the whole room.
+    // quick, but it counts the empty corners of an L-shaped or turning room as filled
     [ContextMenu("Create Footprint (One Box)")]
     private void CreateFootprintOneBox()
     {
@@ -139,7 +141,8 @@ public class Room : MonoBehaviour
     }
 #endif
 
-    // looks through the children for the gates. safe to call more than once
+    // looks through the children for the gates.
+    // safe to call more than once
     // returns false (and says why in the Console) if the room is set up wrong
     public bool FindGates()
     {

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3835424540401563601}
   - component: {fileID: 5875060298042509413}
   - component: {fileID: 6259788223130899660}
+  - component: {fileID: 2387179362860279147}
   m_Layer: 0
   m_Name: Pipe (74)
   m_TagString: Untagged
@@ -14550,6 +14551,21 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!114 &2387179362860279147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 72432394000449856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c43b00edda07415428c5fe1075686478, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpeedCapSurface
+  type: 0
+  maxSpeed: 5
+  bounceSpeed: 10
 --- !u!1 &128215085590033702
 GameObject:
   m_ObjectHideFlags: 0
@@ -34660,6 +34676,7 @@ GameObject:
   - component: {fileID: 998985552187056875}
   - component: {fileID: 4181872935856198209}
   - component: {fileID: 3521798918286672318}
+  - component: {fileID: 8215948831085486008}
   m_Layer: 0
   m_Name: Pipe (76)
   m_TagString: Untagged
@@ -49197,6 +49214,21 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!114 &8215948831085486008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 904041218125080909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c43b00edda07415428c5fe1075686478, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpeedCapSurface
+  type: 0
+  maxSpeed: 5
+  bounceSpeed: 10
 --- !u!1 &966633494384950898
 GameObject:
   m_ObjectHideFlags: 0
@@ -92729,6 +92761,7 @@ GameObject:
   - component: {fileID: 6689243767099247076}
   - component: {fileID: 8074245203082606353}
   - component: {fileID: 6679514279928183234}
+  - component: {fileID: 91482308748855997}
   m_Layer: 0
   m_Name: Pipe (75)
   m_TagString: Untagged
@@ -107266,6 +107299,21 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!114 &91482308748855997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3620613991640184636}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c43b00edda07415428c5fe1075686478, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpeedCapSurface
+  type: 0
+  maxSpeed: 5
+  bounceSpeed: 10
 --- !u!1 &3647462706856123488
 GameObject:
   m_ObjectHideFlags: 0
@@ -209660,6 +209708,7 @@ GameObject:
   - component: {fileID: 7658284664023578809}
   - component: {fileID: 5358169885280313098}
   - component: {fileID: 7300050475547715226}
+  - component: {fileID: 4061120149116500566}
   m_Layer: 0
   m_Name: Pipe (79)
   m_TagString: Untagged
@@ -224197,6 +224246,21 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!114 &4061120149116500566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8101462671670455874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c43b00edda07415428c5fe1075686478, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpeedCapSurface
+  type: 0
+  maxSpeed: 5
+  bounceSpeed: 10
 --- !u!1 &8114445265814957704
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// which list a room comes from. the first four are what the generator picks from normally,
-// the other four are used inside an up or down section
+// which list a room comes from.
+// the first four are what the generator picks from normally, the other four are used inside an up or down section
 public enum RoomCategory
 {
     Forward,
@@ -157,7 +157,8 @@ public class RoomPlanner
     private readonly List<Ban> bans = new List<Ban>();
     private readonly List<OrientedBox> rejectedBoxes = new List<OrientedBox>();
 
-    // the rooms placed so far, oldest first. same order as RoomChain's rooms
+    // the rooms placed so far, oldest first.
+    // same order as RoomChain's rooms
     public IReadOnlyList<Record> Records => records;
     public int Count => records.Count;
 
@@ -198,7 +199,34 @@ public class RoomPlanner
         return false;
     }
 
-    // plans the next room. lastLockedIndex is the newest room that must stay (the one the player is in), anything after it can be taken back
+    // places a fixed first room (the starter room) with its Entry on the start of the chain, so every later room is checked against it
+    // it is committed as forced, so backtracking never takes it back.
+    // it doesn't come from a list, so it is left out of the per-list counts
+    public bool PlanStarter(Room prefab, out PlannedRoom planned)
+    {
+        planned = default;
+
+        if (prefab == null || records.Count > 0)
+            return false;
+
+        RoomBlueprint blueprint = GetBlueprint(prefab);
+
+        if (blueprint == null)
+            return false;
+
+        GetTarget(out Vector3 position, out Quaternion rotation);
+
+        RoomEntry entry = new RoomEntry { room = prefab };
+        Candidate candidate = MakeCandidate(entry, RoomCategory.Forward, blueprint, false, 1f, position, rotation);
+
+        planned = Commit(candidate, CurrentState, true);
+        CategoryCounts[(int)RoomCategory.Forward]--;
+
+        return true;
+    }
+
+    // plans the next room.
+    // lastLockedIndex is the newest room that must stay (the one the player is in), anything after it can be taken back
     // removed is how many rooms were taken back from the end first, the caller has to remove the same number of spawned rooms
     public bool TryPlanNext(int lastLockedIndex, out PlannedRoom planned, out int removed)
     {
@@ -410,7 +438,8 @@ public class RoomPlanner
                 if (blueprint == null)
                     continue;
 
-                // a room that can't mirror only has the one version. one that can has both, split by mirrorChance
+                // a room that can't mirror only has the one version.
+                // one that can has both, split by mirrorChance
                 float plainWeight = entry.room.CanMirror ? 1f - settings.mirrorChance : 1f;
                 float mirroredWeight = entry.room.CanMirror ? settings.mirrorChance : 0f;
 

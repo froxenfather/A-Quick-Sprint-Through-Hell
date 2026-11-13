@@ -11,9 +11,13 @@ using UnityEditor;
 // the slab is built out of up to four ProBuilder boxes around the opening: left, right, below and above
 // pieces that would have no size (the gate touches an edge) are skipped
 
-// the slab is centered on this object. width runs along its X, height along its Y, and thickness along its Z
-// point the gate the same way (its blue arrow along the slab's Z, or the opposite way). the gate can be rolled 90 degrees, the opening is measured in the slab's space. keep the scale of this object and the gate at (1, 1, 1)
-// the pieces are rebuilt in the editor only. they are saved with the scene or prefab, so rooms spawned at runtime already have them
+// the slab is centered on this object.
+// width runs along its X, height along its Y, and thickness along its Z
+// point the gate the same way (its blue arrow along the slab's Z, or the opposite way).
+// the gate can be rolled 90 degrees, the opening is measured in the slab's space.
+// keep the scale of this object and the gate at (1, 1, 1)
+// the pieces are rebuilt in the editor only.
+// they are saved with the scene or prefab, so rooms spawned at runtime already have them
 [ExecuteAlways]
 public class WallWithOpening : MonoBehaviour
 {
@@ -29,12 +33,14 @@ public class WallWithOpening : MonoBehaviour
     [SerializeField] private Vector2 size = new Vector2(40f, 20f);
     [SerializeField] private float thickness = 1f;
 
-    // the gate that cuts the hole. leave empty for a solid slab
+    // the gate that cuts the hole.
+    // leave empty for a solid slab
     [SerializeField] private RoomGate gate;
 
     [SerializeField] private Material material;
 
-    // draws the slab's size as a cyan box in the Scene view while it is selected. off unless you want it
+    // draws the slab's size as a cyan box in the Scene view while it is selected.
+    // off unless you want it
     [SerializeField] private bool drawOutline = false;
 
     // everything the pieces depend on, so we can tell when they are out of date
@@ -52,7 +58,8 @@ public class WallWithOpening : MonoBehaviour
     // what the pieces were last built from
     private BuildState builtState;
 
-    // what we saw on the previous editor tick. while this keeps changing, something is still being dragged
+    // what we saw on the previous editor tick.
+    // while this keeps changing, something is still being dragged
     private BuildState seenState;
 
     private double lastChangeTime;
@@ -82,8 +89,8 @@ public class WallWithOpening : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    // runs every editor tick. the pieces are only rebuilt once nothing has changed for a moment, so dragging a gate
-    // or a size slider does not rebuild (and re-save the prefab) on every single step
+    // runs every editor tick.
+    // the pieces are only rebuilt once nothing has changed for a moment, so dragging a gate or a size slider does not rebuild (and re-save the prefab) on every single step
     private void CheckForChanges()
     {
         // rooms spawned at runtime already have their pieces, nothing to do
@@ -149,7 +156,8 @@ public class WallWithOpening : MonoBehaviour
             return false;
         }
 
-        // take the four corners of the opening into the slab's space. using the corners means a gate rolled 90 degrees still gets the right width and height
+        // take the four corners of the opening into the slab's space.
+        // using the corners means a gate rolled 90 degrees still gets the right width and height
         Vector2 halfOpening = gate.OpeningSize * 0.5f;
 
         min = new Vector2(float.MaxValue, float.MaxValue);
@@ -199,8 +207,8 @@ public class WallWithOpening : MonoBehaviour
         piece.gameObject.AddComponent<MeshCollider>();
     }
 
-    // deletes the pieces and their meshes. destroying a GameObject on its own leaves its mesh behind,
-    // so without this every rebuild would leak a few meshes into memory
+    // deletes the pieces and their meshes.
+    // destroying a GameObject on its own leaves its mesh behind, so without this every rebuild would leak a few meshes into memory
     private static void DestroyPieces(GameObject container)
     {
 #if UNITY_EDITOR

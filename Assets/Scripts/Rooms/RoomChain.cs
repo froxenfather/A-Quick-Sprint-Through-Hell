@@ -2,11 +2,39 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // main Driving Engine for the game!
-// spawns rooms one after another. each new room is moved and rotated so its Entry gate lands exactly on the previous room's Exit gate, so the rooms connect no matter how they are shaped or how high their gates are
+// spawns rooms one after another.
+// each new room is moved and rotated so its Entry gate lands exactly on the previous room's Exit gate, so the rooms connect no matter how they are shaped or how high their gates are
 // which room comes next is decided by RoomPlanner: weighted picks from the room lists, up and down sections, and a check that a room never overlaps one that already exists
-// the first room's Entry goes at this object's position and rotation. keep this object's scale at (1, 1, 1)
+// the first room's Entry goes at this object's position and rotation.
+// keep this object's scale at (1, 1, 1)
 public class RoomChain : MonoBehaviour
 {
+    // the room every run starts with (the chute).
+    // it is placed first with its Entry on this object, and the generator carries on from its Exit
+    // leave empty to start with a normal random room
+    [Header("Start")]
+    [SerializeField] private Room starterRoom;
+
+    // the player starts this far (meters) straight up from the starter room's Entry gate...
+    [SerializeField] private float spawnHeightAboveEntry = 100f;
+
+    // ...and this far in front of it along the gate's blue arrow, facing the arrow and looking straight down
+    [SerializeField] private float spawnDistanceInFront = 1f;
+
+    // the song that starts when the player goes through the starter room's Exit and plays once (it does not loop).
+    // leave empty for no music
+    [SerializeField] private AudioClip startMusic;
+
+    // the volume the song fades up to.
+    // it can be changed while playing
+    [Range(0f, 1f)]
+    [SerializeField] private float musicVolume = 0.7f;
+
+    // seconds the song takes to fade in from silence up to Music Volume.
+    // 0 starts it at full volume straight away
+    [Range(0f, 30f)]
+    [SerializeField] private float musicFadeInSeconds = 4f;
+
     // each list has a weight box beside every room: 1 is normal, 0.5 is half as likely, 4 is four times as likely, 0 means never
     [Header("Rooms (normal level)")]
     [SerializeField] private RoomEntry[] forwardRooms;
@@ -73,32 +101,53 @@ public class RoomChain : MonoBehaviour
     [Min(0)]
     [SerializeField] private int roomsBehind = 1;
 
+    [Header("Gate colors")]
+    // ticked: every gate uses the plain material below.
+    // unticked: entrances are blue and exits are orange again
+    // it changes the gates already in the scene as you click it, and every room that spawns
+    [SerializeField] private bool plainGateLook = false;
+
+    // the plain look (filled in with ProBuilderDefault_Copy in the editor if left empty)
+    [SerializeField] private Material plainGateMaterial;
+
+    // the usual colors (filled in with Blue and orange stretch in the editor if left empty)
+    [SerializeField] private Material entryGateMaterial;
+    [SerializeField] private Material exitGateMaterial;
+
     [Header("Entry seal")]
-    // the wall that fills a room's Entry once the player is through it. uses ProBuilder's default if empty
+    // the wall that fills a room's Entry once the player is through it.
+    // uses ProBuilder's default if empty
     [SerializeField] private Material sealMaterial;
 
     [Min(0.01f)]
     [SerializeField] private float sealThickness = 1f;
 
     // how many rooms behind the player an Entry has to be before it seals
-    // 0 seals a room's Entry as soon as the player is through it. 1 seals it once the player is through the room's Exit as well
+    // 0 seals a room's Entry as soon as the player is through it.
+    // 1 seals it once the player is through the room's Exit as well
     [Min(0)]
     [SerializeField] private int sealRoomsBehind = 1;
 
-    // only used when Seal Rooms Behind is 0. how far past the Entry gate the player has to be before it seals,
-    // so the wall never appears inside them
+    // only used when Seal Rooms Behind is 0.
+    // how far past the Entry gate the player has to be before it seals, so the wall never appears inside them
     [Min(0f)]
     [SerializeField] private float sealDistance = 2f;
 
     [Header("Debug")]
-    // draws every room's footprint in the Scene view (green), and the last room that didn't fit (red). off unless you want it
+    // draws every room's footprint in the Scene view (green), and the last room that didn't fit (red).
+    // off unless you want it
     [SerializeField] private bool drawFootprints = false;
+
+    // draws the green and red gate rectangles and arrows on every room's gates in the Scene view.
+    // untick to hide them all at once
+    [SerializeField] private bool showGateGizmos = true;
 
     // how many rooms Simulate Rooms places (right-click the RoomChain component to run it)
     [Min(1)]
     [SerializeField] private int simulateRooms = 200;
 
-    // the old single room list. the rooms in it are moved into Forward Rooms the first time this is loaded in the editor
+    // the old single room list.
+    // the rooms in it are moved into Forward Rooms the first time this is loaded in the editor
     [SerializeField, HideInInspector] private Room[] roomPrefabs;
 
     // the most rooms one frame may try to spawn (including taking rooms back), see BuildAhead
@@ -115,11 +164,53 @@ public class RoomChain : MonoBehaviour
     // the room the player is in right now is rooms[passedCount]
     private int passedCount;
 
-    // how many rooms have had their Entry sealed. rooms are sealed in order, oldest first
+    // how many rooms the player has gone through in total, for the HUD.
+    // unlike passedCount it never goes down when old rooms are deleted
+    public int RoomsPassed { get; private set; }
+
+    // fired the first time the player goes through the starter room's Exit (the music and the countdown timer start here)
+    public event System.Action StarterExited;
+
+    // how many rooms have had their Entry sealed.
+    // rooms are sealed in order, oldest first
     private int sealedCount;
+
+    // the starter room is room 0 and does not count toward RoomsPassed
+    private bool hasStarter;
+    private bool starterPassed;
+
+    // the song's source and when it started, for the fade-in
+    private AudioSource musicSource;
+    private float musicStartTime;
+
+    private void OnEnable()
+    {
+        RoomGate.ShowGizmos = showGateGizmos;
+    }
 
     private void OnValidate()
     {
+        RoomGate.ShowGizmos = showGateGizmos;
+
+#if UNITY_EDITOR
+        // empty slots get the project's own materials (found by their GUIDs, so renaming them is fine)
+        if (plainGateMaterial == null)
+            plainGateMaterial = LoadMaterial("9dd98d96b17ac804a93718596153719f");
+
+        if (entryGateMaterial == null)
+            entryGateMaterial = LoadMaterial("29cd6cfe2ff0bb24b977b82e53246ce0");
+
+        if (exitGateMaterial == null)
+            exitGateMaterial = LoadMaterial("c6b94c98f5c48fd4089cf05171c3751b");
+
+        // not straight away: changing other objects while Unity is validating this one can be refused
+        UnityEditor.EditorApplication.delayCall += () =>
+        {
+            if (this != null)
+                ApplyGateLookToAll();
+        };
+#endif
+
         sectionRoomsMax = Mathf.Max(sectionRoomsMin, sectionRoomsMax);
 
         // move the rooms from before the lists existed into Forward Rooms, each with a weight of 1
@@ -164,17 +255,120 @@ public class RoomChain : MonoBehaviour
                 player = controller.transform;
         }
 
+        if (starterRoom != null)
+        {
+            if (planner.PlanStarter(starterRoom, out PlannedRoom starterPlan) && SpawnPlanned(starterPlan))
+                hasStarter = true;
+            else
+                Debug.LogError($"The starter room '{starterRoom.name}' could not be placed (does it have an Entry and an Exit gate?). Starting with a normal room instead.", this);
+        }
+
         BuildAhead();
+
+        if (hasStarter)
+            PlacePlayerAtStart();
+    }
+
+#if UNITY_EDITOR
+    private static Material LoadMaterial(string guid)
+    {
+        string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+
+        return string.IsNullOrEmpty(path) ? null : UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(path);
+    }
+#endif
+
+    // the plain material on every gate, or the usual blue (Entry) and orange (Exit)
+    private void ApplyGateLook(RoomGate gate)
+    {
+        Material material = plainGateLook
+            ? plainGateMaterial
+            : (gate.Type == GateType.Entry ? entryGateMaterial : exitGateMaterial);
+
+        if (material == null)
+            return;
+
+        foreach (MeshRenderer meshRenderer in gate.GetComponentsInChildren<MeshRenderer>(true))
+            meshRenderer.sharedMaterial = material;
+    }
+
+    private void ApplyGateLookToAll()
+    {
+        foreach (RoomGate gate in FindObjectsByType<RoomGate>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            ApplyGateLook(gate);
+    }
+
+    // starts the song (once, no loop) the moment the player is out of the starter room
+    private void PlayStartMusic()
+    {
+        if (startMusic == null)
+            return;
+
+        musicSource = gameObject.AddComponent<AudioSource>();
+        musicSource.clip = startMusic;
+        musicSource.volume = musicFadeInSeconds > 0f ? 0f : musicVolume;
+        musicSource.loop = false;
+        musicSource.spatialBlend = 0f;
+        musicSource.playOnAwake = false;
+        musicSource.Play();
+
+        musicStartTime = Time.unscaledTime;
+    }
+
+    // the fade-in: volume rises in a straight line from 0 to musicVolume over musicFadeInSeconds
+    private void UpdateMusicFade()
+    {
+        if (musicSource == null)
+            return;
+
+        float fade = musicFadeInSeconds > 0f ? Mathf.Clamp01((Time.unscaledTime - musicStartTime) / musicFadeInSeconds) : 1f;
+        musicSource.volume = musicVolume * fade;
+    }
+
+    // puts the player above the starter room's Entry, facing along its blue arrow and looking straight down
+    private void PlacePlayerAtStart()
+    {
+        RoomGate entry = rooms[0].Entry;
+        Vector3 forward = entry.WorldForward;
+
+        CustomPlayerController controller = player != null ? player.GetComponent<CustomPlayerController>() : null;
+
+        if (controller == null)
+        {
+            Debug.LogWarning("No player found, so it was not moved to the start.", this);
+            return;
+        }
+
+        controller.Teleport(entry.transform.position + Vector3.up * spawnHeightAboveEntry + forward * spawnDistanceInFront);
+
+        PlayerLook look = player.GetComponent<PlayerLook>();
+
+        if (look != null)
+            look.SetLook(forward, 89f);
     }
 
     private void Update()
     {
+        UpdateMusicFade();
+
         if (player == null || rooms.Count == 0)
             return;
 
         // a room counts as passed once the player is in front of its Exit gate
         while (passedCount < rooms.Count && HasPassed(rooms[passedCount].Exit))
+        {
             passedCount++;
+
+            // the first room passed is the starter room, which is not counted
+            if (hasStarter && !starterPassed)
+            {
+                starterPassed = true;
+                PlayStartMusic();
+                StarterExited?.Invoke();
+            }
+            else
+                RoomsPassed++;
+        }
 
         // close the way back behind the player
         while (sealedCount < rooms.Count && ShouldSeal(sealedCount))
@@ -259,6 +453,13 @@ public class RoomChain : MonoBehaviour
             Destroy(taken.gameObject);
         }
 
+        return SpawnPlanned(plan);
+    }
+
+    // builds the room the planner worked out.
+    // false if the prefab has no Entry or Exit (the planner then forgets it)
+    private bool SpawnPlanned(PlannedRoom plan)
+    {
         Room room = Instantiate(plan.prefab, transform);
 
         // the footprint boxes were only for the planner, they must not exist in the game
@@ -281,6 +482,9 @@ public class RoomChain : MonoBehaviour
         // the planner worked out exactly where this room goes when it checked that it fits
         room.transform.SetPositionAndRotation(plan.rootPosition, plan.rootRotation);
         room.transform.localScale = plan.flip;
+
+        foreach (RoomGate gate in room.GetComponentsInChildren<RoomGate>(true))
+            ApplyGateLook(gate);
 
         rooms.Add(room);
 
@@ -343,6 +547,10 @@ public class RoomChain : MonoBehaviour
             return;
         }
 
+        // the starter room goes first, like in the game
+        if (starterRoom != null)
+            test.PlanStarter(starterRoom, out PlannedRoom starterPlan);
+
         for (int i = 0; i < simulateRooms; i++)
         {
             // like the live game, only the newest few rooms can be taken back, and the first room always stays
@@ -355,8 +563,23 @@ public class RoomChain : MonoBehaviour
         // counted from the rooms that are left (rooms that were taken back and replaced don't count)
         int[] counts = new int[8];
 
+        // how many times each room prefab was used, most used first
+        Dictionary<Room, int> perRoom = new Dictionary<Room, int>();
+
         foreach (RoomPlanner.Record record in test.Records)
+        {
             counts[(int)record.category]++;
+            perRoom.TryGetValue(record.prefab, out int used);
+            perRoom[record.prefab] = used + 1;
+        }
+
+        List<KeyValuePair<Room, int>> sorted = new List<KeyValuePair<Room, int>>(perRoom);
+        sorted.Sort((a, b) => b.Value.CompareTo(a.Value));
+
+        string perRoomText = "";
+
+        foreach (KeyValuePair<Room, int> pair in sorted)
+            perRoomText += $"\n    {pair.Key.name}: {pair.Value}  ({100f * pair.Value / Mathf.Max(1, test.Count):F1}%)";
 
         Debug.Log(
             $"Simulated {test.Count} rooms (seed {usedSeed}):\n" +
@@ -365,7 +588,8 @@ public class RoomChain : MonoBehaviour
             $"  times a room was taken back: {test.BacktrackCount}\n" +
             $"  rooms forced in anyway: {test.ForcedCount}\n" +
             $"  forward {counts[0]}, turns {counts[1]}, up transitions {counts[2]}, down transitions {counts[3]}, " +
-            $"up rooms {counts[4]}, down rooms {counts[5]}, up returns {counts[6]}, down returns {counts[7]}",
+            $"up rooms {counts[4]}, down rooms {counts[5]}, up returns {counts[6]}, down returns {counts[7]}\n" +
+            $"  per room (most used first, a room that was never picked is missing):{perRoomText}",
             this);
     }
 

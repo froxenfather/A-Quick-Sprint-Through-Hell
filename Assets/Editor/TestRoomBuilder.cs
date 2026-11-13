@@ -1,8 +1,8 @@
 using UnityEditor;
 using UnityEngine;
 
-// builds two simple placeholder rooms out of plain cubes, so you can try the room stitching before you have
-// real rooms. delete this file and Assets/Prefabs/Rooms once you do
+// builds two simple placeholder rooms out of plain cubes, so you can try the room stitching before you have real rooms.
+// delete this file and Assets/Prefabs/Rooms once you do
 
 //   TestRoom_A: a straight platform, the Exit is straight ahead
 //   TestRoom_B: a square platform, the Exit is on the right side, so the path turns 90 degrees
@@ -12,7 +12,8 @@ public static class TestRoomBuilder
     private const string GreyMaterialPath = "Assets/Materials/prototype_grid_grey.mat";
     private const string OrangeMaterialPath = "Assets/Materials/prototype_grid_orange.mat";
 
-    // the gate opening. these match the gizmo defaults in RoomGate
+    // the gate opening.
+    // these match the gizmo defaults in RoomGate
     private const float OpeningWidth = 8f;
     private const float OpeningHeight = 18f;
     private const float FrameThickness = 1f;
@@ -84,7 +85,8 @@ public static class TestRoomBuilder
         roomGate.Type = type;
         roomGate.OpeningSize = new Vector2(OpeningWidth, OpeningHeight);
 
-        // a frame made of two posts and a top beam. there is no bottom bar, the opening goes all the way down
+        // a frame made of two posts and a top beam.
+        // there is no bottom bar, the opening goes all the way down
         float halfWidth = OpeningWidth * 0.5f;
         float halfHeight = OpeningHeight * 0.5f;
         float postHeight = OpeningHeight + FrameThickness;

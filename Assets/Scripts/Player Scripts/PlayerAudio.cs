@@ -1,6 +1,7 @@
 using UnityEngine;
 
-// all of the player's sounds. put this on the Player, next to CustomPlayerController
+// all of the player's sounds.
+// put this on the Player, next to CustomPlayerController
 
 //   - Footsteps: one every strideLength meters while running on the ground (so faster running means faster steps)
 //   - One-shots: jump, dash, wall jump, and touching lava or an electric wall
@@ -11,14 +12,16 @@ public class PlayerAudio : MonoBehaviour
 {
     [SerializeField] private CustomPlayerController player;
 
-    // optional. without it, the hazard sounds don't play
+    // optional.
+    // without it, the hazard sounds don't play
     [SerializeField] private PlayerBurn burn;
 
     [Header("Footsteps")]
     // several variations, picked at random (never the same one twice in a row)
     [SerializeField] private AudioClip[] footsteps;
 
-    // meters travelled per step. bigger = slower steps
+    // meters travelled per step.
+    // bigger = slower steps
     [Min(0.5f)]
     [SerializeField] private float strideLength = 3.5f;
 
@@ -29,7 +32,8 @@ public class PlayerAudio : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float footstepVolume = 0.45f;
 
-    // pitch of the footsteps. 1 = as recorded, lower = deeper and heavier, higher = lighter and sharper
+    // pitch of the footsteps.
+    // 1 = as recorded, lower = deeper and heavier, higher = lighter and sharper
     [Range(0.5f, 2f)]
     [SerializeField] private float footstepPitch = 1f;
 
@@ -126,7 +130,8 @@ public class PlayerAudio : MonoBehaviour
     {
         float speed = player.HorizontalSpeed;
 
-        // steps only happen running on the ground. sliding is silent here
+        // steps only happen running on the ground.
+        // sliding is silent here
         if (!player.IsGrounded || player.IsSliding || speed < minStepSpeed)
         {
             // start the next stride fresh, so the first step after stopping isn't instant

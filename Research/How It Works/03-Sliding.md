@@ -28,6 +28,7 @@
   - Set `slideStartTime = now`.
   - If `speed < slideBoostMaxSpeed`: `v.xz += flatDir * slideBoost`.
 - Otherwise, if grounded -> **crouch** (move at `crouchSpeed`, capsule shrinks to `crouchHeight`, feet stay put).
+- A **slide** shrinks the capsule to `crouchHeight` too (`SetCrouchHitbox(crouching || sliding)`), so you can slide under gaps a standing player can't fit through.
 - Releasing the button is the **only** way a slide ends.
 
 `speed` here is `calculatedMovement.magnitude`: the full 3D magnitude, so vertical speed counts too.

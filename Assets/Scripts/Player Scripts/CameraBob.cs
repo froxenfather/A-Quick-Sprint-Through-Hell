@@ -1,6 +1,7 @@
 using UnityEngine;
 
-// a small up-and-down, side-to-side bob of the camera while running, so movement feels like footsteps. put this on the Main Camera
+// a small up-and-down, side-to-side bob of the camera while running, so movement feels like footsteps.
+// put this on the Main Camera
 
 // it moves the camera itself, not the CameraPivot above it (SlideVisuals lowers the pivot for slides and crouches, and they would fight)
 // set Amount to 0 to turn it off
@@ -8,11 +9,13 @@ public class CameraBob : MonoBehaviour
 {
     [SerializeField] private CustomPlayerController player;
 
-    // how far the camera moves up and down (meters) at full speed. the sideways sway is half of this
+    // how far the camera moves up and down (meters) at full speed.
+    // the sideways sway is half of this
     [Min(0f)]
     [SerializeField] private float amount = 0.04f;
 
-    // meters travelled per full step. match PlayerAudio's stride length and the bob lands on the footsteps
+    // meters travelled per full step.
+    // match PlayerAudio's stride length and the bob lands on the footsteps
     [Min(0.5f)]
     [SerializeField] private float strideLength = 3.5f;
 

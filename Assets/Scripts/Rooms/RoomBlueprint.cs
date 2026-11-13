@@ -2,7 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // everything the generator needs to know about a room prefab, worked out once from the prefab asset (no spawning needed):
-// where its gates are and what space it fills. all of it is relative to the room's root
+// where its gates are and what space it fills.
+// all of it is relative to the room's root
 public class RoomBlueprint
 {
     public Room room;
@@ -14,7 +15,8 @@ public class RoomBlueprint
     // the Exit gate, relative to the room's root (the whole matrix, so it follows a mirror too)
     public Matrix4x4 exitMatrix;
 
-    // the footprint boxes, relative to the room's root. empty if the room has no footprint yet
+    // the footprint boxes, relative to the room's root.
+    // empty if the room has no footprint yet
     public List<OrientedBox> boxes = new List<OrientedBox>();
 
     // a sphere around all the boxes, to skip rooms that are nowhere near each other

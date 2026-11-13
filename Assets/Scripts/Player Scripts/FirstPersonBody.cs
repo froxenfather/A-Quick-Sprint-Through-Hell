@@ -1,7 +1,8 @@
 using UnityEngine;
 
 // lets the first-person camera sit inside the stick figure's head without seeing the inside of it
-// put this on the Player. the head (and everything on it) is shrunk to nothing each frame, so the arms, torso and legs stay visible
+// put this on the Player.
+// the head (and everything on it) is shrunk to nothing each frame, so the arms, torso and legs stay visible
 // when you look down, and the animations still play on the rest of the body
 public class FirstPersonBody : MonoBehaviour
 {

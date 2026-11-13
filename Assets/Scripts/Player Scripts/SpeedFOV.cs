@@ -1,6 +1,7 @@
 using UnityEngine;
 
-// widens the camera FOV as the player speeds up, and punches it wider for a moment when they dash. put it on the Camera
+// widens the camera FOV as the player speeds up, and punches it wider for a moment when they dash.
+// put it on the Camera
 [RequireComponent(typeof(Camera))]
 public class SpeedFOV : MonoBehaviour
 {
@@ -21,22 +22,26 @@ public class SpeedFOV : MonoBehaviour
     [SerializeField] private float fovChangeSpeed = 60f;   // degrees per second
 
     [Header("Dash punch")]
-    // extra degrees of FOV right after a dash. on top of the speed boost above
+    // extra degrees of FOV right after a dash.
+    // on top of the speed boost above
     [Range(0f, 60f)]
     [SerializeField] private float dashFovBoost = 25f;
 
-    // how fast the punch opens up (degrees per second). high = nearly instant
+    // how fast the punch opens up (degrees per second).
+    // high = nearly instant
     [Range(1f, 2000f)]
     [SerializeField] private float dashFovRiseSpeed = 800f;
 
-    // how fast it settles back (degrees per second). 120 takes about a fifth of a second for the default boost
+    // how fast it settles back (degrees per second).
+    // 120 takes about a fifth of a second for the default boost
     [Range(1f, 600f)]
     [SerializeField] private float dashFovFadeSpeed = 120f;
 
     private Camera cam;
     private float baseFov;
 
-    // the FOV from our speed alone. kept here (not read back from the camera) so the dash punch can sit on top of it without the two fighting
+    // the FOV from our speed alone.
+    // kept here (not read back from the camera) so the dash punch can sit on top of it without the two fighting
     private float speedFov;
 
     // the extra degrees from a dash right now, and where it is heading (the boost on the way up, 0 on the way down)

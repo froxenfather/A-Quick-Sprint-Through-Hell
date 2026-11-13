@@ -66,3 +66,10 @@ States: **Locomotion** (blend tree on `Speed`: Idle 0, Walk 6, Run 14, Run Fast 
 - **Own animator controller.** The pack's had states only; editing a third-party asset is worse than adding ours.
 - **No scene editing by hand.** The overlay creates itself, and the setup menu does the rest, the same pattern as `TestRoomBuilder`.
 - **Sprint floor at walk speed.** Otherwise enough touches would make sprinting slower than walking.
+
+## Wind (`WindAudio.cs`)
+Wind that gets louder with speed. Silent below `windStartSpeed` (30 m/s), full volume (`maxVolume`) at `fullVolumeSpeed` (70 m/s), in a straight line between: `volume = maxVolume * InverseLerp(30, 70, speed)`, smoothed by `volumeSmoothing`. Uses the player's whole speed (`Velocity.magnitude`), so falling down the chute is loud.
+
+**Seamless loop for any clip:** two AudioSources play the same clip. In the last `crossfadeSeconds` (2 s, at most half the clip) of the playing one, the other starts at the clip's beginning and they cross-fade with an equal-power curve (`cos`/`sin`, so the loudness doesn't dip). When the first finishes the roles swap. Clips that don't loop cleanly on their own still sound continuous, as long as the clip is longer than a few seconds. Start position is random.
+
+**Setup:** add `WindAudio` to the Player (or re-run **Set Up Player Feedback**, which adds it) and drag a wind clip into **Wind Clip**. On the clip's import settings tick **Preload Audio Data** and leave **Load Type** on Decompress On Load, so it doesn't hitch the first time it plays.

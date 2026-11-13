@@ -2,8 +2,10 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 // learning Objective: convert the velocity that would be lost hitting a ramp (the part driving INTO the surface) into extra flat speed down the ramp
-// steeper ramp -> bigger boost. head-on hit -> bigger boost than a glancing one
-// requires: a ramp Collider below (no Rigidbody on this object). drop it straight down, then try again from an angle (tilt startVelocity)
+// steeper ramp -> bigger boost.
+// head-on hit -> bigger boost than a glancing one
+// requires: a ramp Collider below (no Rigidbody on this object).
+// drop it straight down, then try again from an angle (tilt startVelocity)
 public class Exp07_5_SlopeSpeedBoost : MonoBehaviour
 {
     [SerializeField] private float gravity = 9.81f;

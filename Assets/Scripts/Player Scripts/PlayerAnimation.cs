@@ -1,6 +1,7 @@
 using UnityEngine;
 
-// feeds the stick figure's Animator from the player controller. put this on the Player, next to CustomPlayerController
+// feeds the stick figure's Animator from the player controller.
+// put this on the Player, next to CustomPlayerController
 
 // the Animator (made by A Quick Sprint Through Hell > Set Up Player Feedback) decides which animation plays from these parameters:
 //   speed (float)  flat speed, blends idle / walk / run / run fast
@@ -14,7 +15,9 @@ public class PlayerAnimation : MonoBehaviour
     // found on the stick figure (a child of the Player) if left empty
     [SerializeField] private Animator animator;
 
-    // the controller to use. set by the setup menu. left empty, whatever the Animator already has is kept
+    // the controller to use.
+    // set by the setup menu.
+    // left empty, whatever the Animator already has is kept
     [SerializeField] private RuntimeAnimatorController controller;
 
     [Header("Running cycle speed")]
@@ -27,7 +30,8 @@ public class PlayerAnimation : MonoBehaviour
     [Min(0.1f)]
     [SerializeField] private float fastestPlayback = 1.4f;
 
-    // how smoothly the Speed parameter follows the real speed (seconds). higher = lazier blends
+    // how smoothly the Speed parameter follows the real speed (seconds).
+    // higher = lazier blends
     [Min(0f)]
     [SerializeField] private float speedSmoothing = 0.08f;
 

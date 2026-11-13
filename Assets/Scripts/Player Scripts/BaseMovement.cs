@@ -107,7 +107,8 @@ public class PlayerMovement : MonoBehaviour
             else if (!inLandingGrace)
             {
                 // high groundFriction -> decelerates very quickly to a stop
-                // (near-instant, but still frame-rate independent). suppressed during the landing grace window so jump momentum carries
+                // (near-instant, but still frame-rate independent).
+                // suppressed during the landing grace window so jump momentum carries
                 horiz = Vector3.MoveTowards(
                     horiz,
                     Vector3.zero,

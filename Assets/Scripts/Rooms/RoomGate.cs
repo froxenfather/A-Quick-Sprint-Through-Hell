@@ -7,7 +7,8 @@ public enum GateType
     Exit
 }
 
-// a connection point on a room. the transform IS the gate:
+// a connection point on a room.
+// the transform IS the gate:
 //   position = the middle of the opening
 //   forward  = the blue Z arrow = the direction the player travels THROUGH the gate
 
@@ -19,7 +20,8 @@ public class RoomGate : MonoBehaviour
 {
     [SerializeField] private GateType type = GateType.Entry;
 
-    // only used to draw the gizmo, so you can see the opening. match it to your gate frame
+    // only used to draw the gizmo, so you can see the opening.
+    // match it to your gate frame
     [SerializeField] private Vector2 openingSize = new Vector2(8f, 18f);
 
     public GateType Type
@@ -34,16 +36,24 @@ public class RoomGate : MonoBehaviour
         set => openingSize = value;
     }
 
-    // the gate's direction and up in the world, read from its full matrix. when a room is mirrored,
-    // transform.forward and transform.rotation do not follow the mirror, but these do. use these for stitching
+    // the gate's direction and up in the world, read from its full matrix.
+    // when a room is mirrored, transform.forward and transform.rotation do not follow the mirror, but these do.
+    // use these for stitching
     public Vector3 WorldForward => transform.localToWorldMatrix.MultiplyVector(Vector3.forward).normalized;
 
     public Vector3 WorldUp => transform.localToWorldMatrix.MultiplyVector(Vector3.up).normalized;
 
     public Quaternion WorldRotation => Quaternion.LookRotation(WorldForward, WorldUp);
 
+    // set by the RoomChain's "Show Gate Gizmos" checkbox.
+    // false hides every gate's rectangle and arrow
+    public static bool ShowGizmos = true;
+
     private void OnDrawGizmos()
     {
+        if (!ShowGizmos)
+            return;
+
         // gizmo settings stay set after we draw, so remember them and put them back at the end
         Matrix4x4 previousMatrix = Gizmos.matrix;
         Color previousColor = Gizmos.color;

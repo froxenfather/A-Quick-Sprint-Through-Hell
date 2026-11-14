@@ -1271,6 +1271,7 @@ MonoBehaviour:
   smallestMarkSize: 0.18
   largestMarkSize: 0.7
   growSpeed: 3
+  screenDarkness: 0.5
   edgeDarkness: 0.85
   healFadeTime: 0.6
 --- !u!114 &475227418
@@ -1286,7 +1287,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerBurn
   player: {fileID: 0}
-  burnPerTouch: 1
   sprintSpeedLostPerTouch: 1
   touchCooldown: 0.4
 --- !u!114 &475227419
@@ -4522,7 +4522,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7162162377198911445, guid: 729f73d4d997fda4fbd35da48cd7a99e, type: 3}
       propertyPath: m_LocalScale.x
-      value: 15.750945
+      value: 137.4
       objectReference: {fileID: 0}
     - target: {fileID: 7162162377198911445, guid: 729f73d4d997fda4fbd35da48cd7a99e, type: 3}
       propertyPath: m_LocalScale.y
@@ -4530,11 +4530,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7162162377198911445, guid: 729f73d4d997fda4fbd35da48cd7a99e, type: 3}
       propertyPath: m_LocalScale.z
-      value: 71.72467
+      value: 74.2
       objectReference: {fileID: 0}
     - target: {fileID: 7162162377198911445, guid: 729f73d4d997fda4fbd35da48cd7a99e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 56.5
+      value: 115
       objectReference: {fileID: 0}
     - target: {fileID: 7162162377198911445, guid: 729f73d4d997fda4fbd35da48cd7a99e, type: 3}
       propertyPath: m_LocalPosition.y

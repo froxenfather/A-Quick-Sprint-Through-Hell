@@ -30,7 +30,12 @@ public class BurnOverlay : MonoBehaviour
     [Min(0.1f)]
     [SerializeField] private float growSpeed = 3f;
 
-    [Header("Edges")]
+    [Header("Darkness")]
+    // how dark the whole screen gets at full burn.
+    // it rises in a straight line with the burn level
+    [Range(0f, 1f)]
+    [SerializeField] private float screenDarkness = 0.5f;
+
     // how dark the edges of the screen get at full burn
     [Range(0f, 1f)]
     [SerializeField] private float edgeDarkness = 0.85f;
@@ -54,6 +59,7 @@ public class BurnOverlay : MonoBehaviour
 
     private CanvasGroup group;
     private RectTransform marksRoot;
+    private Image tint;
     private Image edges;
 
     private bool healing;
@@ -68,13 +74,15 @@ public class BurnOverlay : MonoBehaviour
 
     private void OnEnable()
     {
-        burn.Burned += OnBurned;
+        burn.Singed += OnSinged;
+        burn.Soothed += RemoveOldestMark;
         burn.Healed += OnHealed;
     }
 
     private void OnDisable()
     {
-        burn.Burned -= OnBurned;
+        burn.Singed -= OnSinged;
+        burn.Soothed -= RemoveOldestMark;
         burn.Healed -= OnHealed;
     }
 
@@ -87,6 +95,8 @@ public class BurnOverlay : MonoBehaviour
 
     private void Update()
     {
+        // the whole screen and its edges both get darker as the burn level rises, a little more with every singe level
+        tint.color = new Color(0f, 0f, 0f, burn.Burn * screenDarkness);
         edges.color = new Color(0f, 0f, 0f, burn.Burn * edgeDarkness);
 
         // the marks grow toward the size that matches the current burn level
@@ -107,13 +117,23 @@ public class BurnOverlay : MonoBehaviour
         }
     }
 
-    private void OnBurned(SpeedCapSurface surface)
+    private void OnSinged()
     {
         // a burn during a fade-out brings the overlay straight back
         if (healing)
             FinishHealing();
 
         AddMark();
+    }
+
+    // one singe level healed: its oldest mark goes
+    private void RemoveOldestMark()
+    {
+        if (marks.Count == 0)
+            return;
+
+        Destroy(marks[0].rect.gameObject);
+        marks.RemoveAt(0);
     }
 
     private void OnHealed()
@@ -179,7 +199,21 @@ public class BurnOverlay : MonoBehaviour
         group.interactable = false;
         group.blocksRaycasts = false;
 
-        // edges first, so the marks are drawn over them
+        // a plain black layer over the whole screen, so every singe level darkens everything a bit more
+        GameObject tintObject = new GameObject("Tint", typeof(RectTransform), typeof(Image));
+        tintObject.transform.SetParent(canvasObject.transform, false);
+
+        RectTransform tintRect = tintObject.GetComponent<RectTransform>();
+        tintRect.anchorMin = Vector2.zero;
+        tintRect.anchorMax = Vector2.one;
+        tintRect.offsetMin = Vector2.zero;
+        tintRect.offsetMax = Vector2.zero;
+
+        tint = tintObject.GetComponent<Image>();
+        tint.color = Color.clear;
+        tint.raycastTarget = false;
+
+        // edges next, so the marks are drawn over them
         GameObject edgesObject = new GameObject("Edges", typeof(RectTransform), typeof(Image));
         edgesObject.transform.SetParent(canvasObject.transform, false);
 

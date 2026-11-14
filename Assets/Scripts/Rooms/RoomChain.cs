@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.ProBuilder;
 
 // main Driving Engine for the game!
 // spawns rooms one after another.
@@ -71,6 +72,12 @@ public class RoomChain : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float mirrorChance = 0.5f;
 
+    // how far (meters) in front of a room's Exit door the next room's Entry door goes.
+    // the gate frames are 1 m deep, so 1 makes them touch face to face and 0 puts them on the same spot
+    [Header("Gate spacing")]
+    [Min(0f)]
+    [SerializeField] private float gateDepth = 1f;
+
     // a new room is only allowed if its footprint and this clear space in front of its Exit (width, height, length) are free
     // that way every room leaves space for at least one more, and the generator never paints itself into a corner
     [Header("Overlap safeguard")]
@@ -102,17 +109,13 @@ public class RoomChain : MonoBehaviour
     [SerializeField] private int roomsBehind = 1;
 
     [Header("Gate colors")]
-    // ticked: every gate uses the plain material below.
-    // unticked: entrances are blue and exits are orange again
-    // it changes the gates already in the scene as you click it, and every room that spawns
-    [SerializeField] private bool plainGateLook = false;
+    // ticked: every room that spawns gets the gate material below on all of its gates, entrances and exits alike.
+    // unticked: gates keep the colors they have in their prefabs (blue entrances, orange exits)
+    [SerializeField] private bool cautionGates = true;
 
-    // the plain look (filled in with ProBuilderDefault_Copy in the editor if left empty)
-    [SerializeField] private Material plainGateMaterial;
-
-    // the usual colors (filled in with Blue and orange stretch in the editor if left empty)
-    [SerializeField] private Material entryGateMaterial;
-    [SerializeField] private Material exitGateMaterial;
+    // the material for the gates (the caution stripes).
+    // filled in with caution_stripes in the editor if it is left empty, and ProBuilder's own default is used if there is still nothing
+    [SerializeField] private Material gateMaterial;
 
     [Header("Entry seal")]
     // the wall that fills a room's Entry once the player is through it.
@@ -150,6 +153,9 @@ public class RoomChain : MonoBehaviour
     // the rooms in it are moved into Forward Rooms the first time this is loaded in the editor
     [SerializeField, HideInInspector] private Room[] roomPrefabs;
 
+    // the GUID of Assets/Materials/caution_stripes.mat
+    private const string CautionMaterialGuid = "f5840fd810bb4eca8cab6144c5f23efc";
+
     // the most rooms one frame may try to spawn (including taking rooms back), see BuildAhead
     private const int MaxSpawnAttemptsPerFrame = 16;
 
@@ -170,6 +176,10 @@ public class RoomChain : MonoBehaviour
 
     // fired the first time the player goes through the starter room's Exit (the music and the countdown timer start here)
     public event System.Action StarterExited;
+
+    // fired every time the player clears a room (goes through its Exit), not counting the starter room.
+    // the player's burn heals one level for each
+    public event System.Action RoomCleared;
 
     // how many rooms have had their Entry sealed.
     // rooms are sealed in order, oldest first
@@ -193,22 +203,14 @@ public class RoomChain : MonoBehaviour
         RoomGate.ShowGizmos = showGateGizmos;
 
 #if UNITY_EDITOR
-        // empty slots get the project's own materials (found by their GUIDs, so renaming them is fine)
-        if (plainGateMaterial == null)
-            plainGateMaterial = LoadMaterial("9dd98d96b17ac804a93718596153719f");
-
-        if (entryGateMaterial == null)
-            entryGateMaterial = LoadMaterial("29cd6cfe2ff0bb24b977b82e53246ce0");
-
-        if (exitGateMaterial == null)
-            exitGateMaterial = LoadMaterial("c6b94c98f5c48fd4089cf05171c3751b");
-
-        // not straight away: changing other objects while Unity is validating this one can be refused
-        UnityEditor.EditorApplication.delayCall += () =>
+        // found by the material's GUID, so renaming or moving it is fine
+        if (gateMaterial == null)
         {
-            if (this != null)
-                ApplyGateLookToAll();
-        };
+            string path = UnityEditor.AssetDatabase.GUIDToAssetPath(CautionMaterialGuid);
+
+            if (!string.IsNullOrEmpty(path))
+                gateMaterial = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(path);
+        }
 #endif
 
         sectionRoomsMax = Mathf.Max(sectionRoomsMin, sectionRoomsMax);
@@ -269,33 +271,16 @@ public class RoomChain : MonoBehaviour
             PlacePlayerAtStart();
     }
 
-#if UNITY_EDITOR
-    private static Material LoadMaterial(string guid)
+    // swaps the material of every gate in a room for the gate material
+    private void ApplyGateMaterial(Room room)
     {
-        string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+        Material material = gateMaterial != null ? gateMaterial : BuiltinMaterials.defaultMaterial;
 
-        return string.IsNullOrEmpty(path) ? null : UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(path);
-    }
-#endif
-
-    // the plain material on every gate, or the usual blue (Entry) and orange (Exit)
-    private void ApplyGateLook(RoomGate gate)
-    {
-        Material material = plainGateLook
-            ? plainGateMaterial
-            : (gate.Type == GateType.Entry ? entryGateMaterial : exitGateMaterial);
-
-        if (material == null)
-            return;
-
-        foreach (MeshRenderer meshRenderer in gate.GetComponentsInChildren<MeshRenderer>(true))
-            meshRenderer.sharedMaterial = material;
-    }
-
-    private void ApplyGateLookToAll()
-    {
-        foreach (RoomGate gate in FindObjectsByType<RoomGate>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-            ApplyGateLook(gate);
+        foreach (RoomGate gate in room.GetComponentsInChildren<RoomGate>(true))
+        {
+            foreach (MeshRenderer meshRenderer in gate.GetComponentsInChildren<MeshRenderer>(true))
+                meshRenderer.sharedMaterial = material;
+        }
     }
 
     // starts the song (once, no loop) the moment the player is out of the starter room
@@ -367,7 +352,10 @@ public class RoomChain : MonoBehaviour
                 StarterExited?.Invoke();
             }
             else
+            {
                 RoomsPassed++;
+                RoomCleared?.Invoke();
+            }
         }
 
         // close the way back behind the player
@@ -483,8 +471,8 @@ public class RoomChain : MonoBehaviour
         room.transform.SetPositionAndRotation(plan.rootPosition, plan.rootRotation);
         room.transform.localScale = plan.flip;
 
-        foreach (RoomGate gate in room.GetComponentsInChildren<RoomGate>(true))
-            ApplyGateLook(gate);
+        if (cautionGates)
+            ApplyGateMaterial(room);
 
         rooms.Add(room);
 
@@ -525,6 +513,7 @@ public class RoomChain : MonoBehaviour
         settings.gateTolerance = gateTolerance;
         settings.overlapTolerance = overlapTolerance;
         settings.maxBacktracks = maxBacktracks;
+        settings.gateDepth = gateDepth;
 
         return new RoomPlanner(settings, random, transform.position, transform.rotation);
     }

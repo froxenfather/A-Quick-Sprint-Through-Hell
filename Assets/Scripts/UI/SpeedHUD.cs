@@ -21,7 +21,7 @@ public class SpeedHUD : MonoBehaviour
     [SerializeField] private float maxScale = 2f;
 
     // how quickly the size catches up with the speed.
-    // higher = snappier, 0 = no smoothing
+    // higher = snappier, 0 = the size never changes
     [SerializeField] private float scaleSmoothing = 12f;
 
     private float currentScale = 1f;
@@ -44,9 +44,7 @@ public class SpeedHUD : MonoBehaviour
         float t = Mathf.InverseLerp(growStartSpeed, maxScaleSpeed, speed);
         float targetScale = Mathf.Lerp(1f, maxScale, t);
 
-        currentScale = scaleSmoothing <= 0f
-            ? targetScale
-            : Mathf.Lerp(currentScale, targetScale, 1f - Mathf.Exp(-scaleSmoothing * Time.unscaledDeltaTime));
+        currentScale = Mathf.Lerp(currentScale, targetScale, scaleSmoothing * Time.unscaledDeltaTime);
 
         numberText.rectTransform.localScale = Vector3.one * currentScale;
     }

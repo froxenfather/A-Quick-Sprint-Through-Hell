@@ -20,7 +20,7 @@ An instant turn toward where you look, plus some speed. Built for quick trajecto
 
 1. Take the queued press (it is used up either way, so pressing with no charge does not buffer a dash). Stop if `DashCharges < 1`.
 
-   **Charges:** stored as `dashChargeBase` (how many we had) and `dashChargeStamp` (when). `DashCharges = min(maxDashCharges, base + (Time.time - stamp) / dashRechargeTime)`, so it is exact between physics steps and refills one at a time with no timer to reset. A dash sets `base = charges - 1` and `stamp = now`, so progress toward the next charge is kept. The HUD reads `DashCharges` and `MaxDashCharges`.
+   **Charges:** one float, `dashCharges`. Every physics step it goes up by `dt / dashRechargeTime` (capped at `maxDashCharges`), and a dash takes 1 off, so progress toward the next charge is kept and charges come back one at a time. The HUD reads `DashCharges` and `MaxDashCharges`.
 2. `flat` = flat velocity (relative to the platform you stand on), `look` = `Flatten(transform.forward)`, the camera's yaw. Same "look" the walk and wall jump code use.
 3. **Direction:**
    - Standing still (flat speed under 0.01): go along `look`. If you are looking dead up or down there is no flat look, so the dash does nothing.

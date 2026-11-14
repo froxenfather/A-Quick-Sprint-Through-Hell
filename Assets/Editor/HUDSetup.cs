@@ -77,7 +77,7 @@ public static class HUDSetup
         EditorSceneManager.MarkSceneDirty(canvasObject.scene);
         Selection.activeObject = canvasObject;
 
-        Debug.Log("HUD is set up in the top left: rooms, speed, then the dash meter. Bottom centre is kept free for the heartbeat. Save the scene (Ctrl+S).");
+        Debug.Log("HUD is set up: rooms at the top left, the timer at the top centre, speed and the dash meter at the bottom left. Bottom centre is kept free for the heartbeat. Save the scene (Ctrl+S).");
     }
 
     // ============================================================
@@ -90,7 +90,8 @@ public static class HUDSetup
         root.transform.SetParent(canvas, false);
 
         RectTransform rootRect = (RectTransform)root.transform;
-        Anchor(rootRect, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(27f, -105f), new Vector2(0f, 1f), new Vector2(507f, 100f));
+        // bottom left, just above the dash meter
+        Anchor(rootRect, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(27f, 77f), new Vector2(0f, 0f), new Vector2(507f, 100f));
 
         if (label != null)
         {
@@ -122,7 +123,8 @@ public static class HUDSetup
         GameObject root = new GameObject("DashMeter", typeof(RectTransform));
         root.transform.SetParent(canvas, false);
 
-        Anchor((RectTransform)root.transform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(27f, -210f), new Vector2(0f, 1f), new Vector2(400f, 40f));
+        // bottom left, in the corner
+        Anchor((RectTransform)root.transform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(27f, 27f), new Vector2(0f, 0f), new Vector2(400f, 40f));
 
         DashMeterHUD hud = root.AddComponent<DashMeterHUD>();
         SetReference(hud, "player", player);

@@ -31,7 +31,7 @@ public class WindAudio : MonoBehaviour
     [SerializeField] private float crossfadeSeconds = 2f;
 
     // how quickly the volume follows the speed.
-    // higher = snappier, 0 = no smoothing
+    // higher = snappier, 0 = the volume never changes
     [Min(0f)]
     [SerializeField] private float volumeSmoothing = 6f;
 
@@ -71,9 +71,7 @@ public class WindAudio : MonoBehaviour
 
         float target = maxVolume * Mathf.InverseLerp(windStartSpeed, fullVolumeSpeed, player.Velocity.magnitude);
 
-        smoothedVolume = volumeSmoothing <= 0f
-            ? target
-            : Mathf.Lerp(smoothedVolume, target, 1f - Mathf.Exp(-volumeSmoothing * Time.unscaledDeltaTime));
+        smoothedVolume = Mathf.Lerp(smoothedVolume, target, volumeSmoothing * Time.unscaledDeltaTime);
 
         // the copy we were fading out has finished: the other one is now the main one
         if (!current.isPlaying)

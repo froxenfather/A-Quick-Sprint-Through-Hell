@@ -6,7 +6,7 @@ On-screen UI built with Unity UI (Canvas) and TextMeshPro. Each piece is a small
 
 **Set up:** menu **A Quick Sprint Through Hell > Set Up HUD** with the Player scene open. It replaces any object named `HUD`, so it is safe to run again. Save the scene afterwards.
 
-**Layout:** top left, from the top: rooms, speed, dash meter. The bottom centre is kept free for the heartbeat (not built yet: waits for "disgrace"; `heart_sheet.png` is a 3-frame sheet for it).
+**Layout:** rooms at the top left, the countdown timer at the top centre, and speed (above) and the dash meter (below) at the bottom left, anchored to the bottom-left corner. The bottom centre is kept free for the heartbeat (not built yet: waits for "disgrace"; `heart_sheet.png` is a 3-frame sheet for it).
 
 ## Rooms (`RoomCounterHUD`)
 - Number = `RoomChain.RoomsPassed`, a running total that increases each time the player passes a room's Exit. (`passedCount` can't be used, it drops when old rooms are deleted.)
@@ -33,3 +33,5 @@ A big `mm:ss` countdown at the top centre with a ticking clock on its left. Only
 - **Time text style:** black digits with a thick red outline (`textColor`, `outlineColor`, `outlineThickness` 0.3). The outline is drawn by the font material, so it is switched on when the game starts (`Awake` uses the text's own material copy), and only shows in Play mode. The font is `Assets/UI/fonts/midnight_spree/MidnightSpree-Regular.ttf` made into a TMP Font Asset.
 - **Rooms outline:** the room counter has a white outline (`outlineColor`, `outlineThickness` 0.2), applied at game start the same way as the timer's. It uses the text's own material copy so the speed number is not affected.
 - **Tick sound:** `tickSound` (`Assets/UI/tick.mp3`) plays once each time the shown second changes while the countdown shows `tickFromSeconds` (5) or fewer, so at 00:05, 00:04, ... 00:00. Played from a 2D AudioSource the timer makes for itself (`tickVolume`). The factory song no longer loops.
+- **Idle message:** while the countdown is not running (before the player goes through the first door of the chute) the time text shows `idleMessage` (default `UR GOOD`) instead of `05:10`, at the same text size. Safe rooms (later) are meant to use the same message while the clock is paused: the check is just `started`, so a pause flag can be added next to it.
+- **Long messages push the clock left:** the time text stays centered in its box and spills out of both sides when the words are long (`UR GOOD`). `PlaceClock` (in `LateUpdate`) moves the clock so it keeps the same gap from the left end of the text as in the scene: `textWidth = max(box width in the scene, timeText.preferredWidth)`, then `clockRight = textLeft - gap`. The time (`05:10`) fits the box, so the clock doesn't move for it.

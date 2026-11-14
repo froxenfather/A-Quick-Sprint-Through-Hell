@@ -64,6 +64,9 @@ public class RoomPlannerSettings
 
     // how many rooms in a row it may take back while looking for a room that fits
     public int maxBacktracks;
+
+    // how far in front of the previous room's Exit gate the next room's Entry gate goes, so the two door frames touch instead of overlapping
+    public float gateDepth;
 }
 
 // decides which room comes next and where it goes, without spawning anything:
@@ -494,8 +497,12 @@ public class RoomPlanner
         candidates.Add(candidate);
     }
 
-    private static Candidate MakeCandidate(RoomEntry entry, RoomCategory category, RoomBlueprint blueprint, bool mirror, float weight, Vector3 position, Quaternion rotation)
+    private Candidate MakeCandidate(RoomEntry entry, RoomCategory category, RoomBlueprint blueprint, bool mirror, float weight, Vector3 position, Quaternion rotation)
     {
+        // the target is the previous Exit gate, and the Entry goes gateDepth further along the way the Exit points (the first room has nothing before it)
+        if (records.Count > 0)
+            position += rotation * Vector3.forward * settings.gateDepth;
+
         Candidate candidate = new Candidate();
         candidate.entry = entry;
         candidate.category = category;

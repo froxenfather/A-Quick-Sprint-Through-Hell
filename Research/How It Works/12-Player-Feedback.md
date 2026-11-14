@@ -44,19 +44,22 @@ States: **Locomotion** (blend tree on `Speed`: Idle 0, Walk 6, Run 14, Run Fast 
 
 **Hazards:** `SpeedCapSurface` now has a **Type** (Lava or Electric). See `11-Hazard-Surfaces.md` for the cap and bounce. `CustomPlayerController` fires `HazardTouched` the first time a surface is touched (even with bounce 0).
 
-**`PlayerBurn.cs`** (on the Player):
+**`PlayerBurn.cs`** (on the Player). The player has **singe levels**, from 0 up to a maximum:
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `burnPerTouch` | 0.1 | Added to the burn level (0 to 1) per touch: ten touches to full |
-| `sprintSpeedLostPerTouch` | 1 | Max sprint speed lost per touch, never below the walk speed |
+| `sprintSpeedLostPerTouch` | 1 | Max sprint speed lost per singe level. The number of levels is (the Sprint Speed set in the Inspector - walk speed) / this, so 25 -> 12 m/s is 13 levels |
 | `touchCooldown` | 0.4 s | Touches closer than this count once |
 
-- `CustomPlayerController` remembers its `sprintSpeed` at Awake. `ReduceSprintSpeed(amount, floor)` lowers it, `ResetSprintSpeed()` puts it back. `GroundMove` already read the field, so nothing else changed.
+- **Each hazard touch** adds one singe level and lowers the max sprint speed by `sprintSpeedLostPerTouch`. `Burn` (0 to 1) is `singe / MaxSinge`, so the screen darkens a little more with every level (before, `burnPerTouch` could jump it straight to full).
+- **The maximum is the walk speed.** Once the sprint speed is down to 12 m/s that is the most damage there is: touching lava or an electric wall still hurts (speed cap, bounce, sound: `Burned` still fires) but adds no more singe (no `Singed`, no extra mark).
+- **Clearing a room** takes one singe level away: `RoomChain.RoomCleared` (fired when the player goes through a room's Exit, not counting the starter room) -> `PlayerBurn.OnRoomCleared`. At 0 singe it does nothing. The last level cleared fires `Healed`, otherwise `Soothed`.
+- **`Heal()`** (the green orb) sets singe to 0 and fires `Healed`.
+- The sprint speed is always worked out from the singe level (`SetSprintSpeed(start - singe * lost)`, clamped between the walk speed and the starting sprint speed), so healing a level gives back exactly what that level took. `GroundMove` already read the field, so nothing else changed.
 - Knock-on: wall running needs 20 m/s, so with a low sprint speed you need a slide, a dash or a slope to get there.
-- **`Heal()`** sets burn to 0 and resets the sprint speed. It fires `Healed`.
+- Events: `Burned` (every counted touch, used for the sounds), `Singed` (a level was added), `Soothed` (a level was removed, some left), `Healed` (all gone).
 
-**`BurnOverlay.cs`** builds its own screen-space canvas at runtime and draws its textures from Perlin noise (no image files). Each touch adds a black ragged burn mark at a random spot, marks grow as the burn level rises, and the screen edges darken (`edgeDarkness`). Healing fades it out over `healFadeTime` and clears the marks. At most `maxMarks` marks; the oldest go first.
+**`BurnOverlay.cs`** builds its own screen-space canvas at runtime and draws its textures from Perlin noise (no image files). It darkens with the burn level in three ways: a black layer over the whole screen (`screenDarkness`, 0.5 at full burn), darker edges (`edgeDarkness`), and burn marks. Each new singe level (`Singed`) adds a black ragged mark at a random spot, and the marks grow as the burn level rises. A level healed by a room (`Soothed`) removes the oldest mark. When all singe is gone (`Healed`) it fades out over `healFadeTime` and clears the marks. At most `maxMarks` marks; the oldest go first.
 
 **`HealthPickup.cs`:** a trigger collider (the controller's sweeps ignore triggers, so it is walked through). `OnTriggerEnter` finds a `PlayerBurn` on the player, calls `Heal()`, plays the pickup sound at its position, then is destroyed (or hidden for `respawnTime` seconds). It spins and bobs. Make one with **Create Health Pickup Prefab** and drag it into a room.
 

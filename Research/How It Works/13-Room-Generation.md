@@ -94,10 +94,23 @@ The **Starter Room** slot on the RoomChain (header "Start") holds the room every
 ### Music
 The **Start Music** slot (and **Music Volume**) on the RoomChain holds a song. It starts the first time the player crosses the starter room's Exit (the same moment the starter room is counted as passed), and plays **once** (it does not loop). It plays through a 2D AudioSource added to the RoomChain object. Empty slot = no music.
 
-## Gate colors (plain look toggle)
-The RoomChain's **Gate colors** header has a **Plain Gate Look** checkbox.
-- **Ticked:** every gate's frame uses **Plain Gate Material** (`ProBuilderDefault_Copy`).
-- **Unticked:** entrances use **Entry Gate Material** (`Blue`), exits use **Exit Gate Material** (`orange stretch`).
-- The three material slots are filled in automatically in the editor when empty (by the materials' GUIDs). Clicking the checkbox changes the gates already in the scene straight away (`OnValidate` -> `ApplyGateLookToAll`, delayed one editor tick), and every room that spawns gets the current look (`SpawnPlanned` -> `ApplyGateLook`). It sets the material on the gate object's MeshRenderers (and its children's), so the prefab assets themselves are never changed.
+## Gate colors (caution stripes on every door)
+The RoomChain's **Gate colors** header has a **Caution Gates** checkbox (on by default) and a **Gate Material** slot.
+- **Ticked:** every room that spawns gets **Gate Material** on every gate, entrances (blue) and exits (orange) alike. The slot is filled in automatically in the editor with `Assets/Materials/caution_stripes.mat` (found by its GUID) if it is empty. ProBuilder's own default is the last fallback.
+- **Unticked:** nothing is touched, so gates keep the colors in their prefabs (blue entrances, orange exits).
+- It is applied when a room spawns (`SpawnPlanned` -> `ApplyGateMaterial`) and only changes the spawned copy, never the prefab assets. It doesn't recolor rooms that already exist, and doors that are not part of a RoomChain room (for example hand-placed ones in the lobby) are not touched: use the Replace Materials window for those.
+- The stripe size follows the material's **Tiling** (smaller = bigger stripes), because ProBuilder maps the texture per meter.
+- The fields were renamed (`plainGateLook` -> `cautionGates`, `plainGateMaterial` -> `gateMaterial`), so a scene that was saved with the old ones starts from the new defaults: on, with the caution stripes.
 
-**Fade-in:** **Music Fade In Seconds** (slider 0 to 30, default 4) sets how long the song takes to rise from silence to **Music Volume**: `volume = musicVolume * clamp01(timeSinceStart / fadeSeconds)`. 0 = full volume at once. Both sliders are read every frame, so you can drag them while the song plays (changing the fade time while it is fading changes the curve at once). Uses unscaled time.
+## Gate spacing (touching doors)
+Before, a room's Entry gate went exactly on the previous room's Exit gate, so the two door frames overlapped. Now they sit face to face.
+
+- **Gate Depth** (RoomChain, "Gate spacing", default 1): the next room's Entry is placed this many meters further along the way the previous Exit points.
+- The gate frames are 1 m deep (`EnterPro` and `ExitPro` both run from z = -0.5 to 0.5 in their own space), so 1 makes them touch. 0 puts them on the same spot, like before.
+- It is one number and one line in `RoomPlanner.MakeCandidate`: `position += rotation * Vector3.forward * gateDepth`.
+- The first room (the starter) has nothing before it, so it is not moved.
+- The planner's footprint checks, Simulate Rooms and the real spawn all use the same placement, so what is checked is exactly where the room appears.
+
+**Caution-stripe doors:** `Assets/Materials/caution_stripes.mat` (URP Lit with `caution_stripes.png`, a seamless 512 x 512 yellow and black 45 degree stripe, tiling 0.5) is meant for this slot. Drag it into **Plain Gate Material** and tick **Plain Gate Look**: every gate of every room that spawns then uses it. The stripe size follows the material's **Tiling** (smaller number = bigger stripes), because ProBuilder maps the texture per meter.
+
+**Why the stripes use a shader, not the texture (`Assets/Shaders/CautionStripes.shader`):** ProBuilder gives every face its own flat texture map, so 45 degree stripes on neighbouring faces point different ways and meet in a V at a corner. The shader doesn't use the texture map. It works out each stripe from the point's position on the object, `(x + y + z) / Stripe Spacing`, which is the same number on both sides of a corner, so the stripes carry straight on and are the same width on every face (the spacing is in meters, default 1.2). It is the object's own space, so rotated and mirrored rooms keep the same stripes. A triangle wave plus `fwidth` gives a smooth one-pixel edge. It has a forward pass (the sun with shadows, plus the ambient light, no extra point lights), a shadow caster pass and a depth pass. `caution_stripes.mat` now uses this shader (colors **Stripe Color (yellow)** and **Stripe Color (black)**, and **Stripe Spacing (m)**). `caution_stripes.png` is no longer used by it.

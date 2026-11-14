@@ -330,11 +330,10 @@ public class CustomPlayerController : MonoBehaviour
 
     // dash state.
     // dashQueued is the same one-frame-press trick as jumpQueued
-    // charges are stored as "how many we had at dashChargeStamp", and recharge from there at a steady rate (see DashCharges).
-    // this keeps them accurate between physics steps and makes them come back one at a time without any timer to reset
+    // dashCharges counts up a little every physics step until it reaches the max, and a dash takes 1 off.
+    // 1.6 means one full charge plus 60% of the next
     private bool dashQueued;
-    private float dashChargeBase;
-    private float dashChargeStamp;
+    private float dashCharges;
 
     // gravity is switched off until this time (see dashHangTime).
     // in the past = no hang
@@ -430,14 +429,13 @@ public class CustomPlayerController : MonoBehaviour
 
     // the sprint speed we have right now (hazards can lower it) and the one we started with
     public float SprintSpeed => sprintSpeed;
+    public float StartSprintSpeed => startSprintSpeed;
     public float WalkSpeed => walkSpeed;
 
     // fired the moment these happen, so effects (the FOV punch, sounds, animations) can react without the controller knowing about them
-    // dash charges for the HUD.
-    // 1.6 means one full charge plus 60% of the next.
-    // never above MaxDashCharges
+    // dash charges for the HUD (1.6 means one full charge plus 60% of the next)
     public int MaxDashCharges => maxDashCharges;
-    public float DashCharges => Mathf.Min(maxDashCharges, dashChargeBase + (Time.time - dashChargeStamp) / dashRechargeTime);
+    public float DashCharges => dashCharges;
 
     public event System.Action Dashed;
     public event System.Action Jumped;
@@ -459,8 +457,7 @@ public class CustomPlayerController : MonoBehaviour
         capsule = GetComponent<CapsuleCollider>();
 
         // start with every dash charged
-        dashChargeBase = maxDashCharges;
-        dashChargeStamp = Time.time;
+        dashCharges = maxDashCharges;
 
         SetupRigidbody();
 
@@ -476,17 +473,11 @@ public class CustomPlayerController : MonoBehaviour
         CalculateMinGroundNormal();
     }
 
-    // lowers the sprint speed by amount, but never below floor (and never raises it).
-    // used by hazards like lava
-    public void ReduceSprintSpeed(float amount, float floor)
+    // sets the sprint speed, never below the walk speed and never above what it was when the game started.
+    // used by burns (PlayerBurn)
+    public void SetSprintSpeed(float speed)
     {
-        sprintSpeed = Mathf.Max(Mathf.Min(floor, sprintSpeed), sprintSpeed - amount);
-    }
-
-    // puts the sprint speed back to what it was when the game started
-    public void ResetSprintSpeed()
-    {
-        sprintSpeed = startSprintSpeed;
+        sprintSpeed = Mathf.Clamp(speed, walkSpeed, startSprintSpeed);
     }
 
     private void OnValidate()
@@ -531,6 +522,9 @@ public class CustomPlayerController : MonoBehaviour
 
         // decide slide/crouch BEFORE jumping, so pressing slide and jump on the same frame still counts as a slide jump instead of missing it by one frame
         UpdateSlideAndCrouch(ref calculatedMovement, dt);
+
+        // dashes come back one at a time
+        dashCharges = Mathf.Min(maxDashCharges, dashCharges + dt / dashRechargeTime);
 
         // dash before the jump, so pressing both on the same frame still gives the jump the dash's speed (and airSpeedCap)
         TryDash(ref calculatedMovement);
@@ -654,12 +648,12 @@ public class CustomPlayerController : MonoBehaviour
 
         // without normalize:
         // (1,1) magnitude = sqrt(2) ~= 1.414
-
+        Mouse mouse = Mouse.current;
         // with normalize:
         // magnitude = 1
         moveInput = input.normalized;
         // normalizing the direction keeps speed precise!
-        sprinting = keyboard.leftShiftKey.isPressed;
+        sprinting = keyboard.leftShiftKey.isPressed || mouse.rightButton.isPressed;
 
         // queue jump here so FixedUpdate cannot miss a single-frame key press
         if (keyboard.spaceKey.wasPressedThisFrame)
@@ -672,15 +666,15 @@ public class CustomPlayerController : MonoBehaviour
 
         // slide is the back thumb button of the mouse.
         // same queue trick as jump for the press, and a plain "is it down" for holding the slide
-        Mouse mouse = Mouse.current;
+        
         if (mouse == null) return;
 
         if (mouse.forwardButton.wasPressedThisFrame)
             dashQueued = true;
 
-        slideHeld = mouse.backButton.isPressed;
+        slideHeld = mouse.backButton.isPressed || keyboard.ctrlKey.isPressed;
 
-        if (mouse.backButton.wasPressedThisFrame)
+        if (mouse.backButton.wasPressedThisFrame || keyboard.ctrlKey.wasPressedThisFrame)
             slideQueued = true;
     }
 
@@ -703,9 +697,7 @@ public class CustomPlayerController : MonoBehaviour
         bool dashPressed = dashQueued;
         dashQueued = false;
 
-        float charges = DashCharges;
-
-        if (!dashPressed || charges < 1f)
+        if (!dashPressed || dashCharges < 1f)
             return;
 
         Vector3 flat = Flatten(calculatedMovement);
@@ -756,8 +748,7 @@ public class CustomPlayerController : MonoBehaviour
 
         // spend one charge.
         // the partial progress toward the next one is kept
-        dashChargeBase = charges - 1f;
-        dashChargeStamp = Time.time;
+        dashCharges -= 1f;
         dashHangEndTime = Time.time + dashHangTime;
         Dashed?.Invoke();
     }
@@ -1110,6 +1101,7 @@ public class CustomPlayerController : MonoBehaviour
     //   - not already moving away from the wall.
     //     without this, the tick after a wall jump (wall still in range if the push is small) would freeze the jump's upward speed
     //   - grace period not used up
+    //   - not sliding
 
     // only time actually spent wall running is counted.
     // the budget refills on landing here, and on a wall jump in ApplyWallJump
@@ -1122,6 +1114,12 @@ public class CustomPlayerController : MonoBehaviour
             wallRunTimeUsed = 0f;
             return;
         }
+
+        // a slide and a wall run never happen together.
+        // starting a slide (UpdateSlideAndCrouch runs before this) ends a wall run at once, and no wall run can start while we are sliding.
+        // wall JUMPS are not affected, they don't look at sliding
+        if (sliding)
+            return;
 
         if (!TryGetWallContact(out WallContact wall) || !wall.lookOk)
             return;
@@ -1139,7 +1137,8 @@ public class CustomPlayerController : MonoBehaviour
     // choose movement model based on what state we're in
     private Vector3 Move(Vector3 calculatedMovement, float dt)
     {
-        // wall running is airborne by definition and overrides the other air models (an air slide included)
+        // wall running is airborne by definition and overrides the other air models.
+        // a slide can never be wall running (UpdateWallRun leaves it off while sliding), so the two never compete
         if (wallRunning)
             return WallRunMove(calculatedMovement);
 

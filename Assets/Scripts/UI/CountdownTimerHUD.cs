@@ -2,27 +2,18 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// a big countdown (mm:ss) with a ticking clock beside it
-// the countdown starts when the player goes through the starter room's Exit (the same moment the music starts)
-//
-// the clock is a few pictures flipped through once every second: they all play during the first animationSeconds of each second
-// (all the pictures in half a second), then it rests on the first picture for the rest of the second, which looks like a tick and a pause
-// the whole group also jitters: every time the picture changes it jumps a little in a random direction, and snaps back to its place while resting
-//
-// put it on the group object that holds the clock and the time (the whole group is what jitters)
+// Big Clock Hours...
 public class CountdownTimerHUD : MonoBehaviour
 {
     [SerializeField] private RoomChain roomChain;
     [SerializeField] private Image clockImage;
 
     // the clock pictures in order.
-    // the first one is also the resting picture
     [SerializeField] private Sprite[] clockFrames = new Sprite[8];
 
     [SerializeField] private TMP_Text timeText;
 
     // how long the countdown starts from, in seconds.
-    // 310 = 05:10
     [Min(1f)]
     [SerializeField] private float durationSeconds = 310f;
 
@@ -37,6 +28,9 @@ public class CountdownTimerHUD : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float outlineThickness = 0.15f;
 
+    // shown instead of the time while the clock is not counting down (before the player goes through the first door of the chute)
+    [SerializeField] private string idleMessage = "UR GOOD";
+
     [Header("Clock animation")]
     // the clock does one full loop of its pictures every this many seconds
     [Min(0.1f)]
@@ -46,9 +40,6 @@ public class CountdownTimerHUD : MonoBehaviour
     [Min(0.05f)]
     [SerializeField] private float animationSeconds = 0.5f;
 
-    // the most (in pixels) the group moves away from its place on each picture change.
-    // 0 turns the jitter off
-    // it is read every frame, so you can drag the slider during Play mode and see the change straight away
     [Header("Tick sound")]
     // played once per second while the countdown shows this many seconds or fewer, down to 00:00.
     // leave empty for no tick
@@ -60,12 +51,19 @@ public class CountdownTimerHUD : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float tickVolume = 1f;
 
+    // the most (in pixels) the group moves away from its place on each picture change.
+    // 0 turns the jitter off
+    // it is read every frame, so you can drag the slider during Play mode and see the change straight away
     [Header("Jitter")]
     [Range(0f, 40f)]
     [SerializeField] private float jitterPixels = 6f;
 
     private RectTransform rect;
     private Vector2 basePosition;
+
+    // the text box's width in the scene, and the gap between the clock and the text, which the clock keeps when the words get longer
+    private float textMinWidth;
+    private float clockGap;
 
     private bool started;
     private float startTime;
@@ -85,6 +83,20 @@ public class CountdownTimerHUD : MonoBehaviour
         if (roomChain == null)
             roomChain = FindFirstObjectByType<RoomChain>();
 
+        // remember how the clock sits next to the text in the scene: the text box's width, and the gap between the clock's right edge and the box's left edge
+        if (clockImage != null && timeText != null)
+        {
+            RectTransform textRect = timeText.rectTransform;
+            RectTransform clockRect = clockImage.rectTransform;
+
+            textMinWidth = textRect.rect.width;
+
+            float textLeft = textRect.anchoredPosition.x - textMinWidth * textRect.pivot.x;
+            float clockRight = clockRect.anchoredPosition.x + clockRect.rect.width * (1f - clockRect.pivot.x);
+
+            clockGap = textLeft - clockRight;
+        }
+
         // a 2D source for the tick, made here so nothing needs setting up
         tickSource = gameObject.AddComponent<AudioSource>();
         tickSource.playOnAwake = false;
@@ -101,6 +113,30 @@ public class CountdownTimerHUD : MonoBehaviour
             timeText.outlineColor = outlineColor;
             timeText.outlineWidth = outlineThickness;
         }
+    }
+
+    // the text is centered in its box and spills out of both sides when the words are long, so the clock has to move out of the way.
+    // the clock keeps the same gap from the left end of the text that it has in the scene
+    private void PlaceClock()
+    {
+        if (clockImage == null || timeText == null)
+            return;
+
+        RectTransform textRect = timeText.rectTransform;
+        RectTransform clockRect = clockImage.rectTransform;
+
+        // how wide the words are, never less than the box in the scene
+        float textWidth = Mathf.Max(textMinWidth, timeText.preferredWidth);
+
+        float textLeft = textRect.anchoredPosition.x - textWidth * textRect.pivot.x;
+        float clockRight = textLeft - clockGap;
+
+        clockRect.anchoredPosition = new Vector2(clockRight - clockRect.rect.width * (1f - clockRect.pivot.x), clockRect.anchoredPosition.y);
+    }
+
+    private void LateUpdate()
+    {
+        PlaceClock();
     }
 
     private void OnEnable()
@@ -129,7 +165,11 @@ public class CountdownTimerHUD : MonoBehaviour
         bool finished = started && elapsed >= durationSeconds;
 
         float remaining = Mathf.Max(0f, Mathf.Ceil(durationSeconds - elapsed));
-        ShowTime(remaining);
+
+        if (started)
+            ShowTime(remaining);
+        else
+            ShowIdleMessage();
 
         // tick each time the shown second changes, from tickFromSeconds down to 0
         int shownSeconds = Mathf.RoundToInt(remaining);
@@ -185,5 +225,12 @@ public class CountdownTimerHUD : MonoBehaviour
 
         int seconds = Mathf.RoundToInt(totalSeconds);
         timeText.text = $"{seconds / 60:00}:{seconds % 60:00}";
+    }
+
+    // the clock isn't counting down, so the text says so
+    private void ShowIdleMessage()
+    {
+        if (timeText != null)
+            timeText.text = idleMessage;
     }
 }

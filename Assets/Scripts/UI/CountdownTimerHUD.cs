@@ -153,6 +153,10 @@ public class CountdownTimerHUD : MonoBehaviour
         rect.anchoredPosition = basePosition;
     }
 
+    // true while the countdown is running, and false while the clock says you're good.
+    // Conseraph follows this: he hunts while it runs and is invisible while it doesn't
+    public bool IsCounting => started;
+
     private void OnStarterExited()
     {
         started = true;

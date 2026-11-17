@@ -6,7 +6,21 @@ On-screen UI built with Unity UI (Canvas) and TextMeshPro. Each piece is a small
 
 **Set up:** menu **A Quick Sprint Through Hell > Set Up HUD** with the Player scene open. It replaces any object named `HUD`, so it is safe to run again. Save the scene afterwards.
 
-**Layout:** rooms at the top left, the countdown timer at the top centre, and speed (above) and the dash meter (below) at the bottom left, anchored to the bottom-left corner. The bottom centre is kept free for the heartbeat (not built yet: waits for "conseraph"; `heart_sheet.png` is a 3-frame sheet for it).
+**Layout:** rooms at the top left, the countdown timer at the top centre, and speed (above) and the dash meter (below) at the bottom left, anchored to the bottom-left corner. The heartbeat sits at the bottom centre (see Heartbeat below).
+
+## Heartbeat (`HeartbeatHUD`)
+A beating heart at the bottom centre. It is **not built by Set Up HUD**: you make it by hand under the HUD canvas (steps below). The script goes on a `RawImage` whose texture is `Assets/UI/heart_sheet_even.png` (840 x 332: three equal cells of 280 x 332, each heart centred on its black outline at its own size). It was made from `heart_sheet.png`, whose hearts were different sizes and not on equal thirds, so cutting that sheet into thirds sliced them. Keep both files: the original is the source. It shows one third of the sheet at a time by moving the `RawImage`'s `uvRect`, so the sheet needs no slicing and no sprite import. Re-running Set Up HUD deletes the HUD object, and the heart with it, so make it again afterwards.
+
+To make it:
+1. Right-click the **HUD** object in the Hierarchy and choose **UI (Canvas) > Raw Image**. Name it `Heartbeat`.
+2. Rect Transform: **Alt + Shift** click the bottom-centre anchor preset, then set **Pos Y** 40, **Width** 169, **Height** 200 (one cell is 280 x 332, so 200 tall is 169 wide).
+3. Drag `heart_sheet_even.png` into **Texture**. Set **UV Rect** to X 0, Y 0, W 0.3333, H 1 so it shows one heart in the editor.
+4. **Add Component > Heartbeat HUD** on the same object. Leave the other fields as they are.
+- **Normal beat:** a beat is 1 s: the three hearts play in order during `animationSeconds` (0.25), then it rests on the first for `restSeconds` (0.75).
+- **Hidden when he isn't hunting:** the heart (the `RawImage`) is switched off whenever `Conseraph.Hunting` is false: from the start of the game through the tutorial, and inside safe rooms. It switches on again, starting from the first heart, when he begins to hunt. With no Conseraph in the scene it always shows.
+- **Speeding up:** only while Conseraph is hunting. Between his catch-up distance (`Conseraph.CatchUpDistance`) and his close distance (`Conseraph.CloseDistance`), the speed rises in a straight line from 1x to `maxSpeedMultiplier` (3.5x) as `DistanceToPlayer` falls: `speed = lerp(1, 3.5, InverseLerp(catchUp, close, distance))`. Farther than the catch-up distance, or while he is paused or invisible (safe rooms, the tutorial), it beats normally.
+- **No jumps:** the beat is a position that moves forward each frame by `deltaTime * speed / beatLength`, so a change of speed never makes the heart jump.
+- **Place and size:** whatever you set on the Raw Image's Rect Transform.
 
 ## Rooms (`RoomCounterHUD`)
 - Number = `RoomChain.RoomsPassed`, a running total that increases each time the player passes a room's Exit. (`passedCount` can't be used, it drops when old rooms are deleted.)

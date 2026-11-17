@@ -123,6 +123,10 @@ public class Conseraph : MonoBehaviour
 
     public float Speed => currentSpeed;
 
+    // the two distances his speed depends on, so other scripts (the heartbeat) can follow them
+    public float CatchUpDistance => catchUpDistance;
+    public float CloseDistance => closeDistance;
+
     // true from the moment the timer reaches 00:00 until it says you're good again
     public bool Enraged => enraged;
 

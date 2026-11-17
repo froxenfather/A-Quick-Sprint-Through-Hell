@@ -749,6 +749,7 @@ GameObject:
   - component: {fileID: 386516197}
   - component: {fileID: 386516196}
   - component: {fileID: 386516198}
+  - component: {fileID: 386516199}
   m_Layer: 0
   m_Name: RoomChainMAINGAME
   m_TagString: Untagged
@@ -775,6 +776,7 @@ MonoBehaviour:
   musicVolume: 0.578
   musicFadeInSeconds: 10
   musicFadeOutSeconds: 2
+  tutorialEnabled: 0
   tutorialRooms:
   - {fileID: 5445654977221729617, guid: ef10e38a5284f51488fe9290f62a3ae8, type: 3}
   - {fileID: 253380468106318857, guid: 0c19cc6e71670f4428a6854f3963941d, type: 3}
@@ -789,6 +791,9 @@ MonoBehaviour:
   - {fileID: 6027824889379840824, guid: a547c13aa09fbcf41978fec90b0d1afa, type: 3}
   - {fileID: 1683439181420032701, guid: 610d8d726f19d2443817124b52a03701, type: 3}
   - {fileID: 5648782931419823011, guid: aa074e4d9dee66b48bfd58b0d685a4e0, type: 3}
+  safeRooms:
+  - room: {fileID: 5648782931419823011, guid: aa074e4d9dee66b48bfd58b0d685a4e0, type: 3}
+    weight: 1
   forwardRooms:
   - room: {fileID: 6380444923456330828, guid: 80e76add227cfb743b76be2f8653562f, type: 3}
     weight: 1
@@ -905,6 +910,31 @@ MonoBehaviour:
   width: 1400
   fadeInSeconds: 1
   fadeOutSeconds: 0.4
+--- !u!114 &386516199
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 386516195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e3b1f0a9c4d4a68b5d2e91c0f6a3b27, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ChaseWarning
+  roomChain: {fileID: 386516196}
+  message: here he comes...
+  font: {fileID: 11400000, guid: 6505bf23ee48eeb428aa834d3ddad205, type: 2}
+  fontSize: 130
+  textColor: {r: 1, g: 0.04, b: 0.04, a: 1}
+  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineThickness: 0.2
+  letterSpacing: 40
+  charactersPerSecond: 4
+  holdSeconds: 2.5
+  fadeOutSeconds: 1.5
+  jitterPixels: 6
+  jitterChangesPerSecond: 16
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1471,6 +1501,7 @@ RectTransform:
   - {fileID: 247617537}
   - {fileID: 1791408122}
   - {fileID: 1191925710}
+  - {fileID: 1696550033}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2749,6 +2780,96 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!1 &1696550032
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1696550033}
+  - component: {fileID: 1696550035}
+  - component: {fileID: 1696550034}
+  - component: {fileID: 1696550036}
+  m_Layer: 0
+  m_Name: Heartbeat
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1696550033
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1696550032}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 2.9, y: 2.9, z: 2.9}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 451338464}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: 0, y: 101.7}
+  m_SizeDelta: {x: 120, y: 160}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1696550034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1696550032}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 2800000, guid: cad7759c93a7232418a2158941efcd8c, type: 3}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0.333333
+    height: 1
+--- !u!222 &1696550035
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1696550032}
+  m_CullTransparentMesh: 1
+--- !u!114 &1696550036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1696550032}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a8c2d6f1b9e47c3a05d7e3f92b1c6d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HeartbeatHUD
+  heart: {fileID: 0}
+  frames: 3
+  animationSeconds: 0.5
+  restSeconds: 0.5
+  maxSpeedMultiplier: 5
 --- !u!1 &1715955449
 GameObject:
   m_ObjectHideFlags: 0

@@ -138,3 +138,41 @@
 - New Rooms
 - - Spillway
 - - Walls
+
+## 11/5/2026
+- New Rooms
+- - Catastrophe
+- - Meltdown
+
+## 11/9/2026
+- Turns have been implemented
+- New Rooms
+- - BlankTurn
+- - CloseCall
+- - Hot Turn
+- - SlidewayTurn
+
+## 11/10/2026
+- Art Day
+- Sketched out Conseraph. The main evil face of the Game
+- SVG Vector Image Complete!
+
+# 11/11/2026
+- Happy 1111
+- Conseraph is HERE
+- No code yet but fully animated and he is AWFUL scary
+
+## 11/12/2026
+- Conseraph chases you and its frankly scary
+
+## 11/13/2026
+- Custom Play now has a door to Factory
+
+## 11/15/2026
+- Animation Day
+- New Intro 
+- New Death Scene
+
+## 11/17/2026
+- Tutorial for the game has been implemented
+- Saferooms are here

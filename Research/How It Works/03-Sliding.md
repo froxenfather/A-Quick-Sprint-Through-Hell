@@ -29,7 +29,8 @@
   - If `speed < slideBoostMaxSpeed`: `v.xz += flatDir * slideBoost`.
 - Otherwise, if grounded -> **crouch** (move at `crouchSpeed`, capsule shrinks to `crouchHeight`, feet stay put).
 - A **slide** shrinks the capsule to `crouchHeight` too (`SetCrouchHitbox(crouching || sliding)`), so you can slide under gaps a standing player can't fit through.
-- Releasing the button is the **only** way a slide ends.
+- Releasing the button is the **only** way a slide ends, with one exception: **a low ceiling.** When the button is released, `CanStandUp()` checks whether a capsule of full standing height would fit where the player is (`OverlapCapsuleNonAlloc` with `collisionMask`, ignoring the player's own colliders, and a capsule a hair thinner than the real one so touching the floor or a wall doesn't count). If something would be inside the head, the player stays low instead of standing, for crouching and sliding alike. The check runs every step, so the moment the space is clear and the button isn't held, they stand up with no extra press.
+- A slide that is forced to continue under a ceiling can slow to a stop, and a slide has no forward control, so it would trap the player. So once a forced slide drops below `slideMinSpeed` on the ground, it turns into a crouch (still low, but the player can walk out at `crouchSpeed`).
 
 `speed` here is `calculatedMovement.magnitude`: the full 3D magnitude, so vertical speed counts too.
 

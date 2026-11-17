@@ -8,6 +8,7 @@ Surfaces that cap the player's speed and throw them back. A material can't hold 
 |---|---|---|
 | `maxSpeed` | 5 | Flat speed (m/s) allowed while touching |
 | `bounceSpeed` | 10 | Speed along the surface normal on first touch. 0 = no bounce |
+| `singeDamage` | on | On: touching it hurts (a singe level, the burn marks, the touch sound, and the "times burned" stat). Off: it only caps the speed and bounces, with no hurt at all (`PlayerBurn` ignores the touch). |
 
 The `SpeedCapSurface` has to be on the same object as the `Collider` (the controller looks on the collider's object).
 

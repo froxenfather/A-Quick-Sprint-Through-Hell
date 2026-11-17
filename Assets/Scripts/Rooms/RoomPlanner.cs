@@ -2,7 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // which list a room comes from.
-// the first four are what the generator picks from normally, the other four are used inside an up or down section
+// the first four are what the generator picks from normally, the next four are used inside an up or down section.
+// SafeRooms is only used when a safe room has to be placed (the first room after the chute when the tutorial is off)
 public enum RoomCategory
 {
     Forward,
@@ -12,7 +13,8 @@ public enum RoomCategory
     UpRooms,
     DownRooms,
     UpReturns,
-    DownReturns
+    DownReturns,
+    SafeRooms
 }
 
 // where the generator is: building the normal level, or inside an up or down section
@@ -175,7 +177,7 @@ public class RoomPlanner
     public int RejectedByClearance { get; private set; }
     public int BacktrackCount { get; private set; }
     public int ForcedCount { get; private set; }
-    public int[] CategoryCounts { get; } = new int[8];
+    public int[] CategoryCounts { get; } = new int[9];
 
     // the same three reasons, for the search that is running right now (used in the warning when a room has to be forced)
     private int searchPrevious;
@@ -296,6 +298,57 @@ public class RoomPlanner
 
             return TryForce(out planned);
         }
+    }
+
+    // plans the next room from the Safe Rooms list only (the first room after the chute when the tutorial is off).
+    // it is picked by weight like any other room, can be mirrored, and has to fit.
+    // it is committed as forced, so backtracking never takes it back.
+    // a safe room is guaranteed, so if none fits the heaviest one is placed anyway, with a warning.
+    // false only if the list has nothing usable
+    public bool TryPlanSafeRoom(out PlannedRoom planned)
+    {
+        planned = default;
+
+        if (!HasUsable(RoomCategory.SafeRooms))
+            return false;
+
+        bans.Clear();
+        searchPrevious = 0;
+        searchOlder = 0;
+        searchClearance = 0;
+
+        GetTarget(out Vector3 position, out Quaternion rotation);
+        ChainState state = CurrentState;
+
+        candidates.Clear();
+        rejectedBoxes.Clear();
+        AddListCandidates(RoomCategory.SafeRooms, position, rotation);
+
+        if (candidates.Count > 0)
+        {
+            planned = Commit(Draw(), state, true);
+            return true;
+        }
+
+        // nothing fits: the heaviest safe room goes in anyway
+        RoomEntry best = null;
+
+        foreach (RoomEntry entry in settings.lists[(int)RoomCategory.SafeRooms])
+        {
+            if (IsUsable(entry) && (best == null || entry.weight > best.weight) && GetBlueprint(entry.room) != null)
+                best = entry;
+        }
+
+        if (best == null)
+            return false;
+
+        Candidate forcedCandidate = MakeCandidate(best, RoomCategory.SafeRooms, GetBlueprint(best.room), false, best.weight, position, rotation);
+
+        ForcedCount++;
+        Debug.LogWarning($"No safe room fit as the first room, so '{best.room.name}' was placed anyway and overlaps something. Check the footprints of the safe rooms and the chute.", best.room);
+
+        planned = Commit(forcedCandidate, state, true);
+        return true;
     }
 
     // forgets the oldest room, because RoomChain deleted it behind the player
@@ -449,29 +502,35 @@ public class RoomPlanner
             if (!CanStartSection(category))
                 continue;
 
-            RoomEntry[] list = settings.lists[(int)category];
+            AddListCandidates(category, position, rotation);
+        }
+    }
 
-            if (list == null)
+    // every usable room in one list, plain and mirrored, added as a candidate if it fits
+    private void AddListCandidates(RoomCategory category, Vector3 position, Quaternion rotation)
+    {
+        RoomEntry[] list = settings.lists[(int)category];
+
+        if (list == null)
+            return;
+
+        foreach (RoomEntry entry in list)
+        {
+            if (!IsUsable(entry))
                 continue;
 
-            foreach (RoomEntry entry in list)
-            {
-                if (!IsUsable(entry))
-                    continue;
+            RoomBlueprint blueprint = GetBlueprint(entry.room);
 
-                RoomBlueprint blueprint = GetBlueprint(entry.room);
+            if (blueprint == null)
+                continue;
 
-                if (blueprint == null)
-                    continue;
+            // a room that can't mirror only has the one version.
+            // one that can has both, split by mirrorChance
+            float plainWeight = entry.room.CanMirror ? 1f - settings.mirrorChance : 1f;
+            float mirroredWeight = entry.room.CanMirror ? settings.mirrorChance : 0f;
 
-                // a room that can't mirror only has the one version.
-                // one that can has both, split by mirrorChance
-                float plainWeight = entry.room.CanMirror ? 1f - settings.mirrorChance : 1f;
-                float mirroredWeight = entry.room.CanMirror ? settings.mirrorChance : 0f;
-
-                TryAddCandidate(entry, category, blueprint, false, entry.weight * plainWeight, position, rotation);
-                TryAddCandidate(entry, category, blueprint, true, entry.weight * mirroredWeight, position, rotation);
-            }
+            TryAddCandidate(entry, category, blueprint, false, entry.weight * plainWeight, position, rotation);
+            TryAddCandidate(entry, category, blueprint, true, entry.weight * mirroredWeight, position, rotation);
         }
     }
 

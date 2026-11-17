@@ -30,7 +30,12 @@ public class SpeedCapSurface : MonoBehaviour
     [Min(0f)]
     [SerializeField] private float bounceSpeed = 10f;
 
+    // ticked: touching this surface hurts the player (a singe level, the burn marks and the touch sound, see PlayerBurn).
+    // unticked: it still caps their speed and bounces them, but doesn't hurt them at all
+    [SerializeField] private bool singeDamage = true;
+
     public HazardType Type => type;
+    public bool SingeDamage => singeDamage;
     public float MaxSpeed => maxSpeed;
     public float BounceSpeed => bounceSpeed;
 }

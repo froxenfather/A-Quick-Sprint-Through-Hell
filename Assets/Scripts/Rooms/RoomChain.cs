@@ -43,10 +43,20 @@ public class RoomChain : MonoBehaviour
     [SerializeField] private float musicFadeOutSeconds = 2f;
 
     [Header("Tutorial")]
+    // ticked: the Tutorial Rooms below are built first.
+    // unticked: they are skipped, and the first room after the starter room is a safe room from the Safe Rooms list instead
+    [SerializeField] private bool tutorialEnabled = true;
+
     // rooms that are built right after the starter room, in this order, before any random room.
     // the last one should be a safe room (tick Safe Room on its Room component), because leaving the first safe room is what starts the run.
     // leave empty to skip the tutorial: the run then starts when the player leaves the starter room
     [SerializeField] private Room[] tutorialRooms = new Room[0];
+
+    // the safe rooms.
+    // with the tutorial off, the first room after the starter room is always one of these, picked by weight like the other lists (1 is normal, 0 means never).
+    // every room in this list works as a safe room, whether or not its own Safe Room box is ticked
+    [Header("Rooms (safe rooms)")]
+    [SerializeField] private RoomEntry[] safeRooms;
 
     // each list has a weight box beside every room: 1 is normal, 0.5 is half as likely, 4 is four times as likely, 0 means never
     [Header("Rooms (normal level)")]
@@ -212,6 +222,10 @@ public class RoomChain : MonoBehaviour
     // the countdown timer says you're good and Conseraph is paused
     public event System.Action SafeRoomEntered;
 
+    // fired every time the player goes into a room (the room they are now in).
+    // the tutorial messages on the screen use this
+    public event System.Action<Room> RoomEntered;
+
     // true while the run is going: from leaving a safe room until the next one is entered
     public bool RunActive { get; private set; }
 
@@ -227,9 +241,17 @@ public class RoomChain : MonoBehaviour
     private bool hasStarter;
     private bool starterPassed;
 
-    // the tutorial has at least one room, and how many of its rooms have been built so far
+    // the tutorial is on and has at least one room, and how many of its rooms have been built so far
     private bool hasTutorial;
     private int nextTutorial;
+
+    // the tutorial is off and there are safe rooms, so a safe room has to be built first.
+    // it goes false once that room has been built (or couldn't be)
+    private bool safeRoomPending;
+
+    // the run waits for the player to leave a safe room.
+    // false means there is nothing to wait for, so leaving the starter room starts it
+    private bool startsAtSafeRoom;
 
     // the song's source and when it started, for the fade-in
     private AudioSource musicSource;
@@ -324,12 +346,13 @@ public class RoomChain : MonoBehaviour
             PlacePlayerAtStart();
     }
 
-    // finds out whether there is a tutorial at all, and warns if it doesn't end in a safe room (the run would never start)
+    // works out how the game opens: the tutorial rooms, a guaranteed safe room (tutorial off), or neither.
+    // it warns if the tutorial doesn't end in a safe room (the run would never start)
     private void CheckTutorial()
     {
         Room last = null;
 
-        if (tutorialRooms != null)
+        if (tutorialEnabled && tutorialRooms != null)
         {
             foreach (Room room in tutorialRooms)
             {
@@ -342,6 +365,31 @@ public class RoomChain : MonoBehaviour
 
         if (hasTutorial && !last.IsSafeRoom)
             Debug.LogWarning($"The last tutorial room '{last.name}' is not a safe room, so the run will never start. Tick Safe Room on its Room component.", this);
+
+        // with the tutorial off, the first room after the chute is a safe room
+        if (!tutorialEnabled)
+        {
+            safeRoomPending = HasSafeRooms();
+
+            if (!safeRoomPending)
+                Debug.LogWarning("The tutorial is off but the Safe Rooms list has no room with a weight above 0, so there is no safe room to start with. The run starts when the player leaves the starter room.", this);
+        }
+
+        startsAtSafeRoom = hasTutorial || safeRoomPending;
+    }
+
+    private bool HasSafeRooms()
+    {
+        if (safeRooms == null)
+            return false;
+
+        foreach (RoomEntry entry in safeRooms)
+        {
+            if (entry != null && entry.room != null && entry.weight > 0f)
+                return true;
+        }
+
+        return false;
     }
 
     // swaps the material of every gate in a room for the gate material
@@ -487,8 +535,8 @@ public class RoomChain : MonoBehaviour
             starterPassed = true;
             StarterExited?.Invoke();
 
-            // with no tutorial there is no safe room to wait for, so leaving the chute starts the run
-            if (!hasTutorial)
+            // with no tutorial and no safe room to wait for, leaving the chute starts the run
+            if (!startsAtSafeRoom)
                 StartRun();
         }
         else
@@ -507,6 +555,9 @@ public class RoomChain : MonoBehaviour
         // going into a safe room pauses it
         if (entered != null && entered.IsSafeRoom)
             PauseRun();
+
+        if (entered != null)
+            RoomEntered?.Invoke(entered);
     }
 
     // the run starts: the song, the timer, and Conseraph's hunt.
@@ -605,11 +656,31 @@ public class RoomChain : MonoBehaviour
         return SpawnPlanned(plan);
     }
 
+    // the first room after the chute when the tutorial is off: one of the safe rooms.
+    // if it can't be placed the run falls back to starting at the chute exit, so it can never get stuck waiting for a safe room that isn't there
+    private bool SpawnFirstSafeRoom()
+    {
+        safeRoomPending = false;
+
+        if (!planner.TryPlanSafeRoom(out PlannedRoom plan))
+        {
+            Debug.LogError("RoomChain could not place a safe room as the first room, so the run starts when the player leaves the starter room.", this);
+            startsAtSafeRoom = false;
+            return true;
+        }
+
+        return SpawnPlanned(plan);
+    }
+
     private bool SpawnNext()
     {
         // the tutorial rooms come first, in order, before anything random
-        if (tutorialRooms != null && nextTutorial < tutorialRooms.Length)
+        if (hasTutorial && nextTutorial < tutorialRooms.Length)
             return SpawnTutorial();
+
+        // with the tutorial off, the first room is a safe room
+        if (safeRoomPending)
+            return SpawnFirstSafeRoom();
 
         // the planner never touches a room the player has reached: rooms after passedCount can be taken back if nothing fits
         if (!planner.TryPlanNext(passedCount, out PlannedRoom plan, out int removed))
@@ -658,6 +729,10 @@ public class RoomChain : MonoBehaviour
         room.transform.SetPositionAndRotation(plan.rootPosition, plan.rootRotation);
         room.transform.localScale = plan.flip;
 
+        // a room from the Safe Rooms list is a safe room, whatever its own box says
+        if (plan.category == RoomCategory.SafeRooms)
+            room.MarkAsSafe();
+
         if (cautionGates)
             ApplyGateMaterial(room);
 
@@ -690,7 +765,8 @@ public class RoomChain : MonoBehaviour
         settings.lists = new[]
         {
             forwardRooms, turnRooms, upTransitions, downTransitions,
-            upRooms, downRooms, upReturns, downReturns
+            upRooms, downRooms, upReturns, downReturns,
+            safeRooms
         };
 
         settings.mirrorChance = mirrorChance;
@@ -727,14 +803,18 @@ public class RoomChain : MonoBehaviour
         if (starterRoom != null)
             test.PlanStarter(starterRoom, out PlannedRoom starterPlan);
 
-        // the tutorial rooms follow it, like in the game
-        if (tutorialRooms != null)
+        // the tutorial rooms follow it, like in the game (or a safe room, when the tutorial is off)
+        if (tutorialEnabled && tutorialRooms != null)
         {
             foreach (Room tutorial in tutorialRooms)
             {
                 if (tutorial != null)
                     test.PlanFixed(tutorial, out PlannedRoom tutorialPlan);
             }
+        }
+        else if (!tutorialEnabled && HasSafeRooms())
+        {
+            test.TryPlanSafeRoom(out PlannedRoom safePlan);
         }
 
         for (int i = 0; i < simulateRooms; i++)
@@ -747,7 +827,7 @@ public class RoomChain : MonoBehaviour
         simulated = test;
 
         // counted from the rooms that are left (rooms that were taken back and replaced don't count)
-        int[] counts = new int[8];
+        int[] counts = new int[9];
 
         // how many times each room prefab was used, most used first
         Dictionary<Room, int> perRoom = new Dictionary<Room, int>();
@@ -774,7 +854,7 @@ public class RoomChain : MonoBehaviour
             $"  times a room was taken back: {test.BacktrackCount}\n" +
             $"  rooms forced in anyway: {test.ForcedCount}\n" +
             $"  forward {counts[0]}, turns {counts[1]}, up transitions {counts[2]}, down transitions {counts[3]}, " +
-            $"up rooms {counts[4]}, down rooms {counts[5]}, up returns {counts[6]}, down returns {counts[7]}\n" +
+            $"up rooms {counts[4]}, down rooms {counts[5]}, up returns {counts[6]}, down returns {counts[7]}, safe rooms {counts[8]}\n" +
             $"  per room (most used first, a room that was never picked is missing):{perRoomText}",
             this);
     }

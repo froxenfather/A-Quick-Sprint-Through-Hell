@@ -75,6 +75,10 @@ public class PlayerBurn : MonoBehaviour
 
     private void OnHazardTouched(SpeedCapSurface surface)
     {
+        // a surface with Singe Damage turned off only caps the speed, so it doesn't hurt at all
+        if (!surface.SingeDamage)
+            return;
+
         if (Time.time - lastTouchTime < touchCooldown)
             return;
 

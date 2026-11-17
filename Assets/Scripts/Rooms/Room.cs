@@ -19,6 +19,25 @@ public class Room : MonoBehaviour
 
     public bool IsSafeRoom => isSafeRoom;
 
+    // called by the RoomChain on a room it builds from the Safe Rooms list, so every room in that list works as a safe room even if its checkbox was forgotten
+    public void MarkAsSafe()
+    {
+        isSafeRoom = true;
+    }
+
+    // a message that fades in on the screen (TutorialPrompt) when the player goes into this room, and stays while they are in it.
+    // leave empty for no message
+    [SerializeField, TextArea(2, 5)] private string tutorialMessage;
+
+    public string TutorialMessage => tutorialMessage;
+
+    // a UI prefab that appears on the screen when the player goes into this room, and goes away when they leave.
+    // design it yourself in Unity's UI editor (text, images, animations) for a 1920 x 1080 screen.
+    // when this is filled in it is shown instead of the Tutorial Message
+    [SerializeField] private GameObject tutorialUI;
+
+    public GameObject TutorialUI => tutorialUI;
+
     public RoomGate Entry { get; private set; }
     public RoomGate Exit { get; private set; }
 

@@ -672,9 +672,10 @@ public class CustomPlayerController : MonoBehaviour
         if (mouse.forwardButton.wasPressedThisFrame)
             dashQueued = true;
 
-        slideHeld = mouse.backButton.isPressed || keyboard.ctrlKey.isPressed;
+        // Ctrl and C do the same thing as the mouse's back button
+        slideHeld = mouse.backButton.isPressed || keyboard.ctrlKey.isPressed || keyboard.cKey.isPressed;
 
-        if (mouse.backButton.wasPressedThisFrame || keyboard.ctrlKey.wasPressedThisFrame)
+        if (mouse.backButton.wasPressedThisFrame || keyboard.ctrlKey.wasPressedThisFrame || keyboard.cKey.wasPressedThisFrame)
             slideQueued = true;
     }
 
@@ -1060,13 +1061,26 @@ public class CustomPlayerController : MonoBehaviour
             //   so just do nothing.)
         }
 
-        // releasing the button always ends whichever state we're in.
+        // releasing the button ends whichever state we're in, unless standing up would put our head inside something.
+        // then we stay low, and this check runs every step, so we stand up the moment there is room.
         // this is the ONLY way a slide ends now - you can slide to a dead stop on a ramp and keep sliding, backwards, once gravity starts winning
-        if (sliding && !slideHeld)
-            sliding = false;
+        if ((sliding || crouching) && !slideHeld && !CanStandUp())
+        {
+            // a slide that has slowed to a crawl turns into a crouch, so we can walk out from under the gap instead of being stuck in it
+            if (sliding && grounded && flatSpeed < slideMinSpeed)
+            {
+                sliding = false;
+                crouching = true;
+            }
+        }
+        else
+        {
+            if (sliding && !slideHeld)
+                sliding = false;
 
-        if (crouching && !slideHeld)
-            crouching = false;
+            if (crouching && !slideHeld)
+                crouching = false;
+        }
 
         // a slide is as low as a crouch, so both shrink the capsule (that is what lets us slide under low gaps)
         SetCrouchHitbox(crouching || sliding);
@@ -1075,8 +1089,7 @@ public class CustomPlayerController : MonoBehaviour
     // shrinks or restores the capsule for crouching and sliding.
     // only the TOP moves - the bottom offset from the capsule's center stays fixed, so our feet never shift
 
-    // known limitation: no ceiling check when standing back up, so standing under something low can clip you into it for a frame until Depenetrate() sorts it out.
-    // fine for v1
+    // standing back up is checked by CanStandUp first (see UpdateSlideAndCrouch), so we never grow into a ceiling
     private void SetCrouchHitbox(bool wantCrouching)
     {
         float targetHeight = wantCrouching ? crouchHeight : standHeight;
@@ -1389,6 +1402,41 @@ public class CustomPlayerController : MonoBehaviour
 
         p0 = center + Vector3.down * half;
         p1 = center + Vector3.up * half;
+    }
+
+    // whether the capsule would fit at full standing height where we are.
+    // only the part above the crouched capsule can be blocked, so this is a ceiling check.
+    // the capsule tested is a hair thinner than the real one, so touching the floor or a wall doesn't count as blocked
+    private bool CanStandUp()
+    {
+        Vector3 scale = transform.lossyScale;
+
+        float realRadius = capsule.radius * Mathf.Max(scale.x, scale.z);
+        float height = Mathf.Max(standHeight * scale.y, realRadius * 2f);
+
+        // the standing capsule's center, using the standing center height (the crouched one is lower)
+        Vector3 center = position + Vector3.Scale(new Vector3(capsule.center.x, standCenterY, capsule.center.z), scale);
+        float half = height * 0.5f - realRadius;
+
+        Vector3 p0 = center + Vector3.down * half;
+        Vector3 p1 = center + Vector3.up * half;
+
+        int overlapCount = Physics.OverlapCapsuleNonAlloc(
+            p0,
+            p1,
+            Mathf.Max(0.01f, realRadius - skinWidth),
+            overlapBuffer,
+            collisionMask,
+            QueryTriggerInteraction.Ignore
+        );
+
+        for (int i = 0; i < overlapCount; i++)
+        {
+            if (!IsSelf(overlapBuffer[i]))
+                return false;
+        }
+
+        return true;
     }
 
     private bool IsSelf(Collider otherCollider)

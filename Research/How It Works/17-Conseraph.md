@@ -46,7 +46,7 @@ He flies in a straight line at the middle of the player's capsule, through walls
 ## Touching the player
 The root has a trigger sphere (radius 1) and **no Rigidbody on purpose**. A trigger only produces events against a Rigidbody, so he reacts to the player (who has a kinematic Rigidbody) and cannot press pressure plates, which react to any collider. All the player controller's physics queries ignore triggers, so he never blocks or shoves the player.
 
-`OnTriggerEnter` raises `Conseraph.TouchedPlayer` when the player enters it, but only while he is hunting (visible), so a resting Conseraph is safe. It also logs "Conseraph touched the player." as a placeholder, to be replaced by the kill. `Conseraph` also exposes `Hunting`, `Visibility`, `DistanceToPlayer` and `Speed` for that code.
+`OnTriggerEnter` raises `Conseraph.TouchedPlayer` when the player enters it, but only while he is hunting (visible), so a resting Conseraph is safe. `PlayerDeath` listens to that event and sends the player back to the lobby (see [18-Death-And-Stats](18-Death-And-Stats.md)). `Conseraph` also exposes `Hunting`, `Visibility`, `DistanceToPlayer` and `Speed` for other code to read.
 
 ## Toll (`ConseraphAudio.cs`)
 - A looping 3D `AudioSource` on the root, so the sound comes from him and pans toward him. Unity's own distance fade is switched off with a flat rolloff curve, and the doppler effect is off, so the volume is entirely ours and his speed doesn't bend the pitch.

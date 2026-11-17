@@ -27,6 +27,8 @@ Pressing Play in the editor starts the scene that is open, so open CustomPlay to
 
 If the video is empty or fails, the sequence skips straight to black, load, fade.
 
+**Also used for death.** `PlayerDeath` starts the same `GameStartSequence` to go back to the lobby, with the "got you" video and an optional `StatsPage`. When a stats page is given, a step runs between the video and the scene change: the stats appear on black one line at a time, and any key or click continues once they are all showing. See [18-Death-And-Stats](18-Death-And-Stats.md). The Portal passes no stats page, so it behaves exactly as above.
+
 ## Notes
 - Each scene has its own player, so nothing carries over. The lobby player is discarded.
 - Playing TheFactory directly works as before, without the video or fade.

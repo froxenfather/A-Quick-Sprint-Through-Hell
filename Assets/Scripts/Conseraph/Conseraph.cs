@@ -61,7 +61,7 @@ public class Conseraph : MonoBehaviour
     [SerializeField] private float distanceToPlayer;
 
     // raised each time he touches the player while he is hunting.
-    // this is where the kill goes
+    // PlayerDeath listens to this and handles the kill
     public event System.Action TouchedPlayer;
 
     private CustomPlayerController player;
@@ -190,8 +190,6 @@ public class Conseraph : MonoBehaviour
         if (other.GetComponentInParent<CustomPlayerController>() == null)
             return;
 
-        // replace this with the kill
-        Debug.Log("Conseraph touched the player.", this);
         TouchedPlayer?.Invoke();
     }
 }

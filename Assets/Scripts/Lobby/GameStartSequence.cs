@@ -1,21 +1,52 @@
 using System.Collections;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
-// runs the "start the game" sequence.
-// made by the Portal and kept alive across the scene change
+// runs the "change scene behind a video" sequence.
+// made by the Portal (start the game) and by PlayerDeath (go back to the lobby), and kept alive across the scene change
 //   1. every other sound stops (the video's own sound is the only one that keeps playing)
 //   2. the next scene starts loading in the background, but is held back
-//   3. the intro video plays full screen.
+//   3. the video plays full screen.
 //      it can't be skipped
-//   4. when it ends the screen is black, the next scene starts, and the black fades away
+//   4. if there is a stats page, it shows now on black, one line at a time, until the player presses a key or clicks
+//   5. the screen is black, the next scene starts, and the black fades away
 // it builds its own full-screen UI, so nothing needs setting up in a scene
 public class GameStartSequence : MonoBehaviour
 {
     // how long to wait for the video's first picture before giving up and carrying on
     private const float VideoStartTimeout = 5f;
+
+    // the stats rows: how wide the column is, how tall each row is, and how big the text is (on the 1920 x 1080 reference screen)
+    private const float StatsWidth = 1000f;
+    private const float StatsRowHeight = 70f;
+    private const float StatsFontSize = 46f;
+
+    // after the last stat lands, keys pressed in this time (seconds) are ignored, so a key still being mashed doesn't skip it
+    private const float AnyKeyGrace = 0.5f;
+
+    // what the stats page shows and how it looks
+    public class StatsPage
+    {
+        // one label and its value per line, in the order they appear
+        public List<(string label, string value)> Lines;
+
+        public TMP_FontAsset Font;
+
+        // played as each line lands (the video's sound source ignores the pause, so it is heard)
+        public AudioClip Thud;
+        public float ThudVolume = 1f;
+
+        // the pause before each line appears
+        public float LineDelay = 0.8f;
+
+        public Color LabelColor = Color.white;
+        public Color ValueColor = Color.red;
+    }
 
     private Canvas canvas;
     private Image black;
@@ -24,21 +55,22 @@ public class GameStartSequence : MonoBehaviour
     private VideoPlayer videoPlayer;
     private RenderTexture videoTexture;
 
-    public static void Begin(string sceneName, VideoClip clip, float fadeInSeconds)
+    // stats is optional: pass one to show the stats page after the video
+    public static void Begin(string sceneName, VideoClip clip, float fadeInSeconds, StatsPage stats = null)
     {
         GameObject sequence = new GameObject("GameStartSequence");
         DontDestroyOnLoad(sequence);
 
-        sequence.AddComponent<GameStartSequence>().Run(sceneName, clip, fadeInSeconds);
+        sequence.AddComponent<GameStartSequence>().Run(sceneName, clip, fadeInSeconds, stats);
     }
 
-    private void Run(string sceneName, VideoClip clip, float fadeInSeconds)
+    private void Run(string sceneName, VideoClip clip, float fadeInSeconds, StatsPage stats)
     {
         BuildUI();
-        StartCoroutine(Sequence(sceneName, clip, fadeInSeconds));
+        StartCoroutine(Sequence(sceneName, clip, fadeInSeconds, stats));
     }
 
-    private IEnumerator Sequence(string sceneName, VideoClip clip, float fadeInSeconds)
+    private IEnumerator Sequence(string sceneName, VideoClip clip, float fadeInSeconds, StatsPage stats)
     {
         // 1. silence everything.
         //    the video's AudioSource ignores this pause
@@ -52,11 +84,15 @@ public class GameStartSequence : MonoBehaviour
         if (clip != null)
             yield return PlayVideo(clip);
 
-        // 4. black, then the scene
+        // 4. black, and the stats if there are any
         videoImage.gameObject.SetActive(false);
         canvas.enabled = true;
 
-        // a scene held back stops loading at 0.9
+        if (stats != null)
+            yield return ShowStats(stats);
+
+        // 5. the scene.
+        //    a scene held back stops loading at 0.9
         while (load.progress < 0.9f)
             yield return null;
 
@@ -133,16 +169,112 @@ public class GameStartSequence : MonoBehaviour
             yield return null;
     }
 
+    // a column of stats on the black screen, one line at a time with a thud.
+    // it ends when the player presses a key or clicks, once every line is showing
+    private IEnumerator ShowStats(StatsPage page)
+    {
+        GameObject container = new GameObject("Stats", typeof(RectTransform));
+        container.transform.SetParent(black.transform, false);
+
+        // centered, tall enough for every row
+        RectTransform containerRect = (RectTransform)container.transform;
+        containerRect.anchorMin = new Vector2(0.5f, 0.5f);
+        containerRect.anchorMax = new Vector2(0.5f, 0.5f);
+        containerRect.pivot = new Vector2(0.5f, 0.5f);
+        containerRect.sizeDelta = new Vector2(StatsWidth, page.Lines.Count * StatsRowHeight);
+        containerRect.anchoredPosition = Vector2.zero;
+
+        // every row starts hidden
+        GameObject[] rows = new GameObject[page.Lines.Count];
+
+        for (int i = 0; i < rows.Length; i++)
+            rows[i] = BuildRow(containerRect, i, page.Lines[i].label, page.Lines[i].value, page);
+
+        foreach (GameObject row in rows)
+        {
+            yield return new WaitForSecondsRealtime(page.LineDelay);
+
+            row.SetActive(true);
+
+            if (page.Thud != null)
+                videoAudio.PlayOneShot(page.Thud, page.ThudVolume);
+        }
+
+        yield return new WaitForSecondsRealtime(AnyKeyGrace);
+
+        while (!AnyKeyOrClick())
+            yield return null;
+
+        container.SetActive(false);
+    }
+
+    // one row: the label on the left and the value on the right.
+    // rows go from the top of the column downward
+    private static GameObject BuildRow(RectTransform parent, int index, string label, string value, StatsPage page)
+    {
+        GameObject row = new GameObject("Row " + index, typeof(RectTransform));
+        row.transform.SetParent(parent, false);
+
+        RectTransform rowRect = (RectTransform)row.transform;
+        rowRect.anchorMin = new Vector2(0f, 1f);
+        rowRect.anchorMax = new Vector2(1f, 1f);
+        rowRect.pivot = new Vector2(0.5f, 1f);
+        rowRect.sizeDelta = new Vector2(0f, StatsRowHeight);
+        rowRect.anchoredPosition = new Vector2(0f, -index * StatsRowHeight);
+
+        BuildText(rowRect, "Label", label, TextAlignmentOptions.MidlineLeft, page.LabelColor, page.Font);
+        BuildText(rowRect, "Value", value, TextAlignmentOptions.MidlineRight, page.ValueColor, page.Font);
+
+        row.SetActive(false);
+        return row;
+    }
+
+    private static void BuildText(RectTransform parent, string objectName, string text, TextAlignmentOptions alignment, Color color, TMP_FontAsset font)
+    {
+        GameObject textObject = new GameObject(objectName, typeof(RectTransform), typeof(TextMeshProUGUI));
+        textObject.transform.SetParent(parent, false);
+        Stretch((RectTransform)textObject.transform);
+
+        TextMeshProUGUI label = textObject.GetComponent<TextMeshProUGUI>();
+        label.text = text;
+        label.alignment = alignment;
+        label.color = color;
+        label.fontSize = StatsFontSize;
+        label.raycastTarget = false;
+
+        if (font != null)
+            label.font = font;
+    }
+
+    // any key on the keyboard, or the left or right mouse button, pressed this frame.
+    // the old Input class is turned off in this project, so this uses the Input System
+    private static bool AnyKeyOrClick()
+    {
+        Keyboard keyboard = Keyboard.current;
+        Mouse mouse = Mouse.current;
+
+        bool key = keyboard != null && keyboard.anyKey.wasPressedThisFrame;
+        bool click = mouse != null && (mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame);
+
+        return key || click;
+    }
+
     // a full-screen overlay: black, with the video fitted inside it
     private void BuildUI()
     {
-        GameObject canvasObject = new GameObject("Canvas", typeof(Canvas));
+        GameObject canvasObject = new GameObject("Canvas", typeof(Canvas), typeof(CanvasScaler));
         canvasObject.transform.SetParent(transform, false);
 
         canvas = canvasObject.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = short.MaxValue;
         canvas.enabled = false;
+
+        // scaled so the stats look the same on any screen size (the black and the video stretch to fill, so they don't care)
+        CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.matchWidthOrHeight = 0.5f;
 
         GameObject blackObject = new GameObject("Black", typeof(RectTransform), typeof(Image));
         blackObject.transform.SetParent(canvasObject.transform, false);

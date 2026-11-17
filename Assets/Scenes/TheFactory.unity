@@ -872,6 +872,8 @@ GameObject:
   - component: {fileID: 450152368}
   - component: {fileID: 450152367}
   - component: {fileID: 450152372}
+  - component: {fileID: 450152374}
+  - component: {fileID: 450152373}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -1174,6 +1176,40 @@ MonoBehaviour:
   maxVolume: 0.8
   crossfadeSeconds: 8.5
   volumeSmoothing: 6
+--- !u!114 &450152373
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450152358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e077e517a87a25f408d778886486c847, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeath
+  conseraph: {fileID: 1342050490}
+  lobbySceneName: CustomPlay
+  gotYouVideo: {fileID: 32900000, guid: fb4402ffd2acb144db890698b18d3e38, type: 3}
+  fadeInSeconds: 0
+  statsFont: {fileID: 11400000, guid: 6505bf23ee48eeb428aa834d3ddad205, type: 2}
+  thudSound: {fileID: 8300000, guid: 569dcbb9bda46504ca4331820eb4be47, type: 3}
+  thudVolume: 1
+  lineDelaySeconds: 0.8
+  labelColor: {r: 1, g: 1, b: 1, a: 1}
+  valueColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &450152374
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450152358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 542f971d6f9d36140b67e861c59ac8fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RunStats
 --- !u!1 &451338461
 GameObject:
   m_ObjectHideFlags: 0
@@ -2214,7 +2250,7 @@ MonoBehaviour:
   tollClip: {fileID: 8300000, guid: 9afb3a2e831f8ea41b480c09f7db01ec, type: 3}
   maxVolume: 1
   minVolume: 0.05
-  hearingRange: 120
+  hearingRange: 150
 --- !u!114 &1342050490
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2228,10 +2264,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Conseraph
   aiEnabled: 1
-  catchUpDistance: 120
-  closeDistance: 50
-  normalSpeed: 30
-  closeSpeed: 20
+  catchUpDistance: 150
+  closeDistance: 60
+  normalSpeed: 15
+  closeSpeed: 10
   catchUpGrowth: 1
   maxCatchUpSpeed: 80
   acceleration: 20

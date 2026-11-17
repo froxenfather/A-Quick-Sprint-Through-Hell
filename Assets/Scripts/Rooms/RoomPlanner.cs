@@ -212,6 +212,20 @@ public class RoomPlanner
         if (prefab == null || records.Count > 0)
             return false;
 
+        return PlanFixed(prefab, out planned);
+    }
+
+    // places a room that has to be there (the starter room, a tutorial room) with its Entry on the end of the chain.
+    // it is never flipped and always committed as forced, so backtracking never takes it back.
+    // it doesn't come from a list, so it is left out of the per-list counts.
+    // if it runs into the rooms before it, that is only a warning: the order is fixed, so it is placed anyway
+    public bool PlanFixed(Room prefab, out PlannedRoom planned)
+    {
+        planned = default;
+
+        if (prefab == null)
+            return false;
+
         RoomBlueprint blueprint = GetBlueprint(prefab);
 
         if (blueprint == null)
@@ -221,6 +235,15 @@ public class RoomPlanner
 
         RoomEntry entry = new RoomEntry { room = prefab };
         Candidate candidate = MakeCandidate(entry, RoomCategory.Forward, blueprint, false, 1f, position, rotation);
+
+        // the exit clearance is left out of this check, since the next fixed room is meant to be right there
+        if (records.Count > 0)
+        {
+            BlockReason reason = GetBlockReason(candidate, rotation);
+
+            if (reason == BlockReason.Previous || reason == BlockReason.Older)
+                Debug.LogWarning($"The room '{prefab.name}' overlaps the rooms before it. It is placed anyway, because its place in the order is fixed. Check its footprint, or move the room.", prefab);
+        }
 
         planned = Commit(candidate, CurrentState, true);
         CategoryCounts[(int)RoomCategory.Forward]--;

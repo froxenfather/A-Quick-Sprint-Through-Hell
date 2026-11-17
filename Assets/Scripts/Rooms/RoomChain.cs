@@ -22,7 +22,8 @@ public class RoomChain : MonoBehaviour
     // ...and this far in front of it along the gate's blue arrow, facing the arrow and looking straight down
     [SerializeField] private float spawnDistanceInFront = 1f;
 
-    // the song that starts when the player goes through the starter room's Exit and plays once (it does not loop).
+    // the song that starts each time the run starts (when the player leaves a safe room) and plays once (it does not loop).
+    // starting it again restarts it from the beginning.
     // leave empty for no music
     [SerializeField] private AudioClip startMusic;
 
@@ -35,6 +36,17 @@ public class RoomChain : MonoBehaviour
     // 0 starts it at full volume straight away
     [Range(0f, 30f)]
     [SerializeField] private float musicFadeInSeconds = 4f;
+
+    // seconds the song takes to fade out to silence when the player goes into a safe room, and then it stops.
+    // 0 stops it at once
+    [Range(0f, 30f)]
+    [SerializeField] private float musicFadeOutSeconds = 2f;
+
+    [Header("Tutorial")]
+    // rooms that are built right after the starter room, in this order, before any random room.
+    // the last one should be a safe room (tick Safe Room on its Room component), because leaving the first safe room is what starts the run.
+    // leave empty to skip the tutorial: the run then starts when the player leaves the starter room
+    [SerializeField] private Room[] tutorialRooms = new Room[0];
 
     // each list has a weight box beside every room: 1 is normal, 0.5 is half as likely, 4 is four times as likely, 0 means never
     [Header("Rooms (normal level)")]
@@ -137,6 +149,16 @@ public class RoomChain : MonoBehaviour
     [SerializeField] private float sealDistance = 2f;
 
     [Header("Debug")]
+    // starts the countdown timer at Debug Timer Seconds instead of the full time, and doesn't play the song.
+    // that way the end of a run (Conseraph becoming enraged) can be watched without waiting.
+    // the timer still starts when the player leaves the starter room.
+    // leave this off for the real game
+    [SerializeField] private bool debugMode = false;
+
+    // where the timer starts from while debug mode is on (seconds)
+    [Min(1f)]
+    [SerializeField] private float debugTimerSeconds = 5f;
+
     // draws every room's footprint in the Scene view (green), and the last room that didn't fit (red).
     // off unless you want it
     [SerializeField] private bool drawFootprints = false;
@@ -174,8 +196,24 @@ public class RoomChain : MonoBehaviour
     // unlike passedCount it never goes down when old rooms are deleted
     public int RoomsPassed { get; private set; }
 
-    // fired the first time the player goes through the starter room's Exit (the music and the countdown timer start here)
+    // debug mode (see the Debug section).
+    // the countdown timer reads these when it starts
+    public bool DebugMode => debugMode;
+    public float DebugTimerSeconds => debugTimerSeconds;
+
+    // fired the first time the player goes through the starter room's Exit (out of the chute)
     public event System.Action StarterExited;
+
+    // fired when the run starts: the player left a safe room (or the starter room, when there is no tutorial).
+    // the music, the countdown timer and Conseraph's hunt all start from this
+    public event System.Action RunStarted;
+
+    // fired when the player goes into a safe room.
+    // the countdown timer says you're good and Conseraph is paused
+    public event System.Action SafeRoomEntered;
+
+    // true while the run is going: from leaving a safe room until the next one is entered
+    public bool RunActive { get; private set; }
 
     // fired every time the player clears a room (goes through its Exit), not counting the starter room.
     // the player's burn heals one level for each
@@ -189,9 +227,18 @@ public class RoomChain : MonoBehaviour
     private bool hasStarter;
     private bool starterPassed;
 
+    // the tutorial has at least one room, and how many of its rooms have been built so far
+    private bool hasTutorial;
+    private int nextTutorial;
+
     // the song's source and when it started, for the fade-in
     private AudioSource musicSource;
     private float musicStartTime;
+
+    // for the fade-out when a safe room is entered: whether it is happening, when it began, and the volume it started from
+    private bool musicFadingOut;
+    private float musicFadeOutStartTime;
+    private float musicFadeOutStartVolume;
 
     private void OnEnable()
     {
@@ -240,6 +287,10 @@ public class RoomChain : MonoBehaviour
         int usedSeed = seed != 0 ? seed : System.Environment.TickCount;
         Debug.Log($"RoomChain seed: {usedSeed}");
 
+        // so it is never left on by accident
+        if (debugMode)
+            Debug.LogWarning($"RoomChain debug mode is ON: the timer starts at {debugTimerSeconds} seconds and the song doesn't play. Untick Debug Mode on the RoomChain for the real game.", this);
+
         planner = CreatePlanner(new System.Random(usedSeed));
 
         if (!planner.HasLevelRooms())
@@ -265,10 +316,32 @@ public class RoomChain : MonoBehaviour
                 Debug.LogError($"The starter room '{starterRoom.name}' could not be placed (does it have an Entry and an Exit gate?). Starting with a normal room instead.", this);
         }
 
+        CheckTutorial();
+
         BuildAhead();
 
         if (hasStarter)
             PlacePlayerAtStart();
+    }
+
+    // finds out whether there is a tutorial at all, and warns if it doesn't end in a safe room (the run would never start)
+    private void CheckTutorial()
+    {
+        Room last = null;
+
+        if (tutorialRooms != null)
+        {
+            foreach (Room room in tutorialRooms)
+            {
+                if (room != null)
+                    last = room;
+            }
+        }
+
+        hasTutorial = last != null;
+
+        if (hasTutorial && !last.IsSafeRoom)
+            Debug.LogWarning($"The last tutorial room '{last.name}' is not a safe room, so the run will never start. Tick Safe Room on its Room component.", this);
     }
 
     // swaps the material of every gate in a room for the gate material
@@ -283,28 +356,71 @@ public class RoomChain : MonoBehaviour
         }
     }
 
-    // starts the song (once, no loop) the moment the player is out of the starter room
+    // starts the song (once, no loop) each time the run starts
     private void PlayStartMusic()
     {
-        if (startMusic == null)
+        // debug mode keeps the song quiet
+        if (debugMode || startMusic == null)
             return;
 
-        musicSource = gameObject.AddComponent<AudioSource>();
+        // one source for the whole game, so starting the song again restarts it instead of stacking a second one on top
+        if (musicSource == null)
+        {
+            musicSource = gameObject.AddComponent<AudioSource>();
+            musicSource.loop = false;
+            musicSource.spatialBlend = 0f;
+            musicSource.playOnAwake = false;
+        }
+
+        // a run starting in the middle of a fade-out cancels it
+        musicFadingOut = false;
+
+        musicSource.Stop();
         musicSource.clip = startMusic;
         musicSource.volume = musicFadeInSeconds > 0f ? 0f : musicVolume;
-        musicSource.loop = false;
-        musicSource.spatialBlend = 0f;
-        musicSource.playOnAwake = false;
         musicSource.Play();
 
         musicStartTime = Time.unscaledTime;
     }
 
+    // fades the song out to silence and stops it, from wherever its volume is now.
+    // nothing happens if it isn't playing (it may have finished already, or there is no song)
+    private void StopMusic()
+    {
+        if (musicSource == null || !musicSource.isPlaying)
+            return;
+
+        if (musicFadeOutSeconds <= 0f)
+        {
+            musicSource.Stop();
+            return;
+        }
+
+        musicFadingOut = true;
+        musicFadeOutStartTime = Time.unscaledTime;
+        musicFadeOutStartVolume = musicSource.volume;
+    }
+
+    // the fade-out: volume falls in a straight line to 0 over musicFadeOutSeconds, then the song stops
     // the fade-in: volume rises in a straight line from 0 to musicVolume over musicFadeInSeconds
     private void UpdateMusicFade()
     {
         if (musicSource == null)
             return;
+
+        if (musicFadingOut)
+        {
+            float progress = Mathf.Clamp01((Time.unscaledTime - musicFadeOutStartTime) / musicFadeOutSeconds);
+            musicSource.volume = Mathf.Lerp(musicFadeOutStartVolume, 0f, progress);
+
+            if (progress >= 1f)
+            {
+                musicSource.Stop();
+                musicFadingOut = false;
+            }
+
+            return;
+        }
 
         float fade = musicFadeInSeconds > 0f ? Mathf.Clamp01((Time.unscaledTime - musicStartTime) / musicFadeInSeconds) : 1f;
         musicSource.volume = musicVolume * fade;
@@ -342,20 +458,13 @@ public class RoomChain : MonoBehaviour
         // a room counts as passed once the player is in front of its Exit gate
         while (passedCount < rooms.Count && HasPassed(rooms[passedCount].Exit))
         {
+            Room left = rooms[passedCount];
             passedCount++;
 
-            // the first room passed is the starter room, which is not counted
-            if (hasStarter && !starterPassed)
-            {
-                starterPassed = true;
-                PlayStartMusic();
-                StarterExited?.Invoke();
-            }
-            else
-            {
-                RoomsPassed++;
-                RoomCleared?.Invoke();
-            }
+            // the next room is always built ahead already, so this is the room the player just went into
+            Room entered = passedCount < rooms.Count ? rooms[passedCount] : null;
+
+            OnRoomPassed(left, entered);
         }
 
         // close the way back behind the player
@@ -367,6 +476,58 @@ public class RoomChain : MonoBehaviour
 
         BuildAhead();
         RemoveOldRooms();
+    }
+
+    // the player went through the Exit of left, and is now in entered
+    private void OnRoomPassed(Room left, Room entered)
+    {
+        // the first room passed is the starter room (the chute), which is not counted and heals nothing
+        if (hasStarter && !starterPassed)
+        {
+            starterPassed = true;
+            StarterExited?.Invoke();
+
+            // with no tutorial there is no safe room to wait for, so leaving the chute starts the run
+            if (!hasTutorial)
+                StartRun();
+        }
+        else
+        {
+            // only rooms of a running game count: never a tutorial room, and never a safe room
+            if (RunActive && !left.IsSafeRoom)
+                RoomsPassed++;
+
+            RoomCleared?.Invoke();
+        }
+
+        // coming out of a safe room starts the run (or restarts it)
+        if (left.IsSafeRoom)
+            StartRun();
+
+        // going into a safe room pauses it
+        if (entered != null && entered.IsSafeRoom)
+            PauseRun();
+    }
+
+    // the run starts: the song, the timer, and Conseraph's hunt.
+    // the same thing every time, whether it is the first safe room or a later one
+    private void StartRun()
+    {
+        RunActive = true;
+
+        PlayStartMusic();
+        RunStarted?.Invoke();
+    }
+
+    // the player is in a safe room: the timer says you're good and Conseraph is paused.
+    // the song fades out and stops
+    private void PauseRun()
+    {
+        RunActive = false;
+
+        StopMusic();
+
+        SafeRoomEntered?.Invoke();
     }
 
     private bool ShouldSeal(int roomIndex)
@@ -422,8 +583,34 @@ public class RoomChain : MonoBehaviour
         }
     }
 
+    // the next tutorial room, placed exactly where the chain ends.
+    // an empty slot is skipped
+    private bool SpawnTutorial()
+    {
+        Room prefab = tutorialRooms[nextTutorial];
+        nextTutorial++;
+
+        if (prefab == null)
+        {
+            Debug.LogWarning($"Tutorial Rooms slot {nextTutorial - 1} is empty, so it is skipped.", this);
+            return true;
+        }
+
+        if (!planner.PlanFixed(prefab, out PlannedRoom plan))
+        {
+            Debug.LogError($"The tutorial room '{prefab.name}' could not be placed (does it have an Entry and an Exit gate?).", this);
+            return false;
+        }
+
+        return SpawnPlanned(plan);
+    }
+
     private bool SpawnNext()
     {
+        // the tutorial rooms come first, in order, before anything random
+        if (tutorialRooms != null && nextTutorial < tutorialRooms.Length)
+            return SpawnTutorial();
+
         // the planner never touches a room the player has reached: rooms after passedCount can be taken back if nothing fits
         if (!planner.TryPlanNext(passedCount, out PlannedRoom plan, out int removed))
         {
@@ -539,6 +726,16 @@ public class RoomChain : MonoBehaviour
         // the starter room goes first, like in the game
         if (starterRoom != null)
             test.PlanStarter(starterRoom, out PlannedRoom starterPlan);
+
+        // the tutorial rooms follow it, like in the game
+        if (tutorialRooms != null)
+        {
+            foreach (Room tutorial in tutorialRooms)
+            {
+                if (tutorial != null)
+                    test.PlanFixed(tutorial, out PlannedRoom tutorialPlan);
+            }
+        }
 
         for (int i = 0; i < simulateRooms; i++)
         {

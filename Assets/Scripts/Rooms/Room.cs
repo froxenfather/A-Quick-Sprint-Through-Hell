@@ -12,6 +12,13 @@ public class Room : MonoBehaviour
 
     public bool CanMirror => canMirror;
 
+    // marks this room as a safe room.
+    // when the player goes into one the timer says you're good and Conseraph is paused.
+    // when they come out of one the run starts again, like at the very start (the music, the timer and Conseraph 1000 meters below)
+    [SerializeField] private bool isSafeRoom;
+
+    public bool IsSafeRoom => isSafeRoom;
+
     public RoomGate Entry { get; private set; }
     public RoomGate Exit { get; private set; }
 

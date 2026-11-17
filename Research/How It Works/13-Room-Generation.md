@@ -92,7 +92,17 @@ The **Starter Room** slot on the RoomChain (header "Start") holds the room every
 - If 100 m up puts the player inside or above the chute's geometry, change the two spawn fields on the RoomChain.
 
 ### Music
-The **Start Music** slot (and **Music Volume**) on the RoomChain holds a song. It starts the first time the player crosses the starter room's Exit (the same moment the starter room is counted as passed), and plays **once** (it does not loop). It plays through a 2D AudioSource added to the RoomChain object. Empty slot = no music.
+The **Start Music** slot (and **Music Volume**) on the RoomChain holds a song. It starts each time the run starts (the player leaves a safe room, see [20-Run-Start-And-Safe-Rooms](20-Run-Start-And-Safe-Rooms.md)), and plays **once** (it does not loop). Starting it again restarts it from the beginning with the fade-in: there is one 2D AudioSource on the RoomChain object, so songs never stack. Going into a safe room fades the song out over **Music Fade Out Seconds** (2, 0 stops it at once) and stops it, from whatever volume it is at then. A song that has already finished is left alone, and starting the run again in the middle of a fade-out cancels the fade. Empty slot = no music.
+
+## Tutorial rooms and safe rooms
+- **Tutorial Rooms** (header "Tutorial" on the RoomChain) is an ordered list of room prefabs built right after the starter room, before any random room. They are placed by `RoomPlanner.PlanFixed`: in the listed order, never mirrored, committed as forced (backtracking never takes them back). If one overlaps the rooms before it, there is a console warning, but it is placed anyway. Empty slots are skipped with a warning. Leave the list empty to skip the tutorial.
+- **Safe Room** is a checkbox on the `Room` component (`Room.IsSafeRoom`). Tick it on the last tutorial room, and on any room that should work as a safe room later (it works in the random lists too).
+- Going into a safe room pauses the run, and leaving one starts it. The tutorial and the random rooms use the same rule, so a safe room anywhere behaves the same. If the last tutorial room isn't a safe room, a console warning says the run will never start.
+- The **Rooms counter** (`RoomsPassed`) only counts rooms of a running game: never the chute, the tutorial or a safe room. Every room except the chute still heals one burn level (`RoomCleared`), tutorial rooms included.
+- **Simulate Rooms** places the tutorial rooms too.
+
+### Debug mode
+The **Debug** section of the RoomChain has **Debug Mode** (off by default) and **Debug Timer Seconds** (5). With it on, the countdown timer starts at 5 seconds instead of 05:10, and the song doesn't play, so the end of a run (Conseraph becoming enraged, see [17-Conseraph](17-Conseraph.md)) can be watched in seconds. The timer still starts when the run starts, as usual. The RoomChain logs a console warning at the start while debug mode is on, so it isn't left on by accident.
 
 ## Gate colors (caution stripes on every door)
 The RoomChain's **Gate colors** header has a **Caution Gates** checkbox (on by default) and a **Gate Material** slot.

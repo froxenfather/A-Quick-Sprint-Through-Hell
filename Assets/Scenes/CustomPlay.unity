@@ -5918,13 +5918,18 @@ MonoBehaviour:
   aiEnabled: 0
   catchUpDistance: 150
   closeDistance: 50
-  normalSpeed: 15
-  closeSpeed: 10
+  normalSpeed: 25
+  closeSpeed: 20
   catchUpGrowth: 1
   maxCatchUpSpeed: 100
   acceleration: 20
   slowdownRate: 100
   fadeSeconds: 1
+  enragedEnabled: 1
+  enragedStartSpeed: 1
+  enragedSpeedStep: 1
+  enragedStepSeconds: 0.2
+  redFadeSeconds: 1
   currentSpeed: 0
   distanceToPlayer: 0
 --- !u!135 &1756626700

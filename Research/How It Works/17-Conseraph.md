@@ -27,7 +27,8 @@ What can still draw over him: the HUD and the Burn Overlay (both Screen Space - 
 ## AI (`Conseraph.cs`)
 **Ai Enabled** is the switch.
 - **Off:** he stays where he is, keeps facing the player, and is always visible. The toll still plays.
-- **On:** he is bound to the countdown timer (`CountdownTimerHUD.IsCounting`). While the timer counts down he is visible and hunting. While it says "UR GOOD" (before the player leaves the chute, and later in safe rooms) he fades out to invisible and stops. He is still there, just invisible. The fade takes `fadeSeconds` (1). If a scene has no timer, he hunts from the start (with a warning).
+- **On:** he is bound to the countdown timer (`CountdownTimerHUD.IsCounting`). While the timer counts down he is visible and hunting. While it says "UR GOOD" (from the start of the game through the tutorial, and inside safe rooms) he fades out to invisible and stops. He is still there, just invisible. The fade takes `fadeSeconds` (1). If a scene has no timer, he hunts from the start (with a warning).
+- **When the run starts** (`RoomChain.RunStarted`: the player leaves a safe room) he is put `startDistanceBelow` (1000 m) straight below the player's capsule center, with his speed reset to 0. He fades in and rushes up through the catch-up zone. A scene with no RoomChain is unaffected. See [20-Run-Start-And-Safe-Rooms](20-Run-Start-And-Safe-Rooms.md).
 
 He flies in a straight line at the middle of the player's capsule, through walls. The speed depends on how far away the player is:
 
@@ -42,6 +43,18 @@ He flies in a straight line at the middle of the player's capsule, through walls
 - Everything uses `deltaTime`, so the framerate doesn't matter.
 - While he is resting the speed is 0, and when he hunts again he picks up from there.
 - **Current Speed** and **Distance To Player** in the Inspector are read-only readouts, to watch while tuning in Play mode.
+
+## Enraged (`Conseraph.cs`, Enraged section)
+When the countdown reaches 00:00 he becomes enraged: `enraged = enragedEnabled && aiEnabled && hasTimer && timer.IsFinished && timer.IsCounting`. It is worked out every frame.
+- His speed drops to `enragedStartSpeed` (1), then `speed = enragedStartSpeed + floor(elapsed / enragedStepSeconds) * enragedSpeedStep`: +1 every 0.2 s, with **no cap**. The distance zones (catch-up, 10 m/s, 5 m/s) are ignored while he is enraged, since they would fight the climb.
+- He still moves with `Vector3.MoveTowards`, which stops exactly on the player, so he can't skip past them however fast he gets, and the touch trigger always overlaps.
+- The screen goes red (see below), and the timer's text stops showing the time: it flashes `RUN!!!` for 2 s, then shows his distance from the player like `07.52 METERS` (see [14-HUD](14-HUD.md)).
+- It ends when the timer says "UR GOOD" (`IsCounting` goes false, which is what a safe room will do later): his speed goes back to `normalSpeed` and the usual distance speeds take over wherever he is. While the timer isn't counting he is also invisible and still, as before.
+- **Enraged Enabled** off means 00:00 does nothing at all: no speed change, no red, no timer text.
+- `Conseraph.Enraged` is public for other scripts to read.
+
+## Red screen
+While he is enraged, `Conseraph` fades a global shader number `_RageAmount` from 0 to 1 over `redFadeSeconds` (1), and back when the enrage ends. A full-screen shader reads it and paints the whole view bright red. See [19-Rage-Screen](19-Rage-Screen.md) for the shader and the two things to set up by hand. The number is reset to 0 when Conseraph is disabled or destroyed, so the lobby is never red after a death.
 
 ## Touching the player
 The root has a trigger sphere (radius 1) and **no Rigidbody on purpose**. A trigger only produces events against a Rigidbody, so he reacts to the player (who has a kinematic Rigidbody) and cannot press pressure plates, which react to any collider. All the player controller's physics queries ignore triggers, so he never blocks or shoves the player.

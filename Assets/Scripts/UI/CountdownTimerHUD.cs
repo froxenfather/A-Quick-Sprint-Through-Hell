@@ -1,3 +1,4 @@
+using System.Globalization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,6 +31,19 @@ public class CountdownTimerHUD : MonoBehaviour
 
     // shown instead of the time while the clock is not counting down (before the player goes through the first door of the chute)
     [SerializeField] private string idleMessage = "UR GOOD";
+
+    [Header("Enraged text")]
+    // flashes when Conseraph becomes enraged (the timer reached 00:00).
+    // after that the text is how far he is from the player
+    [SerializeField] private string runMessage = "RUN!!!";
+
+    // how long the message flashes before the distance takes over (seconds)
+    [Min(0f)]
+    [SerializeField] private float runFlashSeconds = 2f;
+
+    // how many times a second the message blinks on and off
+    [Min(0.5f)]
+    [SerializeField] private float runFlashesPerSecond = 4f;
 
     [Header("Clock animation")]
     // the clock does one full loop of its pictures every this many seconds
@@ -68,6 +82,18 @@ public class CountdownTimerHUD : MonoBehaviour
     private bool started;
     private float startTime;
 
+    // how long this run's countdown is.
+    // it is durationSeconds, unless the RoomChain's debug mode shortens it
+    private float runDuration;
+
+    // Conseraph, found once at the start, for the enraged text
+    private Conseraph conseraph;
+    private bool hasConseraph;
+
+    // whether the enraged text was showing last frame, and when it began
+    private bool wasEnraged;
+    private float enragedStartTime;
+
     // for the tick sound: the whole seconds shown last frame, and the source that plays the tick
     private int lastShownSeconds = -1;
     private AudioSource tickSource;
@@ -82,6 +108,11 @@ public class CountdownTimerHUD : MonoBehaviour
 
         if (roomChain == null)
             roomChain = FindFirstObjectByType<RoomChain>();
+
+        runDuration = durationSeconds;
+
+        conseraph = FindFirstObjectByType<Conseraph>();
+        hasConseraph = conseraph != null;
 
         // remember how the clock sits next to the text in the scene: the text box's width, and the gap between the clock's right edge and the box's left edge
         if (clockImage != null && timeText != null)
@@ -142,13 +173,19 @@ public class CountdownTimerHUD : MonoBehaviour
     private void OnEnable()
     {
         if (roomChain != null)
-            roomChain.StarterExited += OnStarterExited;
+        {
+            roomChain.RunStarted += OnRunStarted;
+            roomChain.SafeRoomEntered += OnSafeRoomEntered;
+        }
     }
 
     private void OnDisable()
     {
         if (roomChain != null)
-            roomChain.StarterExited -= OnStarterExited;
+        {
+            roomChain.RunStarted -= OnRunStarted;
+            roomChain.SafeRoomEntered -= OnSafeRoomEntered;
+        }
 
         rect.anchoredPosition = basePosition;
     }
@@ -157,20 +194,42 @@ public class CountdownTimerHUD : MonoBehaviour
     // Conseraph follows this: he hunts while it runs and is invisible while it doesn't
     public bool IsCounting => started;
 
-    private void OnStarterExited()
+    // true once the countdown has run all the way down to 00:00.
+    // Conseraph becomes enraged when this turns true
+    public bool IsFinished => started && Time.time - startTime >= runDuration;
+
+    // the run starts, or starts again after a safe room: the countdown begins from the full time
+    private void OnRunStarted()
     {
         started = true;
         startTime = Time.time;
+
+        // the RoomChain's debug mode makes the countdown short, so the end of a run can be watched quickly.
+        // it is read once here, so it can't change in the middle of a run
+        runDuration = roomChain.DebugMode ? roomChain.DebugTimerSeconds : durationSeconds;
+    }
+
+    // the player went into a safe room: the clock stops and says you're good
+    private void OnSafeRoomEntered()
+    {
+        started = false;
     }
 
     private void Update()
     {
         float elapsed = started ? Time.time - startTime : 0f;
-        bool finished = started && elapsed >= durationSeconds;
+        bool finished = started && elapsed >= runDuration;
 
-        float remaining = Mathf.Max(0f, Mathf.Ceil(durationSeconds - elapsed));
+        float remaining = Mathf.Max(0f, Mathf.Ceil(runDuration - elapsed));
 
-        if (started)
+        bool enraged = hasConseraph && conseraph.Enraged;
+
+        if (!enraged)
+            wasEnraged = false;
+
+        if (enraged)
+            ShowEnraged();
+        else if (started)
             ShowTime(remaining);
         else
             ShowIdleMessage();
@@ -229,6 +288,33 @@ public class CountdownTimerHUD : MonoBehaviour
 
         int seconds = Mathf.RoundToInt(totalSeconds);
         timeText.text = $"{seconds / 60:00}:{seconds % 60:00}";
+    }
+
+    // while Conseraph is enraged the text is no longer the time.
+    // it flashes the run message first, then shows how far he is from the player, like 07.52 METERS
+    private void ShowEnraged()
+    {
+        if (timeText == null)
+            return;
+
+        if (!wasEnraged)
+        {
+            wasEnraged = true;
+            enragedStartTime = Time.time;
+        }
+
+        float sinceEnraged = Time.time - enragedStartTime;
+
+        if (sinceEnraged < runFlashSeconds)
+        {
+            // on for the first half of each blink and off for the second
+            bool on = Mathf.FloorToInt(sinceEnraged * runFlashesPerSecond * 2f) % 2 == 0;
+            timeText.text = on ? runMessage : "";
+        }
+        else
+        {
+            timeText.text = conseraph.DistanceToPlayer.ToString("00.00", CultureInfo.InvariantCulture) + " METERS";
+        }
     }
 
     // the clock isn't counting down, so the text says so

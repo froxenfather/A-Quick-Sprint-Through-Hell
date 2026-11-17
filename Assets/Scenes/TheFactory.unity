@@ -706,6 +706,8 @@ MonoBehaviour:
   sealThickness: 1
   sealRoomsBehind: 1
   sealDistance: 2
+  debugMode: 1
+  debugTimerSeconds: 5
   drawFootprints: 0
   showGateGizmos: 0
   simulateRooms: 2000
@@ -2209,6 +2211,9 @@ MonoBehaviour:
   outlineColor: {r: 1, g: 0, b: 0, a: 1}
   outlineThickness: 0.15
   idleMessage: UR GOOD
+  runMessage: RUN!!!
+  runFlashSeconds: 2
+  runFlashesPerSecond: 4
   cycleSeconds: 1
   animationSeconds: 0.5
   tickSound: {fileID: 8300000, guid: 7191e149ba6199d40978eda016100be6, type: 3}
@@ -2266,13 +2271,18 @@ MonoBehaviour:
   aiEnabled: 1
   catchUpDistance: 150
   closeDistance: 60
-  normalSpeed: 15
-  closeSpeed: 10
+  normalSpeed: 25
+  closeSpeed: 20
   catchUpGrowth: 1
   maxCatchUpSpeed: 80
   acceleration: 20
   slowdownRate: 100
   fadeSeconds: 1
+  enragedEnabled: 1
+  enragedStartSpeed: 1
+  enragedSpeedStep: 1
+  enragedStepSeconds: 0.2
+  redFadeSeconds: 1
   currentSpeed: 0
   distanceToPlayer: 0
 --- !u!135 &1342050491

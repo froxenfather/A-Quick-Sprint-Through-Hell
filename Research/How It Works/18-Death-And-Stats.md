@@ -21,7 +21,7 @@ Conseraph touching the player is the only way to die. It sends the player from T
 The thud plays on the sequence's own `AudioSource`, which ignores the listener pause, so it is heard while everything else is silent.
 
 ## Stats (`RunStats`)
-Counted from the moment the player leaves the starter room (`RoomChain.StarterExited`, the same moment as the timer), so the long drop down the chute doesn't inflate top speed. In a scene with no RoomChain it counts from the start.
+Counted from the moment the run starts (`RoomChain.RunStarted`, the first time the player leaves a safe room, the same moment as the timer), so the long drop down the chute and the tutorial don't count (the chute would inflate top speed). Later safe rooms don't reset anything, so the stats keep adding up across them. The exception is "Time survived", which only goes up while the player is actively being hunted (`RoomChain.RunActive`), so it stops while they are in a safe room. In a scene with no RoomChain it counts from the start.
 
 | line | where it comes from |
 |---|---|
@@ -29,7 +29,7 @@ Counted from the moment the player leaves the starter room (`RoomChain.StarterEx
 | Top speed | highest `HorizontalSpeed` (the HUD's number), whole m/s |
 | Jumps | `Jumped` + `WallJumped` events |
 | Dashes | `Dashed` events |
-| Time survived | time since the run started, `mm:ss` |
+| Time survived | seconds spent being hunted (the run active, so not the chute, the tutorial or a safe room), `mm:ss` |
 | Distance run | sideways distance moved, m (falling and climbing don't add) |
 | Wall jumps | `WallJumped` events |
 | Time wall running | seconds with `IsWallRunning` |

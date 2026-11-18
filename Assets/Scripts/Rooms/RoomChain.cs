@@ -350,9 +350,17 @@ public class RoomChain : MonoBehaviour
     // it warns if the tutorial doesn't end in a safe room (the run would never start)
     private void CheckTutorial()
     {
+        // the checkbox decides, unless the player took the tutorial orb in the lobby.
+        // the orb only counts for this one load, and asking for it uses it up even if the checkbox was already on
+        bool orbTaken = TutorialChoice.Consume();
+        bool useTutorial = tutorialEnabled || orbTaken;
+
+        if (orbTaken && !tutorialEnabled)
+            Debug.Log("The tutorial orb was taken in the lobby, so the tutorial is on for this run.", this);
+
         Room last = null;
 
-        if (tutorialEnabled && tutorialRooms != null)
+        if (useTutorial && tutorialRooms != null)
         {
             foreach (Room room in tutorialRooms)
             {
@@ -367,7 +375,7 @@ public class RoomChain : MonoBehaviour
             Debug.LogWarning($"The last tutorial room '{last.name}' is not a safe room, so the run will never start. Tick Safe Room on its Room component.", this);
 
         // with the tutorial off, the first room after the chute is a safe room
-        if (!tutorialEnabled)
+        if (!useTutorial)
         {
             safeRoomPending = HasSafeRooms();
 

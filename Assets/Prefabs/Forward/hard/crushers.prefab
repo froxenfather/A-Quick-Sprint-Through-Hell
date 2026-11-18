@@ -993,6 +993,7 @@ MonoBehaviour:
   type: 0
   maxSpeed: 5
   bounceSpeed: 10
+  singeDamage: 1
 --- !u!1 &380800898119326643
 GameObject:
   m_ObjectHideFlags: 0
@@ -4602,6 +4603,7 @@ MonoBehaviour:
   type: 0
   maxSpeed: 5
   bounceSpeed: 10
+  singeDamage: 1
 --- !u!1 &2177966858318767421
 GameObject:
   m_ObjectHideFlags: 0
@@ -4651,6 +4653,7 @@ MonoBehaviour:
   thickness: 1
   gate: {fileID: 2639216100154007410}
   material: {fileID: 0}
+  drawOutline: 0
 --- !u!1 &2223312346551120651
 GameObject:
   m_ObjectHideFlags: 0
@@ -8395,6 +8398,7 @@ MonoBehaviour:
   type: 0
   maxSpeed: 5
   bounceSpeed: 10
+  singeDamage: 1
 --- !u!1 &2739654013260036018
 GameObject:
   m_ObjectHideFlags: 0
@@ -11039,43 +11043,43 @@ MonoBehaviour:
   m_Positions:
   - {x: -2.5, y: -5.083336, z: 2.5}
   - {x: 2.5, y: -5.083336, z: 2.5}
-  - {x: -2.5, y: 13.916664, z: 2.5}
-  - {x: 2.5, y: 13.916664, z: 2.5}
+  - {x: -2.5, y: 17.916664, z: 2.5}
+  - {x: 2.5, y: 17.916664, z: 2.5}
   - {x: 2.5, y: -5.083336, z: 2.5}
   - {x: 2.5, y: -5.083336, z: -2.5}
-  - {x: 2.5, y: 13.916664, z: 2.5}
-  - {x: 2.5, y: 13.916664, z: -2.5}
+  - {x: 2.5, y: 17.916664, z: 2.5}
+  - {x: 2.5, y: 17.916664, z: -2.5}
   - {x: 2.5, y: -5.083336, z: -2.5}
   - {x: -2.5, y: -5.083336, z: -2.5}
-  - {x: 2.5, y: 13.916664, z: -2.5}
-  - {x: -2.5, y: 13.916664, z: -2.5}
+  - {x: 2.5, y: 17.916664, z: -2.5}
+  - {x: -2.5, y: 17.916664, z: -2.5}
   - {x: -2.5, y: -5.083336, z: -2.5}
   - {x: -2.5, y: -5.083336, z: 2.5}
-  - {x: -2.5, y: 13.916664, z: -2.5}
-  - {x: -2.5, y: 13.916664, z: 2.5}
-  - {x: -2.5, y: 13.916664, z: 2.5}
-  - {x: 2.5, y: 13.916664, z: 2.5}
-  - {x: -2.5, y: 13.916664, z: -2.5}
-  - {x: 2.5, y: 13.916664, z: -2.5}
+  - {x: -2.5, y: 17.916664, z: -2.5}
+  - {x: -2.5, y: 17.916664, z: 2.5}
+  - {x: -2.5, y: 17.916664, z: 2.5}
+  - {x: 2.5, y: 17.916664, z: 2.5}
+  - {x: -2.5, y: 17.916664, z: -2.5}
+  - {x: 2.5, y: 17.916664, z: -2.5}
   - {x: -2.5, y: -5.083336, z: -2.5}
   - {x: 2.5, y: -5.083336, z: -2.5}
   - {x: -2.5, y: -5.083336, z: 2.5}
   - {x: 2.5, y: -5.083336, z: 2.5}
   m_Textures0:
-  - {x: 5, y: -18}
-  - {x: 0, y: -18}
+  - {x: 5, y: -22}
+  - {x: 0, y: -22}
   - {x: 5, y: 1}
   - {x: 0, y: 1}
-  - {x: 5, y: -18}
-  - {x: 0, y: -18}
+  - {x: 5, y: -22}
+  - {x: 0, y: -22}
   - {x: 5, y: 1}
   - {x: 0, y: 1}
-  - {x: 5, y: -18}
-  - {x: 0, y: -18}
+  - {x: 5, y: -22}
+  - {x: 0, y: -22}
   - {x: 5, y: 1}
   - {x: 0, y: 1}
-  - {x: 5, y: -18}
-  - {x: 0, y: -18}
+  - {x: 5, y: -22}
+  - {x: 0, y: -22}
   - {x: 5, y: 1}
   - {x: 0, y: 1}
   - {x: 0, y: 1}
@@ -11122,11 +11126,19 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 7161
+  m_VersionIndex: 7541
   m_IsSelectable: 1
-  m_SelectedFaces: 
-  m_SelectedEdges: []
-  m_SelectedVertices: 
+  m_SelectedFaces: 04000000i
+  m_SelectedEdges:
+  - a: 16
+    b: 17
+  - a: 18
+    b: 16
+  - a: 17
+    b: 19
+  - a: 19
+    b: 18
+  m_SelectedVertices: 10000000110000001200000013000000i
 --- !u!114 &2271997787645628278
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11189,7 +11201,7 @@ MeshRenderer:
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
   m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
+  m_SelectedEditorRenderState: 2
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
@@ -16432,6 +16444,7 @@ MonoBehaviour:
   type: 0
   maxSpeed: 5
   bounceSpeed: 10
+  singeDamage: 1
 --- !u!1 &6066547805062010503
 GameObject:
   m_ObjectHideFlags: 0
@@ -20334,6 +20347,7 @@ MonoBehaviour:
   thickness: 1
   gate: {fileID: 4106792501722530561}
   material: {fileID: 0}
+  drawOutline: 0
 --- !u!1 &7380499600019556412
 GameObject:
   m_ObjectHideFlags: 0
@@ -20437,6 +20451,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Room
   canMirror: 1
+  isSafeRoom: 0
+  tutorialMessage: 
+  tutorialUI: {fileID: 0}
 --- !u!1 &7448813510033014923
 GameObject:
   m_ObjectHideFlags: 0
@@ -24402,6 +24419,7 @@ MonoBehaviour:
   type: 0
   maxSpeed: 5
   bounceSpeed: 10
+  singeDamage: 1
 --- !u!1 &9180906278827019516
 GameObject:
   m_ObjectHideFlags: 0

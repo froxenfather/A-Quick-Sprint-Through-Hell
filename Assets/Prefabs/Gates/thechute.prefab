@@ -1574,6 +1574,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Room
   canMirror: 1
+  isSafeRoom: 0
+  tutorialMessage: 
+  tutorialUI: {fileID: 0}
 --- !u!1 &4966585786983866760
 GameObject:
   m_ObjectHideFlags: 0
@@ -3029,19 +3032,19 @@ MonoBehaviour:
   - {x: 40, y: -0.5, z: 75}
   - {x: 40, y: -0.5, z: -5}
   - {x: 40, y: 0.5, z: 75}
-  - {x: 40, y: 4.5, z: -5}
+  - {x: 40, y: 1, z: -5}
   - {x: 40, y: -0.5, z: -5}
   - {x: 18, y: -0.5, z: -5}
-  - {x: 40, y: 4.5, z: -5}
-  - {x: 18, y: 4.5, z: -5}
+  - {x: 40, y: 1, z: -5}
+  - {x: 18, y: 1, z: -5}
   - {x: 18, y: -0.5, z: -5}
   - {x: 18, y: -0.5, z: 75}
-  - {x: 18, y: 4.5, z: -5}
+  - {x: 18, y: 1, z: -5}
   - {x: 18, y: 0.5, z: 75}
   - {x: 18, y: 0.5, z: 75}
   - {x: 40, y: 0.5, z: 75}
-  - {x: 18, y: 4.5, z: -5}
-  - {x: 40, y: 4.5, z: -5}
+  - {x: 18, y: 1, z: -5}
+  - {x: 40, y: 1, z: -5}
   - {x: 18, y: -0.5, z: -5}
   - {x: 40, y: -0.5, z: -5}
   - {x: 18, y: -0.5, z: 75}
@@ -3051,22 +3054,22 @@ MonoBehaviour:
   - {x: 0, y: 0}
   - {x: 22, y: 1}
   - {x: 0, y: 1}
-  - {x: 80, y: -4}
-  - {x: 0, y: -4}
-  - {x: 80, y: -3}
+  - {x: 80, y: -0.5}
+  - {x: 0, y: -0.5}
+  - {x: 80, y: 0.5}
   - {x: 0, y: 1}
-  - {x: 22, y: -4}
-  - {x: 0, y: -4}
+  - {x: 22, y: -0.5}
+  - {x: 0, y: -0.5}
   - {x: 22, y: 1}
   - {x: 0, y: 1}
-  - {x: 80, y: -4}
-  - {x: 0, y: -4}
+  - {x: 80, y: -0.5}
+  - {x: 0, y: -0.5}
   - {x: 80, y: 1}
-  - {x: 0, y: -3}
+  - {x: 0, y: 0.5}
   - {x: 0, y: 1}
   - {x: 22, y: 1}
-  - {x: 0, y: -79.09994}
-  - {x: 22, y: -79.09994}
+  - {x: 0, y: -79.00156}
+  - {x: 22, y: -79.00156}
   - {x: 22, y: -79}
   - {x: 0, y: -79}
   - {x: 22, y: 1}
@@ -3107,7 +3110,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 3521
+  m_VersionIndex: 3819
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges:

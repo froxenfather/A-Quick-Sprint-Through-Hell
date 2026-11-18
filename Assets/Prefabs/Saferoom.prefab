@@ -5501,7 +5501,7 @@ MonoBehaviour:
   canMirror: 1
   isSafeRoom: 1
   tutorialMessage: 
-  tutorialUI: {fileID: 1844657393018163622, guid: dabfff3788d8fe04884d2796238486f1, type: 3}
+  tutorialUI: {fileID: 0}
 --- !u!1 &5932199104518483365
 GameObject:
   m_ObjectHideFlags: 0

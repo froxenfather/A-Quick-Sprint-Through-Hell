@@ -34,6 +34,8 @@ Each time the player goes through a room's Exit, `RoomChain.OnRoomPassed(left, e
 So the Rooms counter starts at 0 for the real run, and tutorial rooms heal burns but don't count.
 
 ## Tutorial rooms
+The tutorial is on if **Tutorial Enabled** is ticked on the RoomChain, or if the player took the tutorial orb in the lobby just before this factory load (see [15-Lobby-And-Portal](15-Lobby-And-Portal.md)). The orb counts for one load only.
+
 `tutorialRooms` is built one at a time by `SpawnNext` before any random room, through `RoomPlanner.PlanFixed` (never mirrored, committed as forced, so backtracking never removes them). They are streamed like every other room (3 built ahead, the one behind kept, older ones deleted). Warnings in the console: an empty slot, a tutorial room that overlaps the rooms before it, and a tutorial whose last room isn't a safe room.
 
 ## Room messages (`TutorialPrompt`)

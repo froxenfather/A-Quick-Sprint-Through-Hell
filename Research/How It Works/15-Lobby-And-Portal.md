@@ -29,6 +29,14 @@ If the video is empty or fails, the sequence skips straight to black, load, fade
 
 **Also used for death.** `PlayerDeath` starts the same `GameStartSequence` to go back to the lobby, with the "got you" video and an optional `StatsPage`. When a stats page is given, a step runs between the video and the scene change: the stats appear on black one line at a time, and any key or click continues once they are all showing. See [18-Death-And-Stats](18-Death-And-Stats.md). The Portal passes no stats page, so it behaves exactly as above.
 
+## The tutorial orb (`TutorialPickup`, `TutorialChoice`)
+A pickup in the lobby that turns the tutorial on for the next factory load.
+- `TutorialPickup` goes on the orb (any object with a Collider set to **Is Trigger**). When the player walks into it, it calls `TutorialChoice.Pick()`, plays `pickupSound`, logs one console line, and destroys the orb. It spins and bobs like `HealthPickup` (`spinSpeed`, `bobHeight`, `bobSpeed`; set them to 0 for a still orb).
+- `TutorialChoice` is a static class holding one flag, so the choice survives the scene change from the lobby to the factory. It resets at the start of every Play session (`RuntimeInitializeOnLoadMethod`), because the editor can keep static values between sessions.
+- In the factory, `RoomChain.CheckTutorial` calls `TutorialChoice.Consume()`, which returns the flag and **clears it**: the tutorial is on if the RoomChain's **Tutorial Enabled** box is ticked **or** the orb was taken. The orb counts for that one load only, so the next factory load goes back to the checkbox, and the orb is back in the lobby (the lobby scene reloads), so the player chooses again. Without the orb, or when playing TheFactory directly, only the checkbox counts.
+
+To set it up: make a sphere in the lobby, tick **Is Trigger** on its collider, **Add Component > Tutorial Pickup**, optionally drag in a pickup sound, place it where the player passes it before the portal, and save the scene.
+
 ## Notes
 - Each scene has its own player, so nothing carries over. The lobby player is discarded.
 - Playing TheFactory directly works as before, without the video or fade.

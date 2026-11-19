@@ -274,12 +274,12 @@ MonoBehaviour:
   redFadeSeconds: 1
   rageIntensity: 0.5
   parryEnabled: 1
-  parryMinSpeed: 26
+  parryMinSpeed: 20
   lookToleranceDegrees: 30
   dashToleranceDegrees: 25
   parryGraceSeconds: 0.25
   knockbackSeconds: 3
-  knockbackMultiplier: 10
+  knockbackMultiplier: 5
   parrySound: {fileID: 8300000, guid: 529459a2f2eeb994885da74c511dd6d7, type: 3}
   parryVolume: 1
   currentSpeed: 0
@@ -935,8 +935,8 @@ MonoBehaviour:
   sealThickness: 1
   sealRoomsBehind: 1
   sealDistance: 2
-  debugMode: 0
-  debugTimerSeconds: 5
+  debugMode: 1
+  debugTimerSeconds: 20
   drawFootprints: 0
   showGateGizmos: 0
   simulateRooms: 2000

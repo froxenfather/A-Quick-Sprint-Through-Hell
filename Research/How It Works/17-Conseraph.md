@@ -7,6 +7,7 @@ Conseraph is four 2D sprites (halo, ring, face, mouth) in the 3D world. They alw
 - `Assets/Scripts/Conseraph/Conseraph.cs`: the chase AI, the fade, and touching the player.
 - `Assets/Scripts/Conseraph/ConseraphAudio.cs`: the toll sound.
 - `Assets/Scripts/Conseraph/ParryImpact.cs`: the freeze frame, flash and hit sound when a parry lands.
+- `Assets/Scripts/Conseraph/EnrageMusic.cs`: the song that plays while he is enraged.
 - `Assets/Shaders/ConseraphSprite.shader`: draws him over everything.
 - The art and sound go in `Assets/Conseraph/`.
 
@@ -50,6 +51,7 @@ When the countdown reaches 00:00 he becomes enraged: `enraged = enragedEnabled &
 - It ends when the timer says "UR GOOD" (`IsCounting` goes false, which is what a safe room will do later): his speed goes back to `normalSpeed` and the usual distance speeds take over wherever he is. While the timer isn't counting he is also invisible and still, as before.
 - **Enraged Enabled** off means 00:00 does nothing at all: no speed change, no red, no timer text.
 - `Conseraph.Enraged` is public for other scripts to read.
+- **Music:** `EnrageMusic` (add it to the Conseraph object, drag the song into **Enrage Music**) reads `Enraged` every frame. The song starts from its very beginning the moment he becomes enraged (the timer hits 00:00) and fades in over `fadeInSeconds` (1, 0 starts it at full volume). When the enrage ends it fades out over `fadeOutSeconds` (1) and stops, so the next enrage starts the song from the beginning again. It loops like the wind (`WindAudio.cs`): two copies of the clip, and in the last `loopCrossfadeSeconds` (2, cut to half the clip's length) of one the other starts at its beginning while the first fades out (equal power). That crossfade only happens at the loop, the start of the song has none. It is 2D (not placed in the world), and the fades use real time, so the freeze frame of a parry doesn't stall them. Leave **Enrage Music** empty for no music. The clip needs to be longer than a few seconds.
 
 ## Red screen
 While he is enraged, `Conseraph` fades a global shader number `_RageAmount` from 0 to 1 over `redFadeSeconds` (1), and back when the enrage ends. The number sent is `rage * rageIntensity`, where **Rage Intensity** (0 to 1, default 1) is a slider that sets how red the screen gets at the most: lower keeps part of the real picture showing through the red. A full-screen shader reads it and paints the whole view bright red. See [19-Rage-Screen](19-Rage-Screen.md) for the shader and the two things to set up by hand. The number is reset to 0 when Conseraph is disabled or destroyed, so the lobby is never red after a death.

@@ -5499,7 +5499,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 052e91ba03b90344b90fb97ecb3b206e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Room
-  canMirror: 1
+  canMirror: 0
   isSafeRoom: 1
   tutorialMessage: 
   tutorialUI: {fileID: 0}

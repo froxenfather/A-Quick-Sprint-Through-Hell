@@ -25,6 +25,44 @@ public class Room : MonoBehaviour
         isSafeRoom = true;
     }
 
+    // how many rooms this counts as on the Rooms counter when the player goes through it.
+    // set by the RoomChain from the number next to the room's weight in its list
+    public int RoomsCounted { get; private set; } = 1;
+
+    public void SetRoomsCounted(int count)
+    {
+        RoomsCounted = Mathf.Max(1, count);
+    }
+
+    // the space the room fills, in the room's own space: the smallest box around all of its footprint boxes.
+    // the footprint is deleted when the room is built, so the RoomChain works this out first
+    private bool hasBounds;
+    private Vector3 boundsMin;
+    private Vector3 boundsMax;
+
+    public bool HasBounds => hasBounds;
+
+    public void SetBounds(Vector3 min, Vector3 max)
+    {
+        boundsMin = min;
+        boundsMax = max;
+        hasBounds = true;
+    }
+
+    // whether a point in the world is inside the room's bounds, with this much extra space all round (meters).
+    // a room with no bounds can't be judged, so it says yes
+    public bool Contains(Vector3 worldPoint, float margin)
+    {
+        if (!hasBounds)
+            return true;
+
+        Vector3 p = transform.InverseTransformPoint(worldPoint);
+
+        return p.x >= boundsMin.x - margin && p.x <= boundsMax.x + margin
+            && p.y >= boundsMin.y - margin && p.y <= boundsMax.y + margin
+            && p.z >= boundsMin.z - margin && p.z <= boundsMax.z + margin;
+    }
+
     // a message that fades in on the screen (TutorialPrompt) when the player goes into this room, and stays while they are in it.
     // leave empty for no message
     [SerializeField, TextArea(2, 5)] private string tutorialMessage;

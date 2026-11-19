@@ -23,7 +23,7 @@ To make it:
 - **Place and size:** whatever you set on the Raw Image's Rect Transform.
 
 ## Rooms (`RoomCounterHUD`)
-- Number = `RoomChain.RoomsPassed`, a running total that increases each time the player passes a room's Exit. (`passedCount` can't be used, it drops when old rooms are deleted.)
+- Number = `RoomChain.RoomsPassed`, a running total that increases each time the player passes a room's Exit, by that room's **Rooms Counted** number (1 unless the room's entry in the RoomChain list says more, see [13-Room-Generation](13-Room-Generation.md)). (`passedCount` can't be used, it drops when old rooms are deleted.)
 - Colour: `HSV(0, t, t)` with `t = rooms / fullRedRoom` (100), so black at 0 rooms and bright red at 100 (the room where the rooms are meant to switch to the outline look).
 - Font: Anton SDF (TextMesh Pro examples).
 

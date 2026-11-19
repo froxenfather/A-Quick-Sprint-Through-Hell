@@ -25,8 +25,8 @@ public enum ChainMode
     Down
 }
 
-// one slot in a room list: the room, and how likely it is to be picked
-// 1 is normal, 0.5 is half as likely, 4 is four times as likely, 0 means never
+// one slot in a room list: the room, how likely it is to be picked, and how many rooms it counts as
+// weight: 1 is normal, 0.5 is half as likely, 4 is four times as likely, 0 means never
 [System.Serializable]
 public class RoomEntry
 {
@@ -34,6 +34,11 @@ public class RoomEntry
 
     [Range(0f, 10f)]
     public float weight = 1f;
+
+    // how many rooms this one counts as on the Rooms counter when the player goes through it.
+    // 1 is normal, 3 makes the counter go up by 3
+    [Min(1)]
+    public int roomsCounted = 1;
 }
 
 // what a new room should be and where it goes, worked out before anything is spawned
@@ -45,6 +50,9 @@ public struct PlannedRoom
     public Vector3 rootPosition;
     public Quaternion rootRotation;
     public Vector3 flip;
+
+    // how many rooms it counts as on the Rooms counter (from its list entry)
+    public int roomsCounted;
 
     // true if nothing fit and this room was placed anyway, as a last resort
     public bool forced;
@@ -750,6 +758,7 @@ public class RoomPlanner
         planned.rootPosition = candidate.rootPosition;
         planned.rootRotation = candidate.rootRotation;
         planned.flip = candidate.flip;
+        planned.roomsCounted = Mathf.Max(1, candidate.entry.roomsCounted);
         planned.forced = forced;
 
         return planned;

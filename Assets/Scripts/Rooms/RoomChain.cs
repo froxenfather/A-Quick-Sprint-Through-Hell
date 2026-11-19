@@ -241,6 +241,9 @@ public class RoomChain : MonoBehaviour
     private bool hasStarter;
     private bool starterPassed;
 
+    // the room prefabs that have already been warned about having no footprint, so each warns once
+    private readonly HashSet<Room> warnedNoBounds = new HashSet<Room>();
+
     // the tutorial is on and has at least one room, and how many of its rooms have been built so far
     private bool hasTutorial;
     private int nextTutorial;
@@ -551,7 +554,7 @@ public class RoomChain : MonoBehaviour
         {
             // only rooms of a running game count: never a tutorial room, and never a safe room
             if (RunActive && !left.IsSafeRoom)
-                RoomsPassed++;
+                RoomsPassed += left.RoomsCounted;
 
             RoomCleared?.Invoke();
         }
@@ -604,6 +607,58 @@ public class RoomChain : MonoBehaviour
         Vector3 toPlayer = player.position - gate.transform.position;
 
         return Vector3.Dot(toPlayer, gate.WorldForward) > distance;
+    }
+
+    // the footprint is a box for each piece of the room (walls, floors), so a point in the middle of the room is inside none of them.
+    // the room's bounds are the one box around all of them, in the room's own space
+    private void StoreBounds(Room room, RoomFootprint footprint)
+    {
+        Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+        Vector3 max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+        bool any = false;
+
+        foreach (BoxCollider box in footprint.GetComponentsInChildren<BoxCollider>(true))
+        {
+            Vector3 half = box.size * 0.5f;
+
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3 corner = box.center + new Vector3(
+                    (i & 1) == 0 ? -half.x : half.x,
+                    (i & 2) == 0 ? -half.y : half.y,
+                    (i & 4) == 0 ? -half.z : half.z);
+
+                Vector3 inRoom = room.transform.InverseTransformPoint(box.transform.TransformPoint(corner));
+
+                min = Vector3.Min(min, inRoom);
+                max = Vector3.Max(max, inRoom);
+                any = true;
+            }
+        }
+
+        if (any)
+            room.SetBounds(min, max);
+    }
+
+    // whether a point (the player) is inside the room they are in, or the one before or after it.
+    // the neighbours are included so going through a gate, or back through an open entrance, never counts as leaving.
+    // margin is extra space all round (meters).
+    // if the room they are in has no bounds it can't be judged, so this says yes
+    public bool IsInsideBounds(Vector3 point, float margin)
+    {
+        if (passedCount >= rooms.Count || !rooms[passedCount].HasBounds)
+            return true;
+
+        for (int i = passedCount - 1; i <= passedCount + 1; i++)
+        {
+            if (i < 0 || i >= rooms.Count)
+                continue;
+
+            if (rooms[i].HasBounds && rooms[i].Contains(point, margin))
+                return true;
+        }
+
+        return false;
     }
 
     // in front of the gate means on the side its arrow points to
@@ -721,9 +776,17 @@ public class RoomChain : MonoBehaviour
 
         if (footprint != null)
         {
+            // the room's bounds come from the footprint, so they are worked out before it goes
+            StoreBounds(room, footprint);
+
             footprint.gameObject.SetActive(false);
             Destroy(footprint.gameObject);
         }
+
+        if (!room.HasBounds && warnedNoBounds.Add(plan.prefab))
+            Debug.LogWarning($"Room '{plan.prefab.name}' has no footprint, so a player falling out of it can't be detected. Open it and use the Room's context menu: Create Footprint From Renderers.", plan.prefab);
+
+        room.SetRoomsCounted(plan.roomsCounted);
 
         // Room.Awake has already looked for the gates, and logged the problem if there is one
         if (room.Entry == null || room.Exit == null)

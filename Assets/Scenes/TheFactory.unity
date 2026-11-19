@@ -794,54 +794,93 @@ MonoBehaviour:
   safeRooms:
   - room: {fileID: 5648782931419823011, guid: aa074e4d9dee66b48bfd58b0d685a4e0, type: 3}
     weight: 1
+    roomsCounted: 1
   forwardRooms:
   - room: {fileID: 6380444923456330828, guid: 80e76add227cfb743b76be2f8653562f, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 4060359367065607814, guid: 982e01805e00ec64095d9454c8783f0c, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 6380444923456330828, guid: 84e561ee72fad554fb273a04e1192b5b, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 6393994183003314920, guid: 5ad8a238f2e511746b7350b9aae1cbf6, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 487381481014500433, guid: 87708715d58218340b056858758a6b65, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 8778050843666654460, guid: 522f7757eef51bc42bc651eda4eec13e, type: 3}
     weight: 0.8
+    roomsCounted: 1
   - room: {fileID: 6026878337139546205, guid: 8de5148007df6b8459f45c6d96fc3380, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 5067064258449662214, guid: 4a935d1a15509104085023523baaf937, type: 3}
     weight: 0.7
+    roomsCounted: 1
   - room: {fileID: 2353999934351408152, guid: e0b28be0bf04f3b46b550d9d097c6054, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 1688619471128331407, guid: db61a1389835ea8419aa2672c550a6de, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 4103393865650268899, guid: d13f7d7c8c573f04e9c0027e993c0398, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 5283417095838355880, guid: af70f78fd81f52746b4ca0b992c54b6e, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 3212327402885206415, guid: 0830dad7e09e29f4f9dd74f8f8f5ca8b, type: 3}
     weight: 0.3
+    roomsCounted: 3
   - room: {fileID: 7961655269294340874, guid: 210c105a000ec004fa078f6a566cdfb7, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 5319169140494915336, guid: c89e42a759d68ad4581d1408406788b0, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 1447607183093539569, guid: bd4d3a326bd8a564cbe6f4239cc9c855, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 6307566298423624665, guid: 94ce95de4ed98324caa4a2aa45fa9e26, type: 3}
     weight: 0.8
+    roomsCounted: 1
   - room: {fileID: 6119939201644301755, guid: 6d2b38203a901bc49852cfbdffcf3ab7, type: 3}
     weight: 0.8
+    roomsCounted: 1
+  - room: {fileID: 5313002180253040216, guid: cee443ba25be2fa44b8a49d74ebc66fd, type: 3}
+    weight: 1
+    roomsCounted: 1
+  - room: {fileID: 1744618026084174864, guid: a9d527b37db58534fb598a995310f4ff, type: 3}
+    weight: 1
+    roomsCounted: 1
+  - room: {fileID: 7943582559502234676, guid: 9b1b2f506ac934c4a9ac4b0e270f68c1, type: 3}
+    weight: 1
+    roomsCounted: 1
+  - room: {fileID: 5594715254893424960, guid: cc8d985600a3531429d4c205cf73804a, type: 3}
+    weight: 1
+    roomsCounted: 1
+  - room: {fileID: 7430873297325719277, guid: f92bf30208f34fd4da64e5be9701f9aa, type: 3}
+    weight: 1
+    roomsCounted: 1
   turnRooms:
   - room: {fileID: 8568710699704201034, guid: 20e7de4d79338f04b8b0ba5e42ee4f1f, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 989451479647469556, guid: 0deccecf275475b449e3bbc13057e7e9, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 4981608254946357394, guid: 073211d1f89110d4a9f7e739e93c799b, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 4127187886191825945, guid: 54322dde40d4a09409d3e5b676582a4b, type: 3}
     weight: 1
+    roomsCounted: 1
   - room: {fileID: 8254592356911211010, guid: 834528d7d6227594fadff13b23cfa73d, type: 3}
     weight: 1
+    roomsCounted: 1
   upTransitions: []
   downTransitions: []
   upRooms: []
@@ -1100,7 +1139,7 @@ Transform:
   m_GameObject: {fileID: 450152358}
   serializedVersion: 2
   m_LocalRotation: {x: -0.001095255, y: -0.0030558275, z: -0.0014083136, w: 0.99999374}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.8501411, y: 87.78283, z: -98.689926}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1130,7 +1169,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 450152358}
   serializedVersion: 5
-  m_Mass: 0.0000001
+  m_Mass: 100000
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -1144,7 +1183,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 1
   m_Interpolate: 1
   m_Constraints: 112
@@ -1401,6 +1440,7 @@ MonoBehaviour:
   conseraph: {fileID: 0}
   lobbySceneName: CustomPlay
   gotYouVideo: {fileID: 32900000, guid: fb4402ffd2acb144db890698b18d3e38, type: 3}
+  voidVideo: {fileID: 0}
   fadeInSeconds: 0
   statsFont: {fileID: 11400000, guid: 6505bf23ee48eeb428aa834d3ddad205, type: 2}
   thudSound: {fileID: 8300000, guid: 569dcbb9bda46504ca4331820eb4be47, type: 3}
@@ -1408,6 +1448,18 @@ MonoBehaviour:
   lineDelaySeconds: 0.8
   labelColor: {r: 1, g: 1, b: 1, a: 1}
   valueColor: {r: 1, g: 0, b: 0, a: 1}
+  conseraphTitle: You succumbed to Conseraph
+  conseraphTitleColor: {r: 1, g: 0, b: 0, a: 1}
+  normalTip: Try taking your time to ensure you do not need to backtrack or slow down!
+  enragedTip: 'Tip: When enraged, you can parry him by dashing straight at him right before he kills you!'
+  singedTip: When singed, slide bouncing and dashing is the best way to keep speed!
+  voidTitle: The Void consumes you.
+  voidTitleColor: {r: 0.6, g: 0.2, b: 1, a: 1}
+  voidTip: Make sure to stay inside the Eternal Factory and avoid holes!
+  voidHeaderFont: {fileID: 11400000, guid: 8a89fa14b10d46a99122fd4f73fca9a2, type: 2}
+  titleSize: 110
+  tipSize: 42
+  tipColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &450152374
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -10,6 +10,9 @@ Conseraph touching the player is the only way to die. It sends the player from T
 3. In **TheFactory**, select the Player and **Add Component > Player Death** (it adds `RunStats` by itself). Drag in the video (**Got You Video**), the sound (**Thud Sound**) and the font `MidnightSpree-Regular SDF` (**Stats Font**).
 4. Run **A Quick Sprint Through Hell > Set Up Build Scenes** if CustomPlay or TheFactory isn't in Build Settings.
 
+## Two ways to die
+Conseraph touching the player, and being lost to the void (`VoidWatch` calling `PlayerDeath.DieToVoid()`), both come here. They differ in the video (`gotYouVideo` or `voidVideo`) and in a **header at the very top of the stats screen** saying how the player died, with a tip under it. See [21-Void-And-Death-Causes](21-Void-And-Death-Causes.md) for the texts, colours and fonts.
+
 ## What happens
 1. `Conseraph.TouchedPlayer` fires. It only fires while he is hunting (visible, the timer running, or AI off), so a resting Conseraph is harmless.
 2. `PlayerDeath.Die` (once only): checks the lobby scene can be loaded (logs an error and does nothing if not), takes the stats lines from `RunStats`, freezes the player (disables `CustomPlayerController` and `PlayerLook`, like the Portal), and starts a `GameStartSequence` with the stats page.

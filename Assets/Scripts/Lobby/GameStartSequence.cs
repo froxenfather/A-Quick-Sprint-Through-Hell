@@ -26,6 +26,9 @@ public class GameStartSequence : MonoBehaviour
     private const float StatsRowHeight = 70f;
     private const float StatsFontSize = 46f;
 
+    // how far (on the 1920 x 1080 screen) the stats column is moved down when there is a header above it
+    private const float StatsDropForHeader = 140f;
+
     // after the last stat lands, keys pressed in this time (seconds) are ignored, so a key still being mashed doesn't skip it
     private const float AnyKeyGrace = 0.5f;
 
@@ -46,6 +49,16 @@ public class GameStartSequence : MonoBehaviour
 
         public Color LabelColor = Color.white;
         public Color ValueColor = Color.red;
+
+        // an optional header at the very top of the screen, shown before the stats: a large title and a smaller tip under it.
+        // leave the title empty for no header
+        public string HeaderTitle;
+        public Color HeaderTitleColor = Color.white;
+        public float HeaderTitleSize = 110f;
+        public string HeaderTip;
+        public Color HeaderTipColor = Color.white;
+        public float HeaderTipSize = 42f;
+        public TMP_FontAsset HeaderFont;
     }
 
     private Canvas canvas;
@@ -176,19 +189,34 @@ public class GameStartSequence : MonoBehaviour
         GameObject container = new GameObject("Stats", typeof(RectTransform));
         container.transform.SetParent(black.transform, false);
 
-        // centered, tall enough for every row
+        // the header (how the player died) at the very top, if there is one
+        GameObject header = string.IsNullOrEmpty(page.HeaderTitle) ? null : BuildHeader(page);
+
+        // centered, tall enough for every row.
+        // with a header it sits lower, so the two don't overlap
         RectTransform containerRect = (RectTransform)container.transform;
         containerRect.anchorMin = new Vector2(0.5f, 0.5f);
         containerRect.anchorMax = new Vector2(0.5f, 0.5f);
         containerRect.pivot = new Vector2(0.5f, 0.5f);
         containerRect.sizeDelta = new Vector2(StatsWidth, page.Lines.Count * StatsRowHeight);
-        containerRect.anchoredPosition = Vector2.zero;
+        containerRect.anchoredPosition = header != null ? new Vector2(0f, -StatsDropForHeader) : Vector2.zero;
 
         // every row starts hidden
         GameObject[] rows = new GameObject[page.Lines.Count];
 
         for (int i = 0; i < rows.Length; i++)
             rows[i] = BuildRow(containerRect, i, page.Lines[i].label, page.Lines[i].value, page);
+
+        // the header lands first, with the same thud
+        if (header != null)
+        {
+            yield return new WaitForSecondsRealtime(page.LineDelay);
+
+            header.SetActive(true);
+
+            if (page.Thud != null)
+                videoAudio.PlayOneShot(page.Thud, page.ThudVolume);
+        }
 
         foreach (GameObject row in rows)
         {
@@ -206,6 +234,50 @@ public class GameStartSequence : MonoBehaviour
             yield return null;
 
         container.SetActive(false);
+
+        if (header != null)
+            header.SetActive(false);
+    }
+
+    // the title and the tip at the top of the screen, hidden until it is their turn.
+    // the title is large, and the tip is smaller and wraps onto a second line if it is long
+    private GameObject BuildHeader(StatsPage page)
+    {
+        GameObject header = new GameObject("Header", typeof(RectTransform));
+        header.transform.SetParent(black.transform, false);
+        Stretch((RectTransform)header.transform);
+
+        BuildHeaderText(header.transform, "Title", page.HeaderTitle, page.HeaderTitleSize, page.HeaderTitleColor, page.HeaderFont, -30f, 150f, 1700f);
+
+        if (!string.IsNullOrEmpty(page.HeaderTip))
+            BuildHeaderText(header.transform, "Tip", page.HeaderTip, page.HeaderTipSize, page.HeaderTipColor, page.HeaderFont, -190f, 120f, 1500f);
+
+        header.SetActive(false);
+        return header;
+    }
+
+    private static void BuildHeaderText(Transform parent, string objectName, string text, float size, Color color, TMP_FontAsset font, float top, float height, float width)
+    {
+        GameObject textObject = new GameObject(objectName, typeof(RectTransform), typeof(TextMeshProUGUI));
+        textObject.transform.SetParent(parent, false);
+
+        // centred along the top edge of the screen
+        RectTransform rect = (RectTransform)textObject.transform;
+        rect.anchorMin = new Vector2(0.5f, 1f);
+        rect.anchorMax = new Vector2(0.5f, 1f);
+        rect.pivot = new Vector2(0.5f, 1f);
+        rect.sizeDelta = new Vector2(width, height);
+        rect.anchoredPosition = new Vector2(0f, top);
+
+        TextMeshProUGUI label = textObject.GetComponent<TextMeshProUGUI>();
+        label.text = text;
+        label.alignment = TextAlignmentOptions.Top;
+        label.fontSize = size;
+        label.color = color;
+        label.raycastTarget = false;
+
+        if (font != null)
+            label.font = font;
     }
 
     // one row: the label on the left and the value on the right.

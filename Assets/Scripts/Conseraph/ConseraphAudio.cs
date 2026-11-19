@@ -20,7 +20,7 @@ public class ConseraphAudio : MonoBehaviour
     // further from the player than this (meters) he can't be heard at all.
     // between here and the player the volume rises in a straight line from minVolume to maxVolume
     [Min(0.1f)]
-    [SerializeField] private float hearingRange = 80f;
+    [SerializeField] private float hearingRange = 120f;
 
     private Conseraph conseraph;
     private AudioSource source;

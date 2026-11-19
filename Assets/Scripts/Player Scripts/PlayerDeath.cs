@@ -62,7 +62,7 @@ public class PlayerDeath : MonoBehaviour
     [SerializeField] private string normalTip = "Try taking your time to ensure you do not need to backtrack or slow down!";
 
     [TextArea(1, 3)]
-    [SerializeField] private string enragedTip = "Tip: When enraged, you can parry him by dashing straight at him right before he kills you!";
+    [SerializeField] private string enragedTip = "Try checking the saferoom for clues on how to counter him when all seems lost!";
 
     [TextArea(1, 3)]
     [SerializeField] private string singedTip = "When singed, slide bouncing and dashing is the best way to keep speed!";

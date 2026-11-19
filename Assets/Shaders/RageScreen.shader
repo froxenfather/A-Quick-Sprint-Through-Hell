@@ -1,6 +1,8 @@
 // turns the whole picture bright red: a red version of what the camera sees, where light stays light and dark stays dark.
 // it is a full-screen pass, so it needs a Full Screen Pass Renderer Feature on the renderer, with a material that uses this shader.
 // _RageAmount is a global number that Conseraph sets: 0 leaves the picture alone and 1 is fully red.
+// Conseraph multiplies it by his Rage Intensity slider, so a lower intensity keeps part of the real picture showing through the red.
+// the numbers in Properties below are only the defaults for a NEW material, a material that already exists keeps the values saved on it
 // this is also the place to grow the later look where objects get red outlines and everything else goes black
 Shader "Custom/Rage Screen"
 {

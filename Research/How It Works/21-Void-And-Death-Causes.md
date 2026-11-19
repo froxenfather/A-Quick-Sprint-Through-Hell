@@ -37,11 +37,11 @@ At the very top of the stats screen, before the stats (it lands first, with the 
 | cause | title | tip |
 |---|---|---|
 | Conseraph | red **You succumbed to Conseraph** (the stats font, Midnight Spree) | normal: *Try taking your time to ensure you do not need to backtrack or slow down!* |
-| Conseraph, enraged (`Conseraph.Enraged`) | same | *Tip: When enraged, you can parry him by dashing straight at him right before he kills you!* |
+| Conseraph, enraged (`Conseraph.Enraged`) | same | *Try checking the saferoom for clues on how to counter him when all seems lost!* |
 | Conseraph, singed (`PlayerBurn.Singe > 0`) | same | *When singed, slide bouncing and dashing is the best way to keep speed!* |
 | the void | purple **The Void consumes you.** (Anton) | *Make sure to stay inside the Eternal Factory and avoid holes!* |
 
-If the player was both enraged and singed, the enraged tip wins. All the texts, colours and the two sizes (`titleSize` 110, `tipSize` 42) are fields on `PlayerDeath`. `voidHeaderFont` is filled with Anton in the editor by its GUID if empty. `GameStartSequence.StatsPage` has the optional header fields, so the Portal's own sequence (which passes none) looks as before. With a header, the stats column sits 140 px lower so the two don't overlap.
+If the player was both enraged and singed, the enraged tip wins. The enraged tip hints at the parry without spelling it out, so the player has to find the clues in the safe room (the parry itself is in [17-Conseraph](17-Conseraph.md)). All the texts, colours and the two sizes (`titleSize` 110, `tipSize` 42) are fields on `PlayerDeath`. `voidHeaderFont` is filled with Anton in the editor by its GUID if empty. `GameStartSequence.StatsPage` has the optional header fields, so the Portal's own sequence (which passes none) looks as before. With a header, the stats column sits 140 px lower so the two don't overlap.
 
 ## Testing
 - Sprint through many rooms, including turns and up and down sections: "Let Go" should never show at gates.

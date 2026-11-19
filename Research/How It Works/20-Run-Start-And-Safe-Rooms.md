@@ -15,7 +15,7 @@ There is no game mode switch yet. A mode chooser is planned for the lobby, and t
 | event | when | who listens |
 |---|---|---|
 | `StarterExited` | the player leaves the chute, the first time | nobody yet |
-| `RunStarted` | the player leaves a safe room (or the chute, when there is no tutorial) | `CountdownTimerHUD` (starts the countdown from the full time), `Conseraph` (placed `startDistanceBelow` = 1000 m below the player, speed reset), `RunStats` (starts counting, only the first time; its "Time survived" only runs while `RunActive`) |
+| `RunStarted` | the player leaves a safe room (or the chute, when there is no tutorial) | `CountdownTimerHUD` (starts the countdown from the full time), `Conseraph` (placed `startDistanceBelow` = 1500 m below the player, speed reset), `RunStats` (starts counting, only the first time; its "Time survived" only runs while `RunActive`) |
 | `SafeRoomEntered` | the player goes into a safe room | `CountdownTimerHUD` (stops, says UR GOOD). The RoomChain itself also fades the song out |
 | `RoomCleared` | the player leaves any room except the chute | `PlayerBurn` (heals one level) |
 | `RoomEntered(Room)` | the player goes into any room (the one they are now in) | `TutorialPrompt` (shows that room's message) |

@@ -8,12 +8,12 @@ An instant turn toward where you look, plus some speed. Built for quick trajecto
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `dashDirectionInfluence` | 80 % | How much of the angle toward your look direction the dash turns you. 100 = exactly where you look, 10 = mostly keeps your direction |
+| `dashDirectionInfluence` | 100 % | How much of the angle toward your look direction the dash turns you. 100 = exactly where you look, 10 = mostly keeps your direction |
 | `dashSpeedBonus` | 5 | Added to your current flat speed (m/s) |
 | `dashMinSpeedSprint` | 35 | Dash speed never ends up below this while Shift is held |
 | `dashMinSpeedWalk` | 20 | ...and never below this otherwise |
 | `maxDashCharges` | 3 | Dashes you can bank. Each dash uses one, and dashes can be done as fast as you press the button while you have charges |
-| `dashRechargeTime` | 3 s | Time to earn one charge back. Charges return one at a time |
+| `dashRechargeTime` | 5 s | Time to earn one charge back. Charges return one at a time |
 | `dashHangTime` | 0.25 s | Seconds of no gravity after a dash (level glide). 0 = off |
 
 ## Steps (`TryDash`)
@@ -31,6 +31,8 @@ An instant turn toward where you look, plus some speed. Built for quick trajecto
 
 **Hang:** until `dashHangEndTime`, `CurrentGravity()` returns 0, so the air models add no gravity and we glide level. A ground jump or wall jump resets `dashHangEndTime`, so the jump rises and falls normally. `dashHangTime = 0` turns it off. Wall slip and the wall run need no special case.
 
+**Read by the parry:** `DashDirection` (the flat unit direction of the last dash), `DashStartSpeed` (the flat speed the dash started from, before the dash's own boost; the flat speed from step 2) and `DashHangTime` are public. The first two are set just before `Dashed` fires. They let Conseraph tell whether a dash was aimed at him, whether it was fast enough, and how long the dash lasts (see [17-Conseraph](17-Conseraph.md)). They don't change how a dash works.
+
 Nothing else: no state flag. `Move()` picks its model afterwards from the usual state, so the dash works in every state.
 
 ## What it does in each state
@@ -46,7 +48,7 @@ Nothing else: no state flag. `Move()` picks its model afterwards from the usual 
 
 `airSpeedCap` is the hard limit on what air control can add (it can never push you past the speed you took off with). The dash raises it with `Max()` so a dash can never lower it, and a lower cap would clamp the boost away on the next line, the same reason as the wall jump. Anything above `maxAirSpeed` (20) still bleeds back toward it at `airOverspeedDecel` (15), which is the soft limit. The cap just lets air control rebuild up to the dash speed afterwards.
 
-On the ground there is no air cap involved: `GroundMoveTowards` pulls overspeed back to the sprint speed at `groundOverspeedDecel` (52), so a ground dash is mostly a burst. Dashing just before a jump (or in the air) keeps the speed much longer.
+On the ground there is no air cap involved: `GroundMoveTowards` pulls overspeed back to the sprint speed at `groundOverspeedDecel` (30), so a ground dash is mostly a burst. Dashing just before a jump (or in the air) keeps the speed much longer.
 
 ## FOV punch (`SpeedFOV.cs`)
 

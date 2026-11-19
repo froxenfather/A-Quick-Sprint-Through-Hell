@@ -220,6 +220,7 @@ GameObject:
   - component: {fileID: 95443813}
   - component: {fileID: 95443812}
   - component: {fileID: 95443811}
+  - component: {fileID: 95443816}
   m_Layer: 0
   m_Name: Conseraph
   m_TagString: Untagged
@@ -269,8 +270,18 @@ MonoBehaviour:
   enragedEnabled: 1
   enragedStartSpeed: 1
   enragedSpeedStep: 1
-  enragedStepSeconds: 0.2
+  enragedStepSeconds: 0.1
   redFadeSeconds: 1
+  rageIntensity: 0.5
+  parryEnabled: 1
+  parryMinSpeed: 26
+  lookToleranceDegrees: 30
+  dashToleranceDegrees: 25
+  parryGraceSeconds: 0.25
+  knockbackSeconds: 3
+  knockbackMultiplier: 10
+  parrySound: {fileID: 8300000, guid: 529459a2f2eeb994885da74c511dd6d7, type: 3}
+  parryVolume: 1
   currentSpeed: 0
   distanceToPlayer: 0
 --- !u!135 &95443813
@@ -346,6 +357,24 @@ Transform:
   - {fileID: 1573605995}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &95443816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 95443810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9468708fee4a3674cac9b5db0721961c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ParryImpact
+  freezeSeconds: 0.3
+  hitSound: {fileID: 8300000, guid: d5a2cad7baa8d634c8d78e6a6d8192d9, type: 3}
+  hitVolume: 1
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  flashStrength: 0.85
+  flashFadeSeconds: 0.1
 --- !u!1001 &174033999
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -750,6 +779,7 @@ GameObject:
   - component: {fileID: 386516196}
   - component: {fileID: 386516198}
   - component: {fileID: 386516199}
+  - component: {fileID: 386516200}
   m_Layer: 0
   m_Name: RoomChainMAINGAME
   m_TagString: Untagged
@@ -974,6 +1004,35 @@ MonoBehaviour:
   fadeOutSeconds: 1.5
   jitterPixels: 6
   jitterChangesPerSecond: 16
+--- !u!114 &386516200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 386516195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3e5a7c9d1f24860a2c4e6f8091b3d5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VoidWatch
+  roomChain: {fileID: 0}
+  playerDeath: {fileID: 0}
+  message: Let Go
+  font: {fileID: 11400000, guid: 6505bf23ee48eeb428aa834d3ddad205, type: 2}
+  fontSize: 160
+  textColor: {r: 0.6, g: 0.2, b: 1, a: 1}
+  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineThickness: 0.2
+  graceSeconds: 0.5
+  fadeInSeconds: 5
+  clearSeconds: 0.4
+  consumeSound: {fileID: 8300000, guid: 19851aced60edaf46aa75b6ee638b1fa, type: 3}
+  maxVolume: 1
+  loopSound: 1
+  jitterPixels: 6
+  jitterChangesPerSecond: 16
+  boundsMargin: 2
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0

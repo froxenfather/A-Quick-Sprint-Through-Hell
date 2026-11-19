@@ -6,8 +6,8 @@ Two small mechanics layered on top of Wall Jumping. Both read the same `currentW
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `wallSlipGravityScale` | 0.5 | Gravity multiplier while touching a wall (the "slipping speed"). 0.5 = half gravity |
-| `wallRunMinSpeed` | 20 | Flat speed needed to start AND keep a wall run |
+| `wallSlipGravityScale` | 0.7 | Gravity multiplier while touching a wall (the "slipping speed"). 0.5 = half gravity |
+| `wallRunMinSpeed` | 10 | Flat speed needed to start AND keep a wall run |
 | `wallRunGracePeriod` | 1.5 s | Wall run time allowed before Y unpauses |
 
 New code defaults only. Check `CustomPlay.unity` for overrides.

@@ -30,43 +30,43 @@ public class CustomPlayerController : MonoBehaviour
 
     [Header("Ground Movement")]
     [SerializeField] private float walkSpeed = 12f;
-    [SerializeField] private float sprintSpeed = 20f;
+    [SerializeField] private float sprintSpeed = 25f;
 
     // how quickly velocity approaches target movement speed
-    [SerializeField] private float groundAccel = 90.9f;
+    [SerializeField] private float groundAccel = 100f;
 
     // deceleration when already moving faster than our desired speed
-    [SerializeField] private float groundOverspeedDecel = 52.1f;
+    [SerializeField] private float groundOverspeedDecel = 30f;
 
     // deceleration when no movement input is held
-    [SerializeField] private float groundFriction = 68.6f;
+    [SerializeField] private float groundFriction = 200f;
 
     // brief friction-free window after landing
     // lets momentum survive landings / allows bunny hopping
     [SerializeField] private float landingGrace = 0.04f;
 
     [Header("Air Movement")]
-    [SerializeField] private float jumpVelocity = 14.68f;
+    [SerializeField] private float jumpVelocity = 25f;
 
     // downward acceleration in m/s^2
-    [SerializeField] private float gravity = 30.01f;
+    [SerializeField] private float gravity = 60f;
 
     // horizontal acceleration while airborne
-    [SerializeField] private float airControl = 15.22f;
+    [SerializeField] private float airControl = 50f;
 
     // prevent infinite horizontal air acceleration
     [SerializeField] private float maxAirSpeed = 20f;
 
     // how fast horizontal speed bleeds off when above maxAirSpeed
     // high = acts like a hard clamp, low = momentum carries through the air
-    [SerializeField] private float airOverspeedDecel = 52.1f;
+    [SerializeField] private float airOverspeedDecel = 15f;
 
     // coyote time: for this many seconds after walking off an edge, pressing jump still counts as a normal ground jump
     // named after the cartoon coyote who hangs in the air before falling.
     // just saw Coyote Vs Acme and was reminded of this!
     // 0 turns it off.
     // around 0.1 feels forgiving without looking like a double jump
-    [SerializeField] private float coyoteTime = 0.1f;
+    [SerializeField] private float coyoteTime = 0.3f;
 
     [Header("Slide")]
     // friction while sliding.
@@ -74,22 +74,22 @@ public class CustomPlayerController : MonoBehaviour
     [SerializeField] private float slidingGroundFriction = 4f;
 
     // speed added the moment a slide starts...
-    [SerializeField] private float slideBoost = 5f;
+    [SerializeField] private float slideBoost = 3f;
 
     // ...but only if we're going slower than this.
     // so the most a boost can ever give is about this + slideBoost
     [Range(0f, 60f)]
-    [SerializeField] private float slideBoostMaxSpeed = 25f;
+    [SerializeField] private float slideBoostMaxSpeed = 26f;
 
     // minimum speed (m/s, same units as walkSpeed/sprintSpeed) needed to START a slide (grounded OR airborne).
     // too slow and we crouch instead
     [Range(0f, 30f)]
-    [SerializeField] private float slideMinSpeed = 6.7f;
+    [SerializeField] private float slideMinSpeed = 15f;
 
     // how strongly A/D nudge our direction while sliding.
     // way weaker than groundAccel - this is a slow drift, not steering like regular ground movement.
     // w/S do nothing at all while sliding
-    [SerializeField] private float slideSteerAccel = 10f;
+    [SerializeField] private float slideSteerAccel = 50f;
 
     // multiplier on gravity pulling us DOWN a slope while sliding.
     // 1 = plain g * sin(angle)
@@ -113,16 +113,16 @@ public class CustomPlayerController : MonoBehaviour
     // landing on the ground while sliding in the air turns some of the fall speed into forward speed
     // this is how much of it we keep: 1 = all of it (the old, very strong boost), 0 = none (a plain landing)
     [Range(0f, 1f)]
-    [SerializeField] private float slideLandingBoostScale = 0.35f;
+    [SerializeField] private float slideLandingBoostScale = 0.3f;
 
     // hard cap (m/s) on that landing boost, so a very tall drop can't launch you
-    [SerializeField] private float slideLandingBoostMax = 12f;
+    [SerializeField] private float slideLandingBoostMax = 100f;
 
     // gravity multiplier while sliding in the AIR: 4 = four times normal gravity, 1 = off
     // it follows `sliding` every step, so the moment the slide ends (button released, wall jump) gravity is back to normal
     // important to know it only affects gravity ONCE YOU GO DOWN!!!!!!!!
     [Min(0f)]
-    [SerializeField] private float slideAirGravityMultiplier = 4f;
+    [SerializeField] private float slideAirGravityMultiplier = 2f;
 
     [Header("Dash")]
     // how strongly a dash turns our flat velocity toward where the camera is looking, in percent
@@ -130,7 +130,7 @@ public class CustomPlayerController : MonoBehaviour
     // 10 = we mostly keep our old direction.
     // only the direction changes, never the speed
     [Range(0f, 100f)]
-    [SerializeField] private float dashDirectionInfluence = 80f;
+    [SerializeField] private float dashDirectionInfluence = 100f;
 
     // speed (m/s) added to our current flat speed by a dash
     [SerializeField] private float dashSpeedBonus = 5f;
@@ -148,7 +148,7 @@ public class CustomPlayerController : MonoBehaviour
     // seconds to earn one charge back.
     // charges come back one at a time
     [Min(0.01f)]
-    [SerializeField] private float dashRechargeTime = 3f;
+    [SerializeField] private float dashRechargeTime = 5f;
 
     // seconds of no gravity right after a dash: we glide level instead of dropping.
     // 0 turns the hang off
@@ -161,25 +161,25 @@ public class CustomPlayerController : MonoBehaviour
     // a normal jump is about 3.6 m with the default jumpVelocity and gravity
     // touching a wall halves gravity (Wall Slip), so the real jump goes a little higher while we are still next to the wall
     [Min(0f)]
-    [SerializeField] private float wallJumpHeight = 1.56f;
+    [SerializeField] private float wallJumpHeight = 8f;
 
     // flat speed added straight away from the wall (along the wall normal)
-    [SerializeField] private float wallJumpPushAway = 10f;
+    [SerializeField] private float wallJumpPushAway = 25f;
 
     // flat speed added along the wall, in the direction we're facing
     // defaults to the same value as slideJumpBoost
-    [SerializeField] private float wallJumpForwardBoost = 8f;
+    [SerializeField] private float wallJumpForwardBoost = 5f;
 
     // how far off "looking parallel to the wall" we can be and still wall jump.
     // applies to BOTH directions along the wall, so 30 gives a 60 degree cone around each one
     [Range(0f, 90f)]
-    [SerializeField] private float wallJumpLookTolerance = 30f;
+    [SerializeField] private float wallJumpLookTolerance = 45f;
 
     // on: we can wall jump off ANY wall we touch in the air, whichever way we face (run face first into a wall, jump up it, kick off backwards).
     // off: we must look along the wall, as before
     // wall RUNNING always needs the look, whatever this says
     // a kick from outside the look range is just up and straight away from the wall: the sideways boost along the wall (wallJumpForwardBoost) only happens when we are looking along it
-    [SerializeField] private bool wallJumpAnyDirection = false;
+    [SerializeField] private bool wallJumpAnyDirection = true;
 
     // how close (meters, from the capsule surface, on top of skinWidth) a wall must be to count
     [SerializeField] private float wallDetectDistance = 0.15f;
@@ -192,7 +192,7 @@ public class CustomPlayerController : MonoBehaviour
     // a surface only counts as a wall if abs(normal.y) is at most this.
     // 0 = perfectly vertical
     [Range(0f, 1f)]
-    [SerializeField] private float wallMaxNormalY = 0.3f;
+    [SerializeField] private float wallMaxNormalY = 0.25f;
 
     [Header("Wall Slip")]
     // the "slipping speed": while touching a wall in the air, gravity is multiplied by this.
@@ -202,11 +202,11 @@ public class CustomPlayerController : MonoBehaviour
     // applies to ANY wall touch, no look angle needed.
     // the moment we are off the wall, gravity is back to normal
     [Range(0f, 1f)]
-    [SerializeField] private float wallSlipGravityScale = 0.5f;
+    [SerializeField] private float wallSlipGravityScale = 0.7f;
 
     [Header("Wall Run")]
     // flat speed (m/s) needed to start AND keep a wall run, on top of holding sprint and meeting every wall jump requirement
-    [SerializeField] private float wallRunMinSpeed = 20f;
+    [SerializeField] private float wallRunMinSpeed = 10f;
 
     // seconds of wall running allowed before Y unpauses and we slip down the wall as normal
     // it is a budget, not a per-wall timer: it only refills on a wall jump or on touching the ground
@@ -221,7 +221,7 @@ public class CustomPlayerController : MonoBehaviour
     [SerializeField] private float crouchHeight = 1.2f;
 
     [Header("Collision")]
-    [SerializeField] private LayerMask collisionMask = ~0;
+    [SerializeField] private LayerMask collisionMask = 503;
 
     // small gap maintained between capsule and surfaces
     // helps avoid floating point collision jitter
@@ -237,14 +237,14 @@ public class CustomPlayerController : MonoBehaviour
     [SerializeField] private float groundProbeDistance = 0.05f;
 
     // uphill slopes above this angle can launch us when we leave them
-    [SerializeField] private float launchSlopeAngle = 10f;
+    [SerializeField] private float launchSlopeAngle = 20f;
 
     // maximum collision-and-slide attempts in one FixedUpdate
     [SerializeField] private int maxBumps = 4;
 
     [Header("Pushing Rigidbodies")]
-    [SerializeField] private float playerMass = 10f;
-    [SerializeField] private float pushStrength = 1f;
+    [SerializeField] private float playerMass = 2f;
+    [SerializeField] private float pushStrength = 2f;
 
     [Header("Debug")]
     [SerializeField] private bool showDebugHUD = true;
@@ -436,6 +436,17 @@ public class CustomPlayerController : MonoBehaviour
     // dash charges for the HUD (1.6 means one full charge plus 60% of the next)
     public int MaxDashCharges => maxDashCharges;
     public float DashCharges => dashCharges;
+
+    // the flat direction of the last dash, as a unit vector.
+    // it is set just before Dashed fires, so a listener can read where the dash went
+    public Vector3 DashDirection { get; private set; }
+
+    // the flat speed (m/s) the last dash started from, before the dash gave its own speed.
+    // it is set just before Dashed fires, so a listener can read how fast we were going
+    public float DashStartSpeed { get; private set; }
+
+    // how long the no-gravity glide after a dash lasts (seconds)
+    public float DashHangTime => dashHangTime;
 
     public event System.Action Dashed;
     public event System.Action Jumped;
@@ -751,6 +762,8 @@ public class CustomPlayerController : MonoBehaviour
         // the partial progress toward the next one is kept
         dashCharges -= 1f;
         dashHangEndTime = Time.time + dashHangTime;
+        DashDirection = direction;
+        DashStartSpeed = speed;
         Dashed?.Invoke();
     }
 

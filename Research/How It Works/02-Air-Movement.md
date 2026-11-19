@@ -43,7 +43,7 @@ Then `MoveAndSlide` moves by `v * dt` (velocity first, then position: semi-impli
 - **`max(before, cap)`.** If you're already faster than the cap (launch pad, slide jump), the limit rises to your current speed, so the cap never clamps boosts. Boost sources also raise `airSpeedCap` themselves.
 - **Max air speed bleeds instead of clamping.** A hard clamp "feels like glass" (devlog). `airOverspeedDecel` is the knob: high behaves like a clamp, low lets momentum carry. At 15 it is a fast-but-visible slowdown.
 - **Gravity last.** Clamping before gravity means gravity can never be capped by accident.
-- **Gravity is `CurrentGravity()`.** While touching a wall it is `gravity * wallSlipGravityScale` (half by default), otherwise plain `gravity` (see Wall Running).
+- **Gravity is `CurrentGravity()`.** While touching a wall it is `gravity * wallSlipGravityScale` (0.7 by default), otherwise plain `gravity` (see Wall Running).
 - **Sliding in the air skips all of this.** `SlideAirMove` is gravity only (see Sliding).
 
 > Outdated note: the devlog roadmap (Pass 2) planned a *directional soft cap* (project velocity onto the wish direction). What shipped is the takeoff-speed cap above.

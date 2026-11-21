@@ -222,7 +222,6 @@ GameObject:
   - component: {fileID: 95443818}
   - component: {fileID: 95443811}
   - component: {fileID: 95443816}
-  - component: {fileID: 95443817}
   m_Layer: 0
   m_Name: Conseraph
   m_TagString: Untagged
@@ -243,11 +242,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConseraphAudio
   tollClip: {fileID: 8300000, guid: 9afb3a2e831f8ea41b480c09f7db01ec, type: 3}
-  maxVolume: 1
-  minVolume: 0.05
-  hearingRange: 120
-  enragedHearingRange: 600
-  manicHearingRange: 10000
+  tollMaxVolume: 1
+  tollMinVolume: 0.05
+  tollHearingRange: 120
+  tollEnragedHearingRange: 250
+  tollEnragedMaxVolume: 1
+  tollManicHearingRange: 10000
+  tollManicMaxVolume: 1
 --- !u!114 &95443812
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -278,8 +279,8 @@ MonoBehaviour:
   enragedStepSeconds: 0.1
   redFadeSeconds: 1
   rageIntensity: 1
-  redFollowsSong: 1
-  redFullSeconds: 160
+  redStartPercent: 10
+  redPerParryPercent: 10
   lookSlowdownPercent: 10
   lookSlowdownDegrees: 30
   lookAwaySpeedupPercent: 10
@@ -299,7 +300,8 @@ MonoBehaviour:
   parrySound: {fileID: 8300000, guid: 529459a2f2eeb994885da74c511dd6d7, type: 3}
   parryVolume: 1
   testEnrageOnSpawn: 0
-  testAlwaysParried: 0
+  testAlwaysParried: 1
+  debugStartDistanceBelow: 100
   currentSpeed: 0
   distanceToPlayer: 0
 --- !u!135 &95443813
@@ -393,24 +395,6 @@ MonoBehaviour:
   flashColor: {r: 1, g: 1, b: 1, a: 1}
   flashStrength: 0.85
   flashFadeSeconds: 0.1
---- !u!114 &95443817
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 95443810}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9eb6e7487e5968445a6a8711f51ace00, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnrageMusic
-  enrageMusic: {fileID: 8300000, guid: 6a8a86dd06a8d3941b2b6ae2d5b69011, type: 3}
-  volume: 0.7
-  loopCrossfadeSeconds: 0.1
-  finalLoopSeconds: 10
-  fadeInSeconds: 1
-  fadeOutSeconds: 0
 --- !u!114 &95443818
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -423,19 +407,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c1d4e8a2b3f45069d8e1a5c7f0b3d92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ManicWarning
-  message: D I E ! ! ! ! !
-  font: {fileID: 11400000, guid: 6505bf23ee48eeb428aa834d3ddad205, type: 2}
-  fontSize: 400
-  textColor: {r: 0.9, g: 0.05, b: 0.05, a: 1}
-  outlineColor: {r: 0, g: 0, b: 0, a: 1}
-  outlineThickness: 0.2
-  fadeInSeconds: 1
-  clearSeconds: 0.4
-  warningSound: {fileID: 8300000, guid: 19851aced60edaf46aa75b6ee638b1fa, type: 3}
-  maxVolume: 1
-  loopSound: 1
-  jitterPixels: 40
-  jitterChangesPerSecond: 16
+  roomChain: {fileID: 386516196}
+  chaseMessage: here it comes...
+  chaseFont: {fileID: 11400000, guid: 58d50c9a97c4467498b345436472d02f, type: 2}
+  chaseFontSize: 70
+  chaseTextColor: {r: 1, g: 0.04, b: 0.04, a: 1}
+  chaseOutlineColor: {r: 0, g: 0, b: 0, a: 1}
+  chaseOutlineThickness: 0.2
+  chaseLetterSpacing: 40
+  chaseCharactersPerSecond: 3
+  chaseHoldSeconds: 2.5
+  chaseFadeOutSeconds: 1.5
+  chaseJitterPixels: 6
+  chaseJitterChangesPerSecond: 16
+  manicMessage: DIE
+  manicFont: {fileID: 11400000, guid: 6505bf23ee48eeb428aa834d3ddad205, type: 2}
+  manicFontSize: 400
+  manicTextColor: {r: 0.9, g: 0.05, b: 0.05, a: 1}
+  manicOutlineColor: {r: 0, g: 0, b: 0, a: 1}
+  manicOutlineThickness: 0.2
+  manicFadeInSeconds: 1
+  manicClearSeconds: 0.4
+  manicSound: {fileID: 8300000, guid: 19851aced60edaf46aa75b6ee638b1fa, type: 3}
+  manicMaxVolume: 1
+  manicLoopSound: 1
+  manicJitterPixels: 40
+  manicJitterChangesPerSecond: 16
 --- !u!1001 &174033999
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -665,7 +662,6 @@ GameObject:
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
   - component: {fileID: 330585548}
-  - component: {fileID: 330585549}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -804,30 +800,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpeedFOV
   player: {fileID: 450152365}
-  startSpeed: 12
-  fullSpeed: 40
+  fovStartSpeed: 12
+  fovFullSpeed: 40
   maxFovBoost: 40
   fovChangeSpeed: 60
   dashFovBoost: 15
   dashFovRiseSpeed: 400
   dashFovFadeSpeed: 60
---- !u!114 &330585549
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 330585543}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7e76bbe4d02ccc94b8745fe04fe3c917, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CameraBob
-  player: {fileID: 0}
-  amount: 0.04
-  strideLength: 3.5
-  fullBobSpeed: 20
-  blendSpeed: 8
+  bobAmount: 0.04
+  bobStrideLength: 3.5
+  bobFullSpeed: 20
+  bobBlendSpeed: 8
 --- !u!1 &386516195
 GameObject:
   m_ObjectHideFlags: 0
@@ -837,9 +820,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 386516197}
+  - component: {fileID: 386516201}
   - component: {fileID: 386516196}
   - component: {fileID: 386516198}
-  - component: {fileID: 386516199}
   - component: {fileID: 386516200}
   m_Layer: 0
   m_Name: RoomChainMAINGAME
@@ -863,10 +846,7 @@ MonoBehaviour:
   starterRoom: {fileID: 6707132738646639110, guid: 4671979ffa62a0445bfb764f4d148a94, type: 3}
   spawnHeightAboveEntry: 300
   spawnDistanceInFront: 10
-  startMusic: {fileID: 8300000, guid: ee6d88377b033ea429d92bdb16bc9f53, type: 3}
-  musicVolume: 0.578
-  musicFadeInSeconds: 10
-  musicFadeOutSeconds: 2
+  musicPlayer: {fileID: 386516201}
   tutorialEnabled: 0
   tutorialRooms:
   - {fileID: 5445654977221729617, guid: ef10e38a5284f51488fe9290f62a3ae8, type: 3}
@@ -1004,7 +984,6 @@ MonoBehaviour:
   drawFootprints: 0
   showGateGizmos: 0
   simulateRooms: 2000
-  roomPrefabs: []
 --- !u!4 &386516197
 Transform:
   m_ObjectHideFlags: 0
@@ -1043,31 +1022,6 @@ MonoBehaviour:
   width: 1400
   fadeInSeconds: 1
   fadeOutSeconds: 0.4
---- !u!114 &386516199
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 386516195}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7e3b1f0a9c4d4a68b5d2e91c0f6a3b27, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ChaseWarning
-  roomChain: {fileID: 386516196}
-  message: here it comes...
-  font: {fileID: 11400000, guid: 58d50c9a97c4467498b345436472d02f, type: 2}
-  fontSize: 70
-  textColor: {r: 1, g: 0.04, b: 0.04, a: 1}
-  outlineColor: {r: 0, g: 0, b: 0, a: 1}
-  outlineThickness: 0.2
-  letterSpacing: 40
-  charactersPerSecond: 3
-  holdSeconds: 2.5
-  fadeOutSeconds: 1.5
-  jitterPixels: 6
-  jitterChangesPerSecond: 16
 --- !u!114 &386516200
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1097,6 +1051,29 @@ MonoBehaviour:
   jitterPixels: 10.7
   jitterChangesPerSecond: 16
   boundsMargin: 2
+--- !u!114 &386516201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 386516195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07d9d83fe4fc40b1be05aac039507be1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MusicPlayer
+  conseraph: {fileID: 95443812}
+  runMusic: {fileID: 8300000, guid: ee6d88377b033ea429d92bdb16bc9f53, type: 3}
+  runVolume: 0.578
+  runFadeInSeconds: 10
+  runFadeOutSeconds: 2
+  enrageSong: {fileID: 8300000, guid: 6a8a86dd06a8d3941b2b6ae2d5b69011, type: 3}
+  enrageVolume: 0.7
+  enrageLoopCrossfadeSeconds: 0.1
+  enrageFinalLoopSeconds: 10
+  enrageFadeInSeconds: 1
+  enrageFadeOutSeconds: 0
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1237,13 +1214,10 @@ GameObject:
   - component: {fileID: 450152361}
   - component: {fileID: 450152364}
   - component: {fileID: 450152365}
-  - component: {fileID: 450152366}
   - component: {fileID: 450152371}
   - component: {fileID: 450152370}
-  - component: {fileID: 450152369}
   - component: {fileID: 450152368}
   - component: {fileID: 450152367}
-  - component: {fileID: 450152372}
   - component: {fileID: 450152374}
   - component: {fileID: 450152373}
   m_Layer: 0
@@ -1405,27 +1379,6 @@ MonoBehaviour:
   pushStrength: 2
   showDebugHUD: 1
   showDebugRays: 0
---- !u!114 &450152366
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 450152358}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 022e96c6483840e4c9477b3aeaf36789, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SlideVisuals
-  player: {fileID: 450152365}
-  cameraPivot: {fileID: 62238683}
-  model: {fileID: 1839950789}
-  slideCameraHeight: 0.7
-  crouchCameraHeight: 1
-  slideCameraSpeed: 8
-  slideTiltAngle: 75
-  slideModelPivotHeight: 1.1
-  tiltSpeed: 540
 --- !u!114 &450152367
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1438,8 +1391,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7429069358e9e3c4391d1819fb124a1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAudio
-  player: {fileID: 0}
-  burn: {fileID: 0}
+  player: {fileID: 450152365}
+  burn: {fileID: 450152371}
   footsteps:
   - {fileID: 8300000, guid: 12b1055d48f0ff14abf24c52a68d9bb8, type: 3}
   - {fileID: 8300000, guid: 4aaac740d2519e845a026f331da834fa, type: 3}
@@ -1460,6 +1413,12 @@ MonoBehaviour:
   slideLoop: {fileID: 8300000, guid: dc0ea3b32216ed64eae1734c32f5c8b1, type: 3}
   loopVolume: 0.5
   loopFadeSpeed: 6
+  windClip: {fileID: 8300000, guid: 7ad3a8dc3deb88c4fafaee28d76ea381, type: 3}
+  windStartSpeed: 30
+  windFullVolumeSpeed: 70
+  windMaxVolume: 0.8
+  windCrossfadeSeconds: 8.5
+  windVolumeSmoothing: 6
 --- !u!114 &450152368
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1479,21 +1438,18 @@ MonoBehaviour:
   slowestPlayback: 0.9
   fastestPlayback: 1.4
   speedSmoothing: 0.08
---- !u!114 &450152369
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 450152358}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7f9e40994af9bb24ea26df68c5fdc618, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FirstPersonBody
+  cameraPivot: {fileID: 0}
+  cameraPivotName: CameraPivot
+  slideCameraHeight: 0.7
+  crouchCameraHeight: 1
+  slideCameraSpeed: 8
+  model: {fileID: 0}
+  slideTiltAngle: 75
+  slideModelPivotHeight: 1.1
+  tiltSpeed: 540
   headBone: {fileID: 0}
   headBoneName: Neck
-  hideHead: 0
+  hideHead: 1
 --- !u!114 &450152370
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1529,25 +1485,6 @@ MonoBehaviour:
   player: {fileID: 0}
   sprintSpeedLostPerTouch: 1
   touchCooldown: 0.4
---- !u!114 &450152372
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 450152358}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1286ab7dca12d27459b9ac47f58ece9a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WindAudio
-  player: {fileID: 450152365}
-  windClip: {fileID: 8300000, guid: 7ad3a8dc3deb88c4fafaee28d76ea381, type: 3}
-  windStartSpeed: 30
-  fullVolumeSpeed: 70
-  maxVolume: 0.8
-  crossfadeSeconds: 8.5
-  volumeSmoothing: 6
 --- !u!114 &450152373
 MonoBehaviour:
   m_ObjectHideFlags: 0

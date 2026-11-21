@@ -59,7 +59,7 @@ public class PlayerBurn : MonoBehaviour
         player.HazardTouched += OnHazardTouched;
 
         // the lobby has no RoomChain, so there are no rooms to clear there
-        roomChain = FindFirstObjectByType<RoomChain>();
+        roomChain = FindAnyObjectByType<RoomChain>();
 
         if (roomChain != null)
             roomChain.RoomCleared += OnRoomCleared;

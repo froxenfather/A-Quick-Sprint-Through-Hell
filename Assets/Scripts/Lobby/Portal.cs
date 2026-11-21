@@ -10,7 +10,7 @@ using UnityEngine.Video;
 public class Portal : MonoBehaviour
 {
     // the scene to go to.
-    // it has to be in Build Settings (menu: A Quick Sprint Through Hell > Set Up Build Scenes)
+    // it has to be in Build Settings (File > Build Profiles, or Build Settings)
     [SerializeField] private string nextSceneName = "TheFactory";
 
     // one of these is picked at random each time and played full screen, with sound, while the next scene loads
@@ -83,7 +83,7 @@ public class Portal : MonoBehaviour
 
         if (!Application.CanStreamedLevelBeLoaded(nextSceneName))
         {
-            Debug.LogError($"Portal can't load scene '{nextSceneName}'. Add it to Build Settings (menu: A Quick Sprint Through Hell > Set Up Build Scenes) and check the name.", this);
+            Debug.LogError($"Portal can't load scene '{nextSceneName}'. Add it to Build Settings (File > Build Profiles) and check the name.", this);
             return;
         }
 

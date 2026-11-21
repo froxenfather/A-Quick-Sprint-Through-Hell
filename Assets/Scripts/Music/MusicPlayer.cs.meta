@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 07d9d83fe4fc40b1be05aac039507be1
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - runMusic: {fileID: 8300000, guid: ee6d88377b033ea429d92bdb16bc9f53, type: 3}
+  - enrageSong: {fileID: 8300000, guid: 6a8a86dd06a8d3941b2b6ae2d5b69011, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData:
+  assetBundleName:
+  assetBundleVariant:

@@ -6,8 +6,11 @@ using UnityEngine;
 //   - Footsteps: one every strideLength meters while running on the ground (so faster running means faster steps)
 //   - One-shots: jump, dash, wall jump, and touching lava or an electric wall
 //   - Loops: the wall run scrape and the wall slide hiss, faded in while they are happening and out when they stop
+//   - Wind: gets louder the faster the player goes. it uses the player's whole speed (falling counts), so dropping down the chute is loud.
+//     it loops with a crossfade, so a clip that doesn't loop cleanly still sounds seamless (see AudioKit.CrossfadeLoop).
+//     the clip has to be longer than a few seconds
 
-// every slot is optional: an empty one is just silent
+// every slot is optional: an empty one is just silent (the lobby has no wind clip, so no wind)
 public class PlayerAudio : MonoBehaviour
 {
     [SerializeField] private CustomPlayerController player;
@@ -65,10 +68,39 @@ public class PlayerAudio : MonoBehaviour
     [Min(0.1f)]
     [SerializeField] private float loopFadeSpeed = 6f;
 
+    [Header("Wind")]
+    // leave empty for no wind
+    [SerializeField] private AudioClip windClip;
+
+    // below this speed (m/s) there is no wind at all
+    [SerializeField] private float windStartSpeed = 30f;
+
+    // at this speed (m/s) the wind is at Wind Max Volume.
+    // in between it rises in a straight line
+    [SerializeField] private float windFullVolumeSpeed = 70f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float windMaxVolume = 0.8f;
+
+    // how long (seconds) the end of the clip fades into its start.
+    // longer hides a rougher loop.
+    // it is cut to half the clip's length
+    [Min(0.1f)]
+    [SerializeField] private float windCrossfadeSeconds = 8.5f;
+
+    // how quickly the volume follows the speed.
+    // higher = snappier, 0 = the volume never changes
+    [Min(0f)]
+    [SerializeField] private float windVolumeSmoothing = 6f;
+
     private AudioSource effectsSource;
     private AudioSource wallRunSource;
     private AudioSource wallSlideSource;
     private AudioSource slideSource;
+
+    // the wind, looping with a crossfade (see AudioKit), or null if there is no wind clip
+    private AudioKit.CrossfadeLoop wind;
+    private float smoothedWindVolume;
 
     private float distanceSinceStep;
     private int lastFootstep = -1;
@@ -89,6 +121,19 @@ public class PlayerAudio : MonoBehaviour
         wallRunSource.clip = wallRunLoop;
         wallSlideSource.clip = wallSlideLoop;
         slideSource.clip = slideLoop;
+    }
+
+    private void Start()
+    {
+        if (windClip == null)
+            return;
+
+        wind = new AudioKit.CrossfadeLoop(gameObject, windClip);
+
+        // start somewhere random in the clip, so it isn't the same stretch of wind every run
+        float fade = Mathf.Min(windCrossfadeSeconds, windClip.length * 0.5f);
+
+        wind.Play(Random.Range(0f, Mathf.Max(0f, windClip.length - fade) * 0.9f));
     }
 
     private void OnEnable()
@@ -120,6 +165,25 @@ public class PlayerAudio : MonoBehaviour
 
         // the slide sound only plays on the ground, an air slide is silent
         FadeLoop(slideSource, player.IsSliding && player.IsGrounded);
+
+        UpdateWind();
+    }
+
+    // ============================================================
+    // WIND
+    // ============================================================
+
+    private void UpdateWind()
+    {
+        if (wind == null)
+            return;
+
+        // the whole speed, falling included
+        float target = windMaxVolume * Mathf.InverseLerp(windStartSpeed, windFullVolumeSpeed, player.Velocity.magnitude);
+
+        smoothedWindVolume = Mathf.Lerp(smoothedWindVolume, target, windVolumeSmoothing * Time.unscaledDeltaTime);
+
+        wind.Update(smoothedWindVolume, windCrossfadeSeconds);
     }
 
     // ============================================================
@@ -226,12 +290,6 @@ public class PlayerAudio : MonoBehaviour
         GameObject sourceObject = new GameObject(sourceName);
         sourceObject.transform.SetParent(transform, false);
 
-        AudioSource source = sourceObject.AddComponent<AudioSource>();
-        source.playOnAwake = false;
-        source.loop = loop;
-        source.spatialBlend = 0f;
-        source.volume = loop ? 0f : 1f;
-
-        return source;
+        return AudioKit.Create2DSource(sourceObject, null, loop, loop ? 0f : 1f);
     }
 }

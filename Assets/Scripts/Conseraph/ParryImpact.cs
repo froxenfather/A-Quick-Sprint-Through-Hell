@@ -58,11 +58,7 @@ public class ParryImpact : MonoBehaviour
         conseraph = GetComponent<Conseraph>();
 
         if (hitSound != null)
-        {
-            hitSource = gameObject.AddComponent<AudioSource>();
-            hitSource.playOnAwake = false;
-            hitSource.spatialBlend = 0f;
-        }
+            hitSource = AudioKit.Create2DSource(gameObject, null, false, 1f);
 
         BuildFlash();
     }
@@ -144,23 +140,15 @@ public class ParryImpact : MonoBehaviour
     // it is its own object, not a child of Conseraph, so his position and size can't touch it
     private void BuildFlash()
     {
-        flashCanvas = new GameObject("Parry Flash Canvas", typeof(Canvas), typeof(CanvasGroup), typeof(Image));
-
-        Canvas canvas = flashCanvas.GetComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-
-        // above the HUD, the burn overlay and the messages, below only the death sequence
-        canvas.sortingOrder = 110;
-
-        flashGroup = flashCanvas.GetComponent<CanvasGroup>();
-        flashGroup.alpha = 0f;
-        flashGroup.interactable = false;
-        flashGroup.blocksRaycasts = false;
+        // above the HUD, the burn overlay and the messages, below only the death sequence.
+        // it is one flat colour over the whole screen, so it has nothing to scale
+        flashGroup = UiKit.BuildOverlay(null, "Parry Flash Canvas", 110, false);
+        flashCanvas = flashGroup.gameObject;
 
         Color color = flashColor;
         color.a = 1f;
 
-        Image image = flashCanvas.GetComponent<Image>();
+        Image image = flashCanvas.AddComponent<Image>();
         image.color = color;
         image.raycastTarget = false;
     }

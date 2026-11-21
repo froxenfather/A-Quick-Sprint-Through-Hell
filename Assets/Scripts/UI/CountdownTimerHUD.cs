@@ -107,11 +107,11 @@ public class CountdownTimerHUD : MonoBehaviour
         basePosition = rect.anchoredPosition;
 
         if (roomChain == null)
-            roomChain = FindFirstObjectByType<RoomChain>();
+            roomChain = FindAnyObjectByType<RoomChain>();
 
         runDuration = durationSeconds;
 
-        conseraph = FindFirstObjectByType<Conseraph>();
+        conseraph = FindAnyObjectByType<Conseraph>();
         hasConseraph = conseraph != null;
 
         // remember how the clock sits next to the text in the scene: the text box's width, and the gap between the clock's right edge and the box's left edge
@@ -129,20 +129,12 @@ public class CountdownTimerHUD : MonoBehaviour
         }
 
         // a 2D source for the tick, made here so nothing needs setting up
-        tickSource = gameObject.AddComponent<AudioSource>();
-        tickSource.playOnAwake = false;
-        tickSource.spatialBlend = 0f;
+        tickSource = AudioKit.Create2DSource(gameObject, null, false, 1f);
 
         if (timeText != null)
         {
             timeText.color = textColor;
-
-            // fontMaterial is this text's own copy of the font material, so the outline doesn't change other texts that use the same font
-            Material material = timeText.fontMaterial;
-            material.EnableKeyword(ShaderUtilities.Keyword_Outline);
-
-            timeText.outlineColor = outlineColor;
-            timeText.outlineWidth = outlineThickness;
+            UiKit.ApplyOutline(timeText, outlineColor, outlineThickness);
         }
     }
 

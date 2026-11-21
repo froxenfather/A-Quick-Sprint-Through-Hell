@@ -33,7 +33,7 @@ public class RunStats : MonoBehaviour
     {
         player = GetComponent<CustomPlayerController>();
         playerBurn = GetComponent<PlayerBurn>();
-        roomChain = FindFirstObjectByType<RoomChain>();
+        roomChain = FindAnyObjectByType<RoomChain>();
         hasRoomChain = roomChain != null;
     }
 

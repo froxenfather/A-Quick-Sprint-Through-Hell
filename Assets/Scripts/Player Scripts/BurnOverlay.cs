@@ -187,27 +187,18 @@ public class BurnOverlay : MonoBehaviour
 
     private void BuildOverlay()
     {
-        GameObject canvasObject = new GameObject("Burn Overlay", typeof(Canvas), typeof(CanvasGroup));
+        // on top of everything else on screen.
+        // the marks are sized in real screen pixels, so this overlay is not scaled to a reference screen.
+        // it starts fully visible (the marks and tint are what is empty), and healing fades it out
+        group = UiKit.BuildOverlay(null, "Burn Overlay", 100, false);
+        group.alpha = 1f;
 
-        Canvas canvas = canvasObject.GetComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-
-        // on top of everything else on screen
-        canvas.sortingOrder = 100;
-
-        group = canvasObject.GetComponent<CanvasGroup>();
-        group.interactable = false;
-        group.blocksRaycasts = false;
+        Transform canvasObject = group.transform;
 
         // a plain black layer over the whole screen, so every singe level darkens everything a bit more
         GameObject tintObject = new GameObject("Tint", typeof(RectTransform), typeof(Image));
-        tintObject.transform.SetParent(canvasObject.transform, false);
-
-        RectTransform tintRect = tintObject.GetComponent<RectTransform>();
-        tintRect.anchorMin = Vector2.zero;
-        tintRect.anchorMax = Vector2.one;
-        tintRect.offsetMin = Vector2.zero;
-        tintRect.offsetMax = Vector2.zero;
+        tintObject.transform.SetParent(canvasObject, false);
+        UiKit.Stretch(tintObject.GetComponent<RectTransform>());
 
         tint = tintObject.GetComponent<Image>();
         tint.color = Color.clear;
@@ -215,13 +206,8 @@ public class BurnOverlay : MonoBehaviour
 
         // edges next, so the marks are drawn over them
         GameObject edgesObject = new GameObject("Edges", typeof(RectTransform), typeof(Image));
-        edgesObject.transform.SetParent(canvasObject.transform, false);
-
-        RectTransform edgesRect = edgesObject.GetComponent<RectTransform>();
-        edgesRect.anchorMin = Vector2.zero;
-        edgesRect.anchorMax = Vector2.one;
-        edgesRect.offsetMin = Vector2.zero;
-        edgesRect.offsetMax = Vector2.zero;
+        edgesObject.transform.SetParent(canvasObject, false);
+        UiKit.Stretch(edgesObject.GetComponent<RectTransform>());
 
         edges = edgesObject.GetComponent<Image>();
         edges.sprite = MakeSprite(MakeEdgeTexture());
@@ -229,7 +215,7 @@ public class BurnOverlay : MonoBehaviour
         edges.raycastTarget = false;
 
         GameObject marksObject = new GameObject("Marks", typeof(RectTransform));
-        marksObject.transform.SetParent(canvasObject.transform, false);
+        marksObject.transform.SetParent(canvasObject, false);
         marksRoot = marksObject.GetComponent<RectTransform>();
 
         for (int i = 0; i < MarkVariants; i++)

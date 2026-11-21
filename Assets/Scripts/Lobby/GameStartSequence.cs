@@ -59,6 +59,10 @@ public class GameStartSequence : MonoBehaviour
         public Color HeaderTipColor = Color.white;
         public float HeaderTipSize = 42f;
         public TMP_FontAsset HeaderFont;
+
+        // true: a title or tip that is too long for its box shrinks until it fits.
+        // false: it stays at its full size and runs over the screen (the Mania death wants that)
+        public bool HeaderShrinkToFit = true;
     }
 
     private Canvas canvas;
@@ -262,18 +266,18 @@ public class GameStartSequence : MonoBehaviour
     {
         GameObject header = new GameObject("Header", typeof(RectTransform));
         header.transform.SetParent(black.transform, false);
-        Stretch((RectTransform)header.transform);
+        UiKit.Stretch((RectTransform)header.transform);
 
-        BuildHeaderText(header.transform, "Title", page.HeaderTitle, page.HeaderTitleSize, page.HeaderTitleColor, page.HeaderFont, -30f, 150f, 1700f);
+        BuildHeaderText(header.transform, "Title", page.HeaderTitle, page.HeaderTitleSize, page.HeaderTitleColor, page.HeaderFont, -30f, 150f, 1700f, page.HeaderShrinkToFit);
 
         if (!string.IsNullOrEmpty(page.HeaderTip))
-            BuildHeaderText(header.transform, "Tip", page.HeaderTip, page.HeaderTipSize, page.HeaderTipColor, page.HeaderFont, -190f, 120f, 1500f);
+            BuildHeaderText(header.transform, "Tip", page.HeaderTip, page.HeaderTipSize, page.HeaderTipColor, page.HeaderFont, -190f, 120f, 1500f, page.HeaderShrinkToFit);
 
         header.SetActive(false);
         return header;
     }
 
-    private static void BuildHeaderText(Transform parent, string objectName, string text, float size, Color color, TMP_FontAsset font, float top, float height, float width)
+    private static void BuildHeaderText(Transform parent, string objectName, string text, float size, Color color, TMP_FontAsset font, float top, float height, float width, bool shrinkToFit)
     {
         GameObject textObject = new GameObject(objectName, typeof(RectTransform), typeof(TextMeshProUGUI));
         textObject.transform.SetParent(parent, false);
@@ -293,10 +297,14 @@ public class GameStartSequence : MonoBehaviour
         label.color = color;
         label.raycastTarget = false;
 
-        // a very long title or tip (the manic death) shrinks to fit the box. the others fit already, so they stay at their size
-        label.enableAutoSizing = true;
-        label.fontSizeMax = size;
-        label.fontSizeMin = 12f;
+        // with shrinkToFit a title or tip that is too long for its box shrinks until it fits (one that already fits stays at its size).
+        // without it the text keeps its full size and runs on past the box, down over the screen
+        if (shrinkToFit)
+        {
+            label.enableAutoSizing = true;
+            label.fontSizeMax = size;
+            label.fontSizeMin = 12f;
+        }
 
         if (font != null)
             label.font = font;
@@ -327,7 +335,7 @@ public class GameStartSequence : MonoBehaviour
     {
         GameObject textObject = new GameObject(objectName, typeof(RectTransform), typeof(TextMeshProUGUI));
         textObject.transform.SetParent(parent, false);
-        Stretch((RectTransform)textObject.transform);
+        UiKit.Stretch((RectTransform)textObject.transform);
 
         TextMeshProUGUI label = textObject.GetComponent<TextMeshProUGUI>();
         label.text = text;
@@ -376,7 +384,7 @@ public class GameStartSequence : MonoBehaviour
         black = blackObject.GetComponent<Image>();
         black.color = Color.black;
         black.raycastTarget = false;
-        Stretch((RectTransform)blackObject.transform);
+        UiKit.Stretch((RectTransform)blackObject.transform);
 
         GameObject videoObject = new GameObject("Video", typeof(RectTransform), typeof(RawImage), typeof(AspectRatioFitter));
         videoObject.transform.SetParent(blackObject.transform, false);
@@ -394,9 +402,7 @@ public class GameStartSequence : MonoBehaviour
         fitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
 
         // 2D, and it keeps playing while AudioListener.pause silences everything else
-        videoAudio = gameObject.AddComponent<AudioSource>();
-        videoAudio.playOnAwake = false;
-        videoAudio.spatialBlend = 0f;
+        videoAudio = AudioKit.Create2DSource(gameObject, null, false, 1f);
         videoAudio.ignoreListenerPause = true;
     }
 
@@ -405,14 +411,6 @@ public class GameStartSequence : MonoBehaviour
         Color color = black.color;
         color.a = alpha;
         black.color = color;
-    }
-
-    private static void Stretch(RectTransform rect)
-    {
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
     }
 
     private void OnDestroy()

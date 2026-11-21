@@ -16,7 +16,7 @@ public class PlayerDeath : MonoBehaviour
 
     [Header("Going back")]
     // the scene to go back to.
-    // it has to be in Build Settings (menu: A Quick Sprint Through Hell > Set Up Build Scenes)
+    // it has to be in Build Settings (File > Build Profiles, or Build Settings)
     [SerializeField] private string lobbySceneName = "CustomPlay";
 
     // played full screen, with sound, while the lobby loads, when Conseraph kills the player.
@@ -95,7 +95,7 @@ public class PlayerDeath : MonoBehaviour
         runStats = GetComponent<RunStats>();
 
         if (conseraph == null)
-            conseraph = FindFirstObjectByType<Conseraph>();
+            conseraph = FindAnyObjectByType<Conseraph>();
 
         if (conseraph == null)
             Debug.LogWarning("PlayerDeath can't find Conseraph in this scene, so he can't kill the player.", this);
@@ -116,12 +116,6 @@ public class PlayerDeath : MonoBehaviour
     private void OnConseraphTouched()
     {
         Die(PickConseraphDeath());
-    }
-
-    // called by VoidWatch when "Let Go" reaches full opacity
-    public void DieToVoid()
-    {
-        Die(DeathMessages.Void);
     }
 
     // which death it was when Conseraph killed the player: the name of the death, see DeathMessages for what each one says.
@@ -156,14 +150,17 @@ public class PlayerDeath : MonoBehaviour
         return DeathMessages.Normal;
     }
 
-    private void Die(string deathName)
+    // the one way to kill the player: anything that can kill them (Conseraph, the void, a future hazard) calls this with the name of the death.
+    // the names are in DeathMessages, which also says what the death screen shows for each one.
+    // for example: playerDeath.Die(DeathMessages.Void)
+    public void Die(string deathName)
     {
         if (dead)
             return;
 
         if (!Application.CanStreamedLevelBeLoaded(lobbySceneName))
         {
-            Debug.LogError($"PlayerDeath can't load scene '{lobbySceneName}'. Add it to Build Settings (menu: A Quick Sprint Through Hell > Set Up Build Scenes) and check the name.", this);
+            Debug.LogError($"PlayerDeath can't load scene '{lobbySceneName}'. Add it to Build Settings (File > Build Profiles) and check the name.", this);
             return;
         }
 
@@ -221,5 +218,6 @@ public class PlayerDeath : MonoBehaviour
         page.HeaderTitleColor = message.Color;
         page.HeaderTip = message.Tip;
         page.HeaderFont = message.UseVoidFont ? voidHeaderFont : statsFont;
+        page.HeaderShrinkToFit = message.ShrinkToFit;
     }
 }

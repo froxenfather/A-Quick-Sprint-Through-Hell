@@ -25,16 +25,10 @@ public class RoomCounterHUD : MonoBehaviour
     private void Awake()
     {
         if (roomChain == null)
-            roomChain = FindFirstObjectByType<RoomChain>();
+            roomChain = FindAnyObjectByType<RoomChain>();
 
         if (text != null)
-        {
-            // fontMaterial is this text's own copy of the font material, so other texts that use the same font don't get the outline
-            text.fontMaterial.EnableKeyword(ShaderUtilities.Keyword_Outline);
-
-            text.outlineColor = outlineColor;
-            text.outlineWidth = outlineThickness;
-        }
+            UiKit.ApplyOutline(text, outlineColor, outlineThickness);
     }
 
     private void Update()

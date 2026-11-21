@@ -47,7 +47,7 @@ public class HeartbeatHUD : MonoBehaviour
             return;
         }
 
-        conseraph = FindFirstObjectByType<Conseraph>();
+        conseraph = FindAnyObjectByType<Conseraph>();
         hasConseraph = conseraph != null;
     }
 

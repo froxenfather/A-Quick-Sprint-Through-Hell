@@ -29,7 +29,7 @@ public class SpeedHUD : MonoBehaviour
     private void Awake()
     {
         if (player == null)
-            player = FindFirstObjectByType<CustomPlayerController>();
+            player = FindAnyObjectByType<CustomPlayerController>();
     }
 
     private void Update()

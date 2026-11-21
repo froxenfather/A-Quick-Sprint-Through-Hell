@@ -1,20 +1,24 @@
 using UnityEngine;
 
 // one death message: the big title, the smaller tip under it, and the title's color.
-// the block font (Anton) is used when UseVoidFont is true, otherwise the scary font from PlayerDeath's Stats screen
+// the block font (Anton) is used when UseVoidFont is true, otherwise the scary font from PlayerDeath's Stats screen.
+// ShrinkToFit (true unless a message says otherwise): a title or tip too long for its box shrinks until it fits.
+// give a message shrinkToFit: false and its text keeps its full size and runs over the screen
 public struct DeathMessage
 {
     public string Title;
     public Color Color;
     public string Tip;
     public bool UseVoidFont;
+    public bool ShrinkToFit;
 
-    public DeathMessage(string title, Color color, string tip, bool useVoidFont = false)
+    public DeathMessage(string title, Color color, string tip, bool useVoidFont = false, bool shrinkToFit = true)
     {
         Title = title;
         Color = color;
         Tip = tip;
         UseVoidFont = useVoidFont;
+        ShrinkToFit = shrinkToFit;
     }
 }
 
@@ -59,46 +63,47 @@ public static class DeathMessages
                     "Make sure to stay inside the Eternal Factory and avoid holes!",
                     true);
 
-            // the title and tip are long, so they shrink to fit the screen
+            // the title and tip are long ON PURPOSE and do not shrink (shrinkToFit: false): they keep their full size and run over the whole screen
             case Mania:
                 return new DeathMessage(
-                    "IHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOU",
+                    "IHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOUIHATEYOU",
                     Red,
-                    "NOWHERETORUNNOWNOWHERETORUNNOWNOWHERETORUNNOWNOWHERETORUNNOW");
+                    "NOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUNNOWHERETORUN",
+                    shrinkToFit: false);
 
             case Parried10:
                 return new DeathMessage(
-                    "Ten times you turned him away, and still he hunts you.",
+                    "YOU LITTLE SHIT",
                     Red,
-                    "Very few ever get this far. You are better than this, so keep dashing!");
+                    "EVERY DENIAL MAKES ME ENJOY THIS MORE. GIVE IN OR ILL TEAR YOUR SOUL OUT.");
 
             case Parried5:
                 return new DeathMessage(
-                    "Five times you struck him down. He remembers.",
+                    "You Are No Match For Me",
                     Red,
-                    "He climbs faster with every parry. Time your dashes and make each one count!");
+                    "Why do you fight this? Just give in! Stop it.");
 
             case Parried1:
                 return new DeathMessage(
-                    "You struck back, but it was not enough.",
+                    "Conseraph Killed You.",
                     Red,
-                    "You know how to parry him now. Dash straight at him right before he reaches you!");
+                    "You think yourself clever don't you? :D");
 
             case Enraged:
                 return new DeathMessage(
                     "You were torn asunder by Conseraph.",
                     Red,
-                    "Tip: When enraged, you can parry him by dashing straight at him right before he kills you!");
+                    "You were alive too long anyway.");
 
             case Singed:
                 return new DeathMessage(
                     "You succumbed to Conseraph",
                     Red,
-                    "When singed, slide bouncing and dashing is the best way to keep speed!");
+                    "When singed or in lava, slide bouncing and dashing is the best way to keep speed and get out!");
 
             case Normal:
                 return new DeathMessage(
-                    "You succumbed to Conseraph",
+                    "You gave in to Conseraph",
                     Red,
                     "Try taking your time to ensure you do not need to backtrack or slow down!");
 

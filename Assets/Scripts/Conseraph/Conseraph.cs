@@ -92,15 +92,17 @@ public class Conseraph : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float rageIntensity = 1f;
 
-    // the red grows with the enrage song: 0 when the song starts to 1 at Red Full Seconds into it (Rage Intensity above is still the most it can reach).
-    // it needs the Enrage Music component with a song on it, without one the red goes straight to full.
-    // untick this for the red to go to full as soon as he is enraged
-    [SerializeField] private bool redFollowsSong = true;
+    // the red is built up by parrying him, not by time.
+    // how red the screen is the moment he becomes enraged, in percent of full red.
+    // (Rage Intensity above is still the most it can ever reach)
+    [Range(0f, 100f)]
+    [SerializeField] private float redStartPercent = 10f;
 
-    // how far into the song (seconds) the red reaches full.
-    // 120 is 2:00
-    [Min(1f)]
-    [SerializeField] private float redFullSeconds = 120f;
+    // how much redder the screen gets for every time he is parried, in percent of full red.
+    // 10 means 10% when he enrages, 20% after the first parry, 30% after the second, and so on up to 100%.
+    // the parries add up for the whole run, like his speed step does
+    [Range(0f, 100f)]
+    [SerializeField] private float redPerParryPercent = 10f;
 
     [Header("Looking")]
     // how much slower he moves (percent) while you are looking at him.
@@ -126,14 +128,13 @@ public class Conseraph : MonoBehaviour
     [SerializeField] private float lookAwayDegrees = 45f;
 
     [Header("Mania")]
-    // the enrage song plays through once and then only its final seconds loop (see Final Loop Seconds on Enrage Music).
-    // at Mania Start Seconds into the song he goes manic: every step of his climb is Manic Speed instead of his usual step, and "DIE!!!!!" shows in the middle of the screen (ManicWarning).
-    // unticked: the song loops as normal, and he never goes manic, so he can be parried forever.
-    // it needs Enrage Music with a song on this object
+    // some time after he becomes enraged he goes manic, on his own: every step of his climb is Manic Speed instead of his usual step, and "DIE!!!!!" shows in the middle of the screen (see Conseraph Warnings).
+    // it doesn't depend on the music, the music only follows him: with Mania Mode the enrage song plays through once and then loops its final seconds (see MusicPlayer).
+    // unticked: he never goes manic, so he can be parried forever
     [SerializeField] private bool maniaMode = true;
 
-    // when he goes manic: how many seconds the enrage song has been playing.
-    // 160 is 2:40, the start of the final 10 seconds of a 2:50 song.
+    // when he goes manic: how many seconds after he became enraged.
+    // 160 is 2:40.
     // it is read every frame, so you can change it during Play mode
     [Min(0f)]
     [SerializeField] private float maniaStartSeconds = 160f;
@@ -210,6 +211,12 @@ public class Conseraph : MonoBehaviour
     // untick it for the real game
     [SerializeField] private bool testAlwaysParried = false;
 
+    // for testing: while Debug Mode is ticked on the RoomChain, he is put this far straight below the player (meters) when the run starts,
+    // instead of Start Distance Below up in Run start.
+    // it does nothing when Debug Mode is off
+    [Min(0f)]
+    [SerializeField] private float debugStartDistanceBelow = 100f;
+
     // these two are only here to watch while you tune him in Play mode
     [Header("Live (read only)")]
     [SerializeField] private float currentSpeed;
@@ -241,6 +248,10 @@ public class Conseraph : MonoBehaviour
     private bool enraged;
     private float enragedElapsed;
 
+    // real seconds since he became enraged (a parry's freeze frame doesn't stall it), 0 while he isn't enraged.
+    // the parries don't reset it: it is what Mania and the red screen go by
+    private float enrageSeconds;
+
     // how many times he has been parried
     private int parryCount;
 
@@ -253,9 +264,6 @@ public class Conseraph : MonoBehaviour
 
     // 0 to 1: how red the screen is right now
     private float rage;
-
-    // the enrage song, if there is one on this object
-    private EnrageMusic enrageMusic;
 
     // closer than this sideways (meters) there is no sideways direction to the player, so the dash can't be off by an angle
     private const float MinFlatAimDistance = 0.5f;
@@ -307,16 +315,11 @@ public class Conseraph : MonoBehaviour
     private void Awake()
     {
         GetComponent<SphereCollider>().isTrigger = true;
-        enrageMusic = GetComponent<EnrageMusic>();
-
-        // the "DIE!!!!!" text. it works without being added by hand, but one added in the Inspector gets the scary font filled in
-        if (GetComponent<ManicWarning>() == null)
-            gameObject.AddComponent<ManicWarning>();
 
         // start with a clear screen, whatever a last run left behind
         Shader.SetGlobalFloat(RageAmountId, 0f);
 
-        player = FindFirstObjectByType<CustomPlayerController>();
+        player = FindAnyObjectByType<CustomPlayerController>();
 
         if (player == null)
         {
@@ -328,10 +331,10 @@ public class Conseraph : MonoBehaviour
         // CustomPlayerController requires a capsule collider, so it is always there
         playerCapsule = player.GetComponent<CapsuleCollider>();
 
-        timer = FindFirstObjectByType<CountdownTimerHUD>();
+        timer = FindAnyObjectByType<CountdownTimerHUD>();
         hasTimer = timer != null;
 
-        roomChain = FindFirstObjectByType<RoomChain>();
+        roomChain = FindAnyObjectByType<RoomChain>();
 
         // the camera sits under the player, so he can tell whether the player is looking at him
         playerCamera = player.GetComponentInChildren<Camera>();
@@ -345,11 +348,7 @@ public class Conseraph : MonoBehaviour
             Debug.LogWarning("Conseraph can't find the player's camera, so the parry is switched off.", this);
 
         if (parrySound != null)
-        {
-            parrySource = gameObject.AddComponent<AudioSource>();
-            parrySource.playOnAwake = false;
-            parrySource.spatialBlend = 0f;
-        }
+            parrySource = AudioKit.Create2DSource(gameObject, null, false, 1f);
 
         if (aiEnabled && !hasTimer)
             Debug.LogWarning("Conseraph can't find the countdown timer in this scene, so he hunts from the start. Untick Ai Enabled to keep him still.", this);
@@ -418,10 +417,13 @@ public class Conseraph : MonoBehaviour
     }
 
     // the run starts, at the first safe room or a later one.
-    // he is put far below the player and rushes up from there, visible and hunting because the timer is counting by now
+    // he is put far below the player and rushes up from there, visible and hunting because the timer is counting by now.
+    // with Debug Mode on (on the RoomChain) he is put Debug Start Distance Below instead
     private void OnRunStarted()
     {
-        transform.position = PlayerCenter + Vector3.down * startDistanceBelow;
+        float distanceBelow = roomChain != null && roomChain.DebugMode ? debugStartDistanceBelow : startDistanceBelow;
+
+        transform.position = PlayerCenter + Vector3.down * distanceBelow;
         currentSpeed = 0f;
         CancelParry();
     }
@@ -437,6 +439,7 @@ public class Conseraph : MonoBehaviour
         if (shouldBeEnraged && !enraged)
         {
             enraged = true;
+            enrageSeconds = 0f;
             ResetClimb();
         }
         else if (!shouldBeEnraged && enraged)
@@ -444,6 +447,7 @@ public class Conseraph : MonoBehaviour
             // back to normal wherever he is.
             // the usual distance speeds take over from his normal speed
             enraged = false;
+            enrageSeconds = 0f;
             currentSpeed = normalSpeed;
 
             // the parry only exists while he is enraged
@@ -451,20 +455,22 @@ public class Conseraph : MonoBehaviour
         }
 
         if (enraged)
+        {
             enragedElapsed += deltaTime;
+            enrageSeconds += Time.unscaledDeltaTime;
+        }
     }
 
     // the screen goes red while he is enraged.
     // the full-screen shader reads this as a global number, so no material has to be changed
     private void UpdateRage(float deltaTime)
     {
-        float goal = enraged ? 1f : 0f;
+        // while he is enraged the red is Red Start Percent, plus Red Per Parry Percent for every parry so far (never more than full).
+        // the screen is clear while he isn't enraged
+        float goal = enraged ? Mathf.Clamp01((redStartPercent + parryCount * redPerParryPercent) / 100f) : 0f;
 
-        // the red follows how far through the song it is
-        if (enraged && redFollowsSong && enrageMusic != null && enrageMusic.HasSong)
-            goal = Mathf.Clamp01(enrageMusic.SongElapsed / redFullSeconds);
-
-        rage =Mathf.MoveTowards(rage, goal, deltaTime / redFadeSeconds);
+        // it moves toward the goal over Red Fade Seconds, so each parry makes the red climb smoothly
+        rage = Mathf.MoveTowards(rage, goal, deltaTime / redFadeSeconds);
 
         // sent every frame, so a change to Rage Intensity in the Inspector shows even while the screen is fully red
         Shader.SetGlobalFloat(RageAmountId, rage * rageIntensity);
@@ -544,8 +550,12 @@ public class Conseraph : MonoBehaviour
     // how many times he has been parried since the scene started (PlayerDeath uses it to pick the death message)
     public int ParryCount => parryCount;
 
-    // he is enraged, Mania Mode is on, and the enrage song has been playing for Mania Start Seconds
-    public bool Manic => enraged && maniaMode && enrageMusic != null && enrageMusic.HasSong && enrageMusic.SongElapsed >= maniaStartSeconds;
+    // real seconds since he became enraged, 0 while he isn't enraged
+    public float EnrageSeconds => enrageSeconds;
+
+    // he is enraged, Mania Mode is on, and he has been enraged for Mania Start Seconds.
+    // he decides this himself, whatever the music is doing
+    public bool Manic => enraged && maniaMode && enrageSeconds >= maniaStartSeconds;
 
     // straight at the player in 3D, through walls.
     // he stops exactly on the player and can't go past them, however fast he is

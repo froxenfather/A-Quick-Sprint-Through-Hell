@@ -6,11 +6,6 @@ public class LaunchBehavior : MonoBehaviour, IPlayerContact
     [SerializeField] private float launchForward = 5f;
     [SerializeField] private float launchUp = 5f;
 
-    void Start()
-    {
-        Debug.Log("Im a fat fucking launch pad");
-    }
-
     void OnCollisionEnter(Collision collision)
     {
         Rigidbody rb = collision.gameObject.GetComponent<Rigidbody>();

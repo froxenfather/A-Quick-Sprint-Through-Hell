@@ -84,7 +84,7 @@ public class ConseraphVisuals : MonoBehaviour
         mouthPart = new Part(mouth);
 
         if (player == null)
-            player = FindFirstObjectByType<CustomPlayerController>();
+            player = FindAnyObjectByType<CustomPlayerController>();
 
         if (player != null)
             playerCapsule = player.GetComponent<CapsuleCollider>();

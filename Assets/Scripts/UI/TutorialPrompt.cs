@@ -65,7 +65,7 @@ public class TutorialPrompt : MonoBehaviour
     private void Awake()
     {
         if (roomChain == null)
-            roomChain = FindFirstObjectByType<RoomChain>();
+            roomChain = FindAnyObjectByType<RoomChain>();
 
         if (roomChain == null)
         {
@@ -164,7 +164,7 @@ public class TutorialPrompt : MonoBehaviour
         currentUI = Instantiate(prefab, canvasTransform, false);
 
         if (currentUI.GetComponent<Canvas>() != null)
-            Stretch((RectTransform)currentUI.transform);
+            UiKit.Stretch((RectTransform)currentUI.transform);
     }
 
     private void ClearUI()
@@ -176,58 +176,13 @@ public class TutorialPrompt : MonoBehaviour
         currentUI = null;
     }
 
-    private static void Stretch(RectTransform rect)
-    {
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
-    }
-
-    // a full-screen overlay with one text on it, scaled so it looks the same on any screen size
+    // a full-screen overlay with one text on it, invisible until the first message.
+    // a Tutorial UI prefab is made as another child of the same canvas
     private void BuildUI()
     {
-        GameObject canvasObject = new GameObject("Tutorial Prompt Canvas", typeof(Canvas), typeof(CanvasScaler), typeof(CanvasGroup));
-        canvasObject.transform.SetParent(transform, false);
-        canvasTransform = canvasObject.transform;
+        group = UiKit.BuildOverlay(transform, "Tutorial Prompt Canvas", 50);
+        canvasTransform = group.transform;
 
-        Canvas canvas = canvasObject.GetComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 50;
-
-        CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = 0.5f;
-
-        // invisible until the first message, and it never catches clicks
-        group = canvasObject.GetComponent<CanvasGroup>();
-        group.alpha = 0f;
-        group.interactable = false;
-        group.blocksRaycasts = false;
-
-        GameObject textObject = new GameObject("Message", typeof(RectTransform), typeof(TextMeshProUGUI));
-        textObject.transform.SetParent(canvasObject.transform, false);
-
-        RectTransform rect = (RectTransform)textObject.transform;
-        rect.anchorMin = new Vector2(0.5f, heightOnScreen);
-        rect.anchorMax = new Vector2(0.5f, heightOnScreen);
-        rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.sizeDelta = new Vector2(width, 300f);
-        rect.anchoredPosition = Vector2.zero;
-
-        label = textObject.GetComponent<TextMeshProUGUI>();
-        label.alignment = TextAlignmentOptions.Center;
-        label.fontSize = fontSize;
-        label.color = textColor;
-        label.raycastTarget = false;
-
-        if (font != null)
-            label.font = font;
-
-        // the outline is drawn by the font's material, so it is switched on here (fontMaterial is this text's own copy)
-        label.fontMaterial.EnableKeyword(ShaderUtilities.Keyword_Outline);
-        label.outlineColor = outlineColor;
-        label.outlineWidth = outlineThickness;
+        label = UiKit.CreateText(canvasTransform, "Message", new Vector2(0.5f, heightOnScreen), new Vector2(width, 300f), font, fontSize, textColor, outlineColor, outlineThickness);
     }
 }

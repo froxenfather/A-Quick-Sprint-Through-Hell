@@ -219,8 +219,10 @@ GameObject:
   - component: {fileID: 95443814}
   - component: {fileID: 95443813}
   - component: {fileID: 95443812}
+  - component: {fileID: 95443818}
   - component: {fileID: 95443811}
   - component: {fileID: 95443816}
+  - component: {fileID: 95443817}
   m_Layer: 0
   m_Name: Conseraph
   m_TagString: Untagged
@@ -244,6 +246,8 @@ MonoBehaviour:
   maxVolume: 1
   minVolume: 0.05
   hearingRange: 120
+  enragedHearingRange: 600
+  manicHearingRange: 10000
 --- !u!114 &95443812
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -270,18 +274,32 @@ MonoBehaviour:
   enragedEnabled: 1
   enragedStartSpeed: 1
   enragedSpeedStep: 1
+  parryStepGrowth: 1
   enragedStepSeconds: 0.1
   redFadeSeconds: 1
-  rageIntensity: 0.5
+  rageIntensity: 1
+  redFollowsSong: 1
+  redFullSeconds: 160
+  lookSlowdownPercent: 10
+  lookSlowdownDegrees: 30
+  lookAwaySpeedupPercent: 10
+  lookAwayDegrees: 30
+  maniaMode: 1
+  maniaStartSeconds: 158
+  manicSpeed: 100
+  manicKnockbackSeconds: 1
   parryEnabled: 1
   parryMinSpeed: 20
   lookToleranceDegrees: 30
   dashToleranceDegrees: 25
   parryGraceSeconds: 0.25
   knockbackSeconds: 3
-  knockbackMultiplier: 5
+  knockbackMultiplier: 10
+  maxKnockbackSpeed: 1000
   parrySound: {fileID: 8300000, guid: 529459a2f2eeb994885da74c511dd6d7, type: 3}
   parryVolume: 1
+  testEnrageOnSpawn: 0
+  testAlwaysParried: 0
   currentSpeed: 0
   distanceToPlayer: 0
 --- !u!135 &95443813
@@ -375,6 +393,49 @@ MonoBehaviour:
   flashColor: {r: 1, g: 1, b: 1, a: 1}
   flashStrength: 0.85
   flashFadeSeconds: 0.1
+--- !u!114 &95443817
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 95443810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9eb6e7487e5968445a6a8711f51ace00, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnrageMusic
+  enrageMusic: {fileID: 8300000, guid: 6a8a86dd06a8d3941b2b6ae2d5b69011, type: 3}
+  volume: 0.7
+  loopCrossfadeSeconds: 0.1
+  finalLoopSeconds: 10
+  fadeInSeconds: 1
+  fadeOutSeconds: 0
+--- !u!114 &95443818
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 95443810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c1d4e8a2b3f45069d8e1a5c7f0b3d92, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ManicWarning
+  message: D I E ! ! ! ! !
+  font: {fileID: 11400000, guid: 6505bf23ee48eeb428aa834d3ddad205, type: 2}
+  fontSize: 400
+  textColor: {r: 0.9, g: 0.05, b: 0.05, a: 1}
+  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineThickness: 0.2
+  fadeInSeconds: 1
+  clearSeconds: 0.4
+  warningSound: {fileID: 8300000, guid: 19851aced60edaf46aa75b6ee638b1fa, type: 3}
+  maxVolume: 1
+  loopSound: 1
+  jitterPixels: 40
+  jitterChangesPerSecond: 16
 --- !u!1001 &174033999
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -833,7 +894,7 @@ MonoBehaviour:
     weight: 1
     roomsCounted: 1
   - room: {fileID: 6380444923456330828, guid: 84e561ee72fad554fb273a04e1192b5b, type: 3}
-    weight: 1
+    weight: 10
     roomsCounted: 1
   - room: {fileID: 6393994183003314920, guid: 5ad8a238f2e511746b7350b9aae1cbf6, type: 3}
     weight: 1
@@ -895,6 +956,9 @@ MonoBehaviour:
   - room: {fileID: 7430873297325719277, guid: f92bf30208f34fd4da64e5be9701f9aa, type: 3}
     weight: 1
     roomsCounted: 1
+  - room: {fileID: 651678494850511012, guid: 6b516bb02b53af44e8f5c0d309b3c29c, type: 3}
+    weight: 1
+    roomsCounted: 1
   turnRooms:
   - room: {fileID: 8568710699704201034, guid: 20e7de4d79338f04b8b0ba5e42ee4f1f, type: 3}
     weight: 1
@@ -936,7 +1000,7 @@ MonoBehaviour:
   sealRoomsBehind: 1
   sealDistance: 2
   debugMode: 1
-  debugTimerSeconds: 20
+  debugTimerSeconds: 5
   drawFootprints: 0
   showGateGizmos: 0
   simulateRooms: 2000
@@ -1018,9 +1082,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VoidWatch
   roomChain: {fileID: 0}
   playerDeath: {fileID: 0}
-  message: Let Go
+  message: L  e  t     G  o
   font: {fileID: 11400000, guid: 6505bf23ee48eeb428aa834d3ddad205, type: 2}
-  fontSize: 160
+  fontSize: 300
   textColor: {r: 0.6, g: 0.2, b: 1, a: 1}
   outlineColor: {r: 0, g: 0, b: 0, a: 1}
   outlineThickness: 0.2
@@ -1030,7 +1094,7 @@ MonoBehaviour:
   consumeSound: {fileID: 8300000, guid: 19851aced60edaf46aa75b6ee638b1fa, type: 3}
   maxVolume: 1
   loopSound: 1
-  jitterPixels: 6
+  jitterPixels: 10.7
   jitterChangesPerSecond: 16
   boundsMargin: 2
 --- !u!1 &410087039
@@ -1198,7 +1262,7 @@ Transform:
   m_GameObject: {fileID: 450152358}
   serializedVersion: 2
   m_LocalRotation: {x: -0.001095255, y: -0.0030558275, z: -0.0014083136, w: 0.99999374}
-  m_LocalPosition: {x: 0.8501411, y: 87.78283, z: -98.689926}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1507,18 +1571,10 @@ MonoBehaviour:
   lineDelaySeconds: 0.8
   labelColor: {r: 1, g: 1, b: 1, a: 1}
   valueColor: {r: 1, g: 0, b: 0, a: 1}
-  conseraphTitle: You succumbed to Conseraph
-  conseraphTitleColor: {r: 1, g: 0, b: 0, a: 1}
-  normalTip: Try taking your time to ensure you do not need to backtrack or slow down!
-  enragedTip: 'Tip: When enraged, you can parry him by dashing straight at him right before he kills you!'
-  singedTip: When singed, slide bouncing and dashing is the best way to keep speed!
-  voidTitle: The Void consumes you.
-  voidTitleColor: {r: 0.6, g: 0.2, b: 1, a: 1}
-  voidTip: Make sure to stay inside the Eternal Factory and avoid holes!
-  voidHeaderFont: {fileID: 11400000, guid: 8a89fa14b10d46a99122fd4f73fca9a2, type: 2}
   titleSize: 110
   tipSize: 42
   tipColor: {r: 1, g: 1, b: 1, a: 1}
+  voidHeaderFont: {fileID: 11400000, guid: 8a89fa14b10d46a99122fd4f73fca9a2, type: 2}
 --- !u!114 &450152374
 MonoBehaviour:
   m_ObjectHideFlags: 0

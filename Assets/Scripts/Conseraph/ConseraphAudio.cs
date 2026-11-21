@@ -22,6 +22,15 @@ public class ConseraphAudio : MonoBehaviour
     [Min(0.1f)]
     [SerializeField] private float hearingRange = 120f;
 
+    // the same, while he is enraged: he can be heard from much further away.
+    // the volume still rises in a straight line from minVolume at this distance to maxVolume on top of the player
+    [Min(0.1f)]
+    [SerializeField] private float enragedHearingRange = 600f;
+
+    // the same, while he is manic (Mania Mode)
+    [Min(0.1f)]
+    [SerializeField] private float manicHearingRange = 10000f;
+
     private Conseraph conseraph;
     private AudioSource source;
 
@@ -67,9 +76,12 @@ public class ConseraphAudio : MonoBehaviour
     {
         float distance = conseraph.DistanceToPlayer;
 
-        float rangeVolume = distance >= hearingRange
+        // manic first, then enraged, then normal
+        float range = conseraph.Manic ? manicHearingRange : conseraph.Enraged ? enragedHearingRange : hearingRange;
+
+        float rangeVolume = distance >= range
             ? 0f
-            : Mathf.Lerp(minVolume, maxVolume, 1f - distance / hearingRange);
+            : Mathf.Lerp(minVolume, maxVolume, 1f - distance / range);
 
         source.volume = rangeVolume * conseraph.Visibility;
     }

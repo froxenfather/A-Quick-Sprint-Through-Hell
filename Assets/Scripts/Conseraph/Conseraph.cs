@@ -67,9 +67,15 @@ public class Conseraph : MonoBehaviour
     [Min(0f)]
     [SerializeField] private float enragedStartSpeed = 1f;
 
-    // how much faster he gets each step
+    // how much faster he gets each step.
+    // every time he is parried this goes up by Parry Step Growth, so it is 1, then 2, then 3...
     [Min(0f)]
     [SerializeField] private float enragedSpeedStep = 1f;
+
+    // how much the step goes up each time he is parried.
+    // 1 is 1, 2, 3...  2 is 1, 3, 5...  0 means parries don't change the step
+    [Range(0f, 10f)]
+    [SerializeField] private float parryStepGrowth = 1f;
 
     // how often he gets faster (seconds).
     // 0.2 is five times a second
@@ -85,6 +91,62 @@ public class Conseraph : MonoBehaviour
     // it is read every frame, so you can drag it during Play mode and see the change straight away
     [Range(0f, 1f)]
     [SerializeField] private float rageIntensity = 1f;
+
+    // the red grows with the enrage song: 0 when the song starts to 1 at Red Full Seconds into it (Rage Intensity above is still the most it can reach).
+    // it needs the Enrage Music component with a song on it, without one the red goes straight to full.
+    // untick this for the red to go to full as soon as he is enraged
+    [SerializeField] private bool redFollowsSong = true;
+
+    // how far into the song (seconds) the red reaches full.
+    // 120 is 2:00
+    [Min(1f)]
+    [SerializeField] private float redFullSeconds = 120f;
+
+    [Header("Looking")]
+    // how much slower he moves (percent) while you are looking at him.
+    // 0 is no change, 50 is half speed, 100 stops him.
+    // looking at him is measured the same way as for the parry: how far he is from the middle of the screen
+    [Min(0f)]
+    [SerializeField] private float lookSlowdownPercent = 0f;
+
+    // how far from the middle of the screen (degrees) he can be and still count as looked at, for the slowdown.
+    // bigger is easier to do
+    [Range(0f, 90f)]
+    [SerializeField] private float lookSlowdownDegrees = 20f;
+
+    // how much faster he moves (percent) while you are looking the opposite way, with your back to him.
+    // 0 is no change, 50 is one and a half times his speed, 100 is double
+    [Min(0f)]
+    [SerializeField] private float lookAwaySpeedupPercent = 0f;
+
+    // how far from directly opposite him (degrees) you can be looking and still count as looking away, for the speedup.
+    // 0 is looking exactly away from him, 90 is anything that isn't facing him at all.
+    // bigger is easier to do
+    [Range(0f, 90f)]
+    [SerializeField] private float lookAwayDegrees = 45f;
+
+    [Header("Mania")]
+    // the enrage song plays through once and then only its final seconds loop (see Final Loop Seconds on Enrage Music).
+    // at Mania Start Seconds into the song he goes manic: every step of his climb is Manic Speed instead of his usual step, and "DIE!!!!!" shows in the middle of the screen (ManicWarning).
+    // unticked: the song loops as normal, and he never goes manic, so he can be parried forever.
+    // it needs Enrage Music with a song on this object
+    [SerializeField] private bool maniaMode = true;
+
+    // when he goes manic: how many seconds the enrage song has been playing.
+    // 160 is 2:40, the start of the final 10 seconds of a 2:50 song.
+    // it is read every frame, so you can change it during Play mode
+    [Min(0f)]
+    [SerializeField] private float maniaStartSeconds = 160f;
+
+    // how much faster he gets each step while he is manic, instead of Enraged Speed Step (and its parry growth).
+    // the climb carries on from the speed he already had
+    [Min(0f)]
+    [SerializeField] private float manicSpeed = 100f;
+
+    // how long (seconds) a parry throws him back while he is manic, instead of Knockback Seconds.
+    // it only changes him, the player is still thrown at his real speed
+    [Min(0.01f)]
+    [SerializeField] private float manicKnockbackSeconds = 1f;
 
     [Header("Parry")]
     // while he is enraged, a dash straight at him makes you immune to him for a moment.
@@ -124,6 +186,11 @@ public class Conseraph : MonoBehaviour
     [Min(0f)]
     [SerializeField] private float knockbackMultiplier = 1f;
 
+    // the fastest he can be thrown back, however fast he was going and however big the multiplier is.
+    // it only changes him, the player is still thrown at his real speed
+    [Min(0f)]
+    [SerializeField] private float maxKnockbackSpeed = 1000f;
+
     // plays once, from the speakers and not from him, when he starts to fly back.
     // with the freeze frame (ParryImpact on him) that is when the freeze ends, otherwise it is the moment the parry works.
     // leave empty for no sound
@@ -131,6 +198,17 @@ public class Conseraph : MonoBehaviour
 
     [Range(0f, 1f)]
     [SerializeField] private float parryVolume = 1f;
+
+    [Header("Debug")]
+    // for testing: he is enraged the moment he spawns in (when the run starts and he begins hunting), without waiting for the timer to reach 00:00.
+    // it still needs Enraged Enabled and Ai Enabled.
+    // untick it for the real game
+    [SerializeField] private bool testEnrageOnSpawn = false;
+
+    // for testing: every time he touches the player while he is enraged he is parried, with no looking at him and no dash.
+    // he is still only parried while he is enraged (turn on Test Enrage On Spawn to have that straight away), and not while he is already flying back from one.
+    // untick it for the real game
+    [SerializeField] private bool testAlwaysParried = false;
 
     // these two are only here to watch while you tune him in Play mode
     [Header("Live (read only)")]
@@ -163,8 +241,21 @@ public class Conseraph : MonoBehaviour
     private bool enraged;
     private float enragedElapsed;
 
+    // how many times he has been parried
+    private int parryCount;
+
+    // the enraged climb: his speed so far, and how many of the steps in enragedElapsed have already been added to it
+    private float climbSpeed;
+
+    // how long the knockback in progress lasts (seconds)
+    private float knockDuration = 1f;
+    private int climbSteps;
+
     // 0 to 1: how red the screen is right now
     private float rage;
+
+    // the enrage song, if there is one on this object
+    private EnrageMusic enrageMusic;
 
     // closer than this sideways (meters) there is no sideways direction to the player, so the dash can't be off by an angle
     private const float MinFlatAimDistance = 0.5f;
@@ -216,6 +307,11 @@ public class Conseraph : MonoBehaviour
     private void Awake()
     {
         GetComponent<SphereCollider>().isTrigger = true;
+        enrageMusic = GetComponent<EnrageMusic>();
+
+        // the "DIE!!!!!" text. it works without being added by hand, but one added in the Inspector gets the scary font filled in
+        if (GetComponent<ManicWarning>() == null)
+            gameObject.AddComponent<ManicWarning>();
 
         // start with a clear screen, whatever a last run left behind
         Shader.SetGlobalFloat(RageAmountId, 0f);
@@ -334,12 +430,14 @@ public class Conseraph : MonoBehaviour
     // with the AI off he never moves, so he is never enraged
     private void UpdateEnraged(float deltaTime)
     {
-        bool shouldBeEnraged = enragedEnabled && aiEnabled && hasTimer && timer.IsFinished && timer.IsCounting;
+        // for testing he is enraged from the moment he starts hunting, without waiting for the timer to run out
+        bool timerRanOut = testEnrageOnSpawn ? Hunting : hasTimer && timer.IsFinished && timer.IsCounting;
+        bool shouldBeEnraged = enragedEnabled && aiEnabled && timerRanOut;
 
         if (shouldBeEnraged && !enraged)
         {
             enraged = true;
-            enragedElapsed = 0f;
+            ResetClimb();
         }
         else if (!shouldBeEnraged && enraged)
         {
@@ -362,7 +460,11 @@ public class Conseraph : MonoBehaviour
     {
         float goal = enraged ? 1f : 0f;
 
-        rage = Mathf.MoveTowards(rage, goal, deltaTime / redFadeSeconds);
+        // the red follows how far through the song it is
+        if (enraged && redFollowsSong && enrageMusic != null && enrageMusic.HasSong)
+            goal = Mathf.Clamp01(enrageMusic.SongElapsed / redFullSeconds);
+
+        rage =Mathf.MoveTowards(rage, goal, deltaTime / redFadeSeconds);
 
         // sent every frame, so a change to Rage Intensity in the Inspector shows even while the screen is fully red
         Shader.SetGlobalFloat(RageAmountId, rage * rageIntensity);
@@ -413,10 +515,37 @@ public class Conseraph : MonoBehaviour
     // the zone speeds are ignored, they would fight the climb
     private void Rampage(Vector3 target, float deltaTime)
     {
-        currentSpeed = enragedStartSpeed + Mathf.Floor(enragedElapsed / enragedStepSeconds) * enragedSpeedStep;
+        // manic: every step is Manic Speed.
+        // otherwise each parry makes the step bigger: 1, then 2, then 3...
+        float step = Manic ? manicSpeed : enragedSpeedStep + parryCount * parryStepGrowth;
+
+        // only the steps that came due since the last frame are added, so switching to manic carries on from the speed he already has
+        int stepsDue = Mathf.FloorToInt(enragedElapsed / enragedStepSeconds);
+
+        climbSpeed += (stepsDue - climbSteps) * step;
+        climbSteps = stepsDue;
+
+        currentSpeed = climbSpeed;
 
         MoveToward(target, deltaTime);
     }
+
+    // the climb starts over: from Enraged Start Speed, with no steps taken
+    private void ResetClimb()
+    {
+        enragedElapsed = 0f;
+        climbSteps = 0;
+        climbSpeed = enragedStartSpeed;
+    }
+
+    // Mania Mode is on
+    public bool ManiaMode => maniaMode;
+
+    // how many times he has been parried since the scene started (PlayerDeath uses it to pick the death message)
+    public int ParryCount => parryCount;
+
+    // he is enraged, Mania Mode is on, and the enrage song has been playing for Mania Start Seconds
+    public bool Manic => enraged && maniaMode && enrageMusic != null && enrageMusic.HasSong && enrageMusic.SongElapsed >= maniaStartSeconds;
 
     // straight at the player in 3D, through walls.
     // he stops exactly on the player and can't go past them, however fast he is
@@ -428,7 +557,27 @@ public class Conseraph : MonoBehaviour
         if (toTarget.sqrMagnitude > 0f)
             lastMoveDirection = toTarget.normalized;
 
-        transform.position = Vector3.MoveTowards(transform.position, target, currentSpeed * deltaTime);
+        // looking at him slows him, looking away speeds him.
+        // it only changes how far he moves, currentSpeed itself stays his real speed for the parry
+        transform.position = Vector3.MoveTowards(transform.position, target, currentSpeed * LookSpeedFactor() * deltaTime);
+    }
+
+    // 1 normally, below 1 while the player looks at him, above 1 while they look away from him
+    private float LookSpeedFactor()
+    {
+        if (!hasCamera)
+            return 1f;
+
+        Transform cameraTransform = playerCamera.transform;
+        float angle = Vector3.Angle(cameraTransform.forward, transform.position - cameraTransform.position);
+
+        if (lookSlowdownPercent > 0f && angle <= lookSlowdownDegrees)
+            return Mathf.Max(0f, 1f - lookSlowdownPercent / 100f);
+
+        if (lookAwaySpeedupPercent > 0f && angle >= 180f - lookAwayDegrees)
+            return 1f + lookAwaySpeedupPercent / 100f;
+
+        return 1f;
     }
 
     // a dash while he is enraged: if it was aimed at him, you are immune for the glide plus the grace time.
@@ -465,11 +614,17 @@ public class Conseraph : MonoBehaviour
     // Parries throw both you and him back!
     private void Parry()
     {
-        knockSpeed = currentSpeed * knockbackMultiplier;
+        knockSpeed = Mathf.Min(currentSpeed * knockbackMultiplier, maxKnockbackSpeed);
         knockDirection = -lastMoveDirection;
+
+        // decided now, so it can't change halfway through the flight
+        knockDuration = Manic ? manicKnockbackSeconds : knockbackSeconds;
         knockElapsed = 0f;
         knockedBack = true;
         parryTimeLeft = 0f;
+
+        // the next climb has a bigger step
+        parryCount++;
 
         // the player is thrown exactly the way he was moving, up or down included, at his speed.
         // it replaces their whole velocity
@@ -501,7 +656,7 @@ public class Conseraph : MonoBehaviour
 
         knockElapsed += deltaTime;
 
-        float progress = Mathf.Clamp01(knockElapsed / knockbackSeconds);
+        float progress = Mathf.Clamp01(knockElapsed / knockDuration);
         currentSpeed = knockSpeed * (1f - progress);
         transform.position += knockDirection * currentSpeed * deltaTime;
 
@@ -509,7 +664,7 @@ public class Conseraph : MonoBehaviour
         {
             knockedBack = false;
             currentSpeed = 0f;
-            enragedElapsed = 0f;
+            ResetClimb();
         }
     }
 
@@ -541,7 +696,8 @@ public class Conseraph : MonoBehaviour
             return;
 
         // dashed at him while he is enraged: he is parried instead of killing
-        if (enraged && parryTimeLeft > 0f)
+        // (Test Always Parried skips the dash: touching him is enough, but not again while he is flying back)
+        if (enraged && (parryTimeLeft > 0f || (testAlwaysParried && !knockedBack)))
         {
             Parry();
             return;

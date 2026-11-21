@@ -23,6 +23,14 @@ public class EnrageMusic : MonoBehaviour
     [Min(0.1f)]
     [SerializeField] private float loopCrossfadeSeconds = 2f;
 
+    // Mania Mode (on Conseraph) only.
+    // the song plays through once, and when it gets to its final this many seconds, those seconds loop forever instead of the whole song.
+    // for a 2:50 song, 10 means the loop is 2:40 to 2:50.
+    // when Conseraph goes manic is set separately, by Mania Start Seconds on him.
+    // the loop crossfade is cut to half of this
+    [Min(1f)]
+    [SerializeField] private float finalLoopSeconds = 10f;
+
     [Header("Fade")]
     // how long the song takes to fade in from silence once he is enraged (seconds).
     // 0 starts it at full volume straight away
@@ -48,6 +56,18 @@ public class EnrageMusic : MonoBehaviour
 
     // the fade-in and fade-out, 0 is silence and 1 is full volume
     private float fade;
+
+    // how long (seconds) the song has been playing since this enrage started, not counting its loops.
+    // the freeze frame of a parry doesn't stall it, same as the fades
+    private float songElapsed;
+
+    // false if there is no song, so nothing can follow it
+    public bool HasSong => hasMusic;
+
+    // how many seconds the song has been playing since this enrage started.
+    // it keeps counting when the song loops, and starts over from 0 with the next enrage
+    public float SongElapsed => songElapsed;
+
 
     private void Awake()
     {
@@ -87,6 +107,7 @@ public class EnrageMusic : MonoBehaviour
             }
 
             fade = fadeInSeconds > 0f ? Mathf.MoveTowards(fade, 1f, deltaTime / fadeInSeconds) : 1f;
+            songElapsed += deltaTime;
         }
         else if (playing)
         {
@@ -119,6 +140,7 @@ public class EnrageMusic : MonoBehaviour
     {
         playing = true;
         fade = 0f;
+        songElapsed = 0f;
 
         current.Play();
     }
@@ -157,7 +179,13 @@ public class EnrageMusic : MonoBehaviour
         }
 
         float length = enrageMusic.length;
-        float crossfade = Mathf.Min(loopCrossfadeSeconds, length * 0.5f);
+
+        // with Mania Mode the song loops back to the start of its final seconds, not to its very beginning
+        bool mania = conseraph.ManiaMode;
+        float loopStart = mania ? Mathf.Max(0f, length - finalLoopSeconds) : 0f;
+        float loopLength = length - loopStart;
+
+        float crossfade = Mathf.Min(loopCrossfadeSeconds, loopLength * 0.5f);
         float crossfadeStart = length - crossfade;
 
         // in the last part of the song: bring in the start of the song on the other copy, fading between them
@@ -166,7 +194,7 @@ public class EnrageMusic : MonoBehaviour
             if (!other.isPlaying)
             {
                 other.Play();
-                other.time = 0f;
+                other.time = loopStart;
             }
 
             float progress = Mathf.Clamp01((current.time - crossfadeStart) / crossfade);

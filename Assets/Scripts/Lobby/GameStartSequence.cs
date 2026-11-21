@@ -207,27 +207,44 @@ public class GameStartSequence : MonoBehaviour
         for (int i = 0; i < rows.Length; i++)
             rows[i] = BuildRow(containerRect, i, page.Lines[i].label, page.Lines[i].value, page);
 
-        // the header lands first, with the same thud
-        if (header != null)
+        // the header lands first, then each row, one thud at a time.
+        // the first key or click while they are still arriving shows everything that is left at once (one thud for the lot).
+        // the next one leaves, as it always did.
+        // keys pressed in the first moment of the screen are ignored, so a key still being mashed from the death doesn't skip it
+        float skipLockedUntil = Time.unscaledTime + AnyKeyGrace;
+        bool skipped = false;
+
+        for (int i = header != null ? -1 : 0; i < rows.Length; i++)
         {
-            yield return new WaitForSecondsRealtime(page.LineDelay);
+            // the item the skip happens on still gets its thud, the ones after it are silent
+            if (!skipped)
+            {
+                float waited = 0f;
 
-            header.SetActive(true);
+                while (waited < page.LineDelay)
+                {
+                    if (Time.unscaledTime >= skipLockedUntil && AnyKeyOrClick())
+                    {
+                        skipped = true;
+                        break;
+                    }
 
-            if (page.Thud != null)
-                videoAudio.PlayOneShot(page.Thud, page.ThudVolume);
+                    waited += Time.unscaledDeltaTime;
+                    yield return null;
+                }
+
+                if (page.Thud != null)
+                    videoAudio.PlayOneShot(page.Thud, page.ThudVolume);
+            }
+
+            // -1 is the header
+            if (i < 0)
+                header.SetActive(true);
+            else
+                rows[i].SetActive(true);
         }
 
-        foreach (GameObject row in rows)
-        {
-            yield return new WaitForSecondsRealtime(page.LineDelay);
-
-            row.SetActive(true);
-
-            if (page.Thud != null)
-                videoAudio.PlayOneShot(page.Thud, page.ThudVolume);
-        }
-
+        // after a skip this also makes sure the click that skipped can't leave straight away
         yield return new WaitForSecondsRealtime(AnyKeyGrace);
 
         while (!AnyKeyOrClick())
@@ -275,6 +292,11 @@ public class GameStartSequence : MonoBehaviour
         label.fontSize = size;
         label.color = color;
         label.raycastTarget = false;
+
+        // a very long title or tip (the manic death) shrinks to fit the box. the others fit already, so they stay at their size
+        label.enableAutoSizing = true;
+        label.fontSizeMax = size;
+        label.fontSizeMin = 12f;
 
         if (font != null)
             label.font = font;

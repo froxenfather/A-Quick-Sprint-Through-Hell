@@ -518,6 +518,7 @@ public class RoomChain : MonoBehaviour
         while (passedCount < rooms.Count && HasPassed(rooms[passedCount].Exit))
         {
             Room left = rooms[passedCount];
+            Debug.Log($"[RoomDebug] PASSED '{left.name}' exit; player={player.position}, gate={left.Exit.transform.position}, fwd={left.Exit.WorldForward}, passedCount->{passedCount + 1}", left);
             passedCount++;
 
             // the next room is always built ahead already, so this is the room the player just went into
@@ -758,6 +759,7 @@ public class RoomChain : MonoBehaviour
             Room taken = rooms[rooms.Count - 1];
             rooms.RemoveAt(rooms.Count - 1);
 
+            Debug.Log($"[RoomDebug] BACKTRACK destroying '{taken.name}' (passedCount={passedCount}, rooms={rooms.Count})", taken);
             taken.gameObject.SetActive(false);
             Destroy(taken.gameObject);
         }
@@ -816,6 +818,7 @@ public class RoomChain : MonoBehaviour
     {
         while (passedCount > roomsBehind)
         {
+            Debug.Log($"[RoomDebug] REMOVE OLD destroying '{rooms[0].name}' (passedCount={passedCount}, roomsBehind={roomsBehind}, rooms={rooms.Count})", rooms[0]);
             Destroy(rooms[0].gameObject);
             rooms.RemoveAt(0);
             planner.RemoveOldest();

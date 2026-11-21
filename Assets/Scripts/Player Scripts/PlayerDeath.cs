@@ -2,19 +2,15 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Video;
 
-// the two ways to die: Conseraph touching the player, and being lost to the void (see VoidWatch).
+// the ways to die: Conseraph touching the player (normal, enraged, after parrying him, or manic), and being lost to the void (see VoidWatch).
 // it freezes the player and sends them back to the lobby.
 // a video plays while the lobby loads, then a black screen shows how they died and the stats of the run (see GameStartSequence).
+// this works out WHICH death happened (by name, see PickConseraphDeath) and DeathMessages says what the screen shows for it.
+// the titles, tips, colors and manic phrases are in DeathMessages.cs, not in the Inspector.
 // put this on the Player in TheFactory
 [RequireComponent(typeof(RunStats))]
 public class PlayerDeath : MonoBehaviour
 {
-    private enum DeathCause
-    {
-        Conseraph,
-        Void
-    }
-
     // found at the start if left empty
     [SerializeField] private Conseraph conseraph;
 
@@ -35,7 +31,7 @@ public class PlayerDeath : MonoBehaviour
     [SerializeField] private float fadeInSeconds = 1f;
 
     [Header("Stats screen")]
-    // the font for the stats and for the red Conseraph header (the scary one)
+    // the font for the stats and for the Conseraph headers (the scary one)
     [SerializeField] private TMP_FontAsset statsFont;
 
     // played as each stat lands.
@@ -52,32 +48,6 @@ public class PlayerDeath : MonoBehaviour
     [SerializeField] private Color labelColor = Color.white;
     [SerializeField] private Color valueColor = Color.red;
 
-    [Header("How they died: Conseraph")]
-    [SerializeField] private string conseraphTitle = "You succumbed to Conseraph";
-    [SerializeField] private Color conseraphTitleColor = Color.red;
-
-    // the tips under the title.
-    // the enraged one wins over the singed one, and the normal one is for everything else
-    [TextArea(1, 3)]
-    [SerializeField] private string normalTip = "Try taking your time to ensure you do not need to backtrack or slow down!";
-
-    [TextArea(1, 3)]
-    [SerializeField] private string enragedTip = "Try checking the saferoom for clues on how to counter him when all seems lost!";
-
-    [TextArea(1, 3)]
-    [SerializeField] private string singedTip = "When singed, slide bouncing and dashing is the best way to keep speed!";
-
-    [Header("How they died: the void")]
-    [SerializeField] private string voidTitle = "The Void consumes you.";
-    [SerializeField] private Color voidTitleColor = new Color(0.6f, 0.2f, 1f);
-
-    [TextArea(1, 3)]
-    [SerializeField] private string voidTip = "Make sure to stay inside the Eternal Factory and avoid holes!";
-
-    // the block font for the void title and tip.
-    // filled in with Anton in the editor if it is left empty
-    [SerializeField] private TMP_FontAsset voidHeaderFont;
-
     [Header("Header sizes")]
     [Min(1f)]
     [SerializeField] private float titleSize = 110f;
@@ -86,6 +56,10 @@ public class PlayerDeath : MonoBehaviour
     [SerializeField] private float tipSize = 42f;
 
     [SerializeField] private Color tipColor = Color.white;
+
+    // the block font for the void title and tip.
+    // filled in with Anton in the editor if it is left empty, so it is not shown in the Inspector
+    [SerializeField, HideInInspector] private TMP_FontAsset voidHeaderFont;
 
     // the GUID of Anton SDF, one of the fonts that comes with TextMesh Pro
     private const string AntonFontGuid = "8a89fa14b10d46a99122fd4f73fca9a2";
@@ -141,16 +115,48 @@ public class PlayerDeath : MonoBehaviour
 
     private void OnConseraphTouched()
     {
-        Die(DeathCause.Conseraph);
+        Die(PickConseraphDeath());
     }
 
     // called by VoidWatch when "Let Go" reaches full opacity
     public void DieToVoid()
     {
-        Die(DeathCause.Void);
+        Die(DeathMessages.Void);
     }
 
-    private void Die(DeathCause cause)
+    // which death it was when Conseraph killed the player: the name of the death, see DeathMessages for what each one says.
+    // the rules are checked from the top and the first one that matches wins, so put the most specific ones first.
+    // to add a death, add a name and a case in DeathMessages, then add an `if` here that returns that name.
+    // what you can check: manic, parries (how many times he was parried this run), enraged, singed
+    private string PickConseraphDeath()
+    {
+        bool manic = conseraph != null && conseraph.Manic;
+        int parries = conseraph != null ? conseraph.ParryCount : 0;
+        bool enraged = conseraph != null && conseraph.Enraged;
+        bool singed = playerBurn != null && playerBurn.Singe > 0;
+
+        if (manic)
+            return DeathMessages.Mania;
+
+        if (parries >= 10)
+            return DeathMessages.Parried10;
+
+        if (parries >= 5)
+            return DeathMessages.Parried5;
+
+        if (parries >= 1)
+            return DeathMessages.Parried1;
+
+        if (enraged)
+            return DeathMessages.Enraged;
+
+        if (singed)
+            return DeathMessages.Singed;
+
+        return DeathMessages.Normal;
+    }
+
+    private void Die(string deathName)
     {
         if (dead)
             return;
@@ -174,7 +180,11 @@ public class PlayerDeath : MonoBehaviour
             ValueColor = valueColor
         };
 
-        FillHeader(page, cause);
+        // the Mania death: every stat is a phrase instead of a number
+        if (deathName == DeathMessages.Mania)
+            OverwriteWithPhrases(page.Lines);
+
+        FillHeader(page, deathName);
 
         // freeze the player where they are, they are about to be replaced by the lobby's player
         player.enabled = false;
@@ -182,38 +192,34 @@ public class PlayerDeath : MonoBehaviour
         if (look != null)
             look.enabled = false;
 
-        VideoClip video = cause == DeathCause.Void ? voidVideo : gotYouVideo;
+        VideoClip video = deathName == DeathMessages.Void ? voidVideo : gotYouVideo;
 
         // this object is in the factory, which gets unloaded, so the rest runs on an object that survives the scene change
         GameStartSequence.Begin(lobbySceneName, video, fadeInSeconds, page);
     }
 
-    // the title and tip at the very top of the stats screen: how the player died
-    private void FillHeader(GameStartSequence.StatsPage page, DeathCause cause)
+    // each stat keeps its label and gets a random phrase for its value
+    private void OverwriteWithPhrases(System.Collections.Generic.List<(string label, string value)> lines)
     {
+        if (DeathMessages.ManiaPhrases.Length == 0)
+            return;
+
+        for (int i = 0; i < lines.Count; i++)
+            lines[i] = (lines[i].label, DeathMessages.ManiaPhrases[Random.Range(0, DeathMessages.ManiaPhrases.Length)]);
+    }
+
+    // the title and tip at the very top of the stats screen: how the player died
+    private void FillHeader(GameStartSequence.StatsPage page, string deathName)
+    {
+        DeathMessage message = DeathMessages.Get(deathName);
+
         page.HeaderTitleSize = titleSize;
         page.HeaderTipSize = tipSize;
         page.HeaderTipColor = tipColor;
 
-        if (cause == DeathCause.Void)
-        {
-            page.HeaderTitle = voidTitle;
-            page.HeaderTitleColor = voidTitleColor;
-            page.HeaderTip = voidTip;
-            page.HeaderFont = voidHeaderFont;
-            return;
-        }
-
-        page.HeaderTitle = conseraphTitle;
-        page.HeaderTitleColor = conseraphTitleColor;
-        page.HeaderFont = statsFont;
-
-        // enraged first, then singed (any singe level at all), then the normal tip
-        if (conseraph != null && conseraph.Enraged)
-            page.HeaderTip = enragedTip;
-        else if (playerBurn != null && playerBurn.Singe > 0)
-            page.HeaderTip = singedTip;
-        else
-            page.HeaderTip = normalTip;
+        page.HeaderTitle = message.Title;
+        page.HeaderTitleColor = message.Color;
+        page.HeaderTip = message.Tip;
+        page.HeaderFont = message.UseVoidFont ? voidHeaderFont : statsFont;
     }
 }

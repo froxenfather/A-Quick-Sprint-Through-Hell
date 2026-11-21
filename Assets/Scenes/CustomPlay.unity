@@ -6580,7 +6580,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1672725483
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6609,11 +6609,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fa85e1e929f28542a5f8a18ae4cfe68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Conseraph
-  aiEnabled: 1
+  aiEnabled: 0
   catchUpDistance: 150
   closeDistance: 60
-  normalSpeed: 25
-  closeSpeed: 20
+  normalSpeed: 35
+  closeSpeed: 30
   catchUpGrowth: 1
   maxCatchUpSpeed: 80
   acceleration: 20
@@ -6625,6 +6625,16 @@ MonoBehaviour:
   enragedSpeedStep: 1
   enragedStepSeconds: 0.2
   redFadeSeconds: 1
+  rageIntensity: 1
+  parryEnabled: 1
+  parryMinSpeed: 26
+  lookToleranceDegrees: 20
+  dashToleranceDegrees: 25
+  parryGraceSeconds: 0.5
+  knockbackSeconds: 1
+  knockbackMultiplier: 1
+  parrySound: {fileID: 0}
+  parryVolume: 1
   currentSpeed: 0
   distanceToPlayer: 0
 --- !u!135 &1672725485
